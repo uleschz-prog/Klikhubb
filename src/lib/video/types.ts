@@ -27,7 +27,10 @@ const GRADIENTS = [
 ];
 
 export function videoGradient(id: string) {
-  const sum = [...id].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  let sum = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    sum += id.charCodeAt(i);
+  }
   return GRADIENTS[sum % GRADIENTS.length];
 }
 
