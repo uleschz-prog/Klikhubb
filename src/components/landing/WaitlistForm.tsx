@@ -25,14 +25,18 @@ export function WaitlistForm({ variant = "hero" }: { variant?: "hero" | "giant" 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, intent }),
       });
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; emailed?: boolean };
       if (!response.ok) {
         setStatus("error");
         setMessage(payload.error ?? "No pudimos guardar tu acceso. Intenta de nuevo.");
         return;
       }
       setStatus("ok");
-      setMessage("Ya tienes lugar. Te escribimos cuando abran las primeras mil cuentas.");
+      setMessage(
+        payload.emailed
+          ? "Ya tienes lugar. Te enviamos un correo — revisa inbox y spam."
+          : "Ya tienes lugar. Te escribimos cuando abran las primeras mil cuentas.",
+      );
     } catch {
       setStatus("error");
       setMessage("Red no disponible. Revisa tu conexión.");

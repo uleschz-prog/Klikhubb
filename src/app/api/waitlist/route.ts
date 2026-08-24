@@ -1,10 +1,12 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { sendWaitlistNotify, sendWaitlistWelcome } from "@/lib/email/waitlist";
+import { hasDatabaseUrl, prisma } from "@/lib/prisma";
 import { waitlistSchema } from "@/lib/validations/waitlist";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
@@ -20,24 +22,37 @@ export async function POST(request: Request) {
     locale: "es",
   };
 
-  try {
-    await prisma.waitlistEntry.upsert({
-      where: { email: data.email },
-      create: data,
-      update: { intent: data.intent },
-    });
-    return NextResponse.json({ ok: true });
-  } catch {
-    if (process.env.NODE_ENV === "production") {
-      return NextResponse.json(
-        { error: "La lista de espera no está disponible ahora." },
-        { status: 503 },
-      );
+  let saved = false;
+  if (hasDatabaseUrl) {
+    try {
+      await prisma.waitlistEntry.upsert({
+        where: { email: data.email },
+        create: data,
+        update: { intent: data.intent },
+      });
+      saved = true;
+    } catch (error) {
+      console.error("waitlist db", error);
     }
-
-    await appendLocalFallback(data);
-    return NextResponse.json({ ok: true, demo: true });
   }
+  if (!saved && process.env.NODE_ENV !== "production") {
+    await appendLocalFallback(data);
+    saved = true;
+  }
+
+  const emailed = await sendWaitlistWelcome(data);
+  if (emailed) {
+    await sendWaitlistNotify(data).catch(() => false);
+  }
+
+  if (saved || emailed) {
+    return NextResponse.json({ ok: true, emailed });
+  }
+
+  return NextResponse.json(
+    { error: "La lista de espera no está disponible ahora." },
+    { status: 503 },
+  );
 }
 
 async function appendLocalFallback(entry: { email: string; intent: string }) {
