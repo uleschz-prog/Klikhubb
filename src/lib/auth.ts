@@ -9,7 +9,10 @@ const googleConfigured =
   Boolean(process.env.GOOGLE_CLIENT_ID) && Boolean(process.env.GOOGLE_CLIENT_SECRET);
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET ?? "klikhubb-demo-secret",
+  secret:
+    process.env.NEXTAUTH_SECRET?.trim() ||
+    process.env.AUTH_SECRET?.trim() ||
+    "klikhubb-demo-secret",
   adapter: hasDatabaseUrl ? PrismaAdapter(prisma) : undefined,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
