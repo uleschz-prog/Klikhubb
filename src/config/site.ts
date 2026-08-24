@@ -8,10 +8,17 @@ export const brand = {
   },
 } as const;
 
+export function siteUrl() {
+  const explicit = process.env.NEXTAUTH_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
+  return "http://localhost:3000";
+}
+
 export const site = {
   name: brand.name,
   slogan: brand.slogan,
-  url: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+  url: siteUrl(),
   description:
     "La red social donde publicas, vendes y tu gente se queda contigo. Video, comunidad y academia en un clic.",
 } as const;

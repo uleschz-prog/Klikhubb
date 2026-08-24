@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { siteUrl } from "@/config/site";
 import { toCents } from "@/lib/money/cents";
 import { CommerceError, settlePaidOrder, type SettledOrder } from "@/lib/commerce/settle-order";
 import { demoEnrollmentOrderId, demoSettleOrder, isConnectionError } from "@/lib/demo/store";
@@ -9,9 +10,7 @@ export function isStripeEnabled() {
 }
 
 export function appBaseUrl() {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL.replace(/\/$/, "");
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  return "http://localhost:3000";
+  return siteUrl();
 }
 
 export function getStripe() {

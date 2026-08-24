@@ -1,3 +1,10 @@
+if (!process.env.NEXTAUTH_URL?.trim()) {
+  delete process.env.NEXTAUTH_URL;
+  if (process.env.VERCEL_URL) {
+    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
+  }
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
