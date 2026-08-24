@@ -1,3 +1,5 @@
+import type { FeedVideo } from "@/lib/video/types";
+
 export type MockProduct = {
   id: string;
   slug: string;
@@ -6,24 +8,17 @@ export type MockProduct = {
   currency: string;
 };
 
-export type MockVideo = {
-  id: string;
-  creatorName: string;
-  handle: string;
-  caption: string;
-  product: MockProduct | null;
-  likes: number;
-  comments: number;
-  gradient: string;
-};
-
-export const mockVideos: MockVideo[] = [
+export const mockVideos: FeedVideo[] = [
   {
     id: "v1",
     creatorName: "Maya Chen",
     handle: "mayaclose",
     caption: "Empaqué mi curso en 18 segundos. El botón vende. Yo cobro sin salir del feed.",
-    product: { id: "p1", slug: "cierre-elite", title: "Academia Cierre Élite", price: 497, currency: "USD" },
+    title: "De view a cliente",
+    videoUrl: "/videos/maya-cierre.mp4",
+    playbackId: null,
+    thumbnailUrl: null,
+    product: { slug: "cierre-elite", title: "Academia Cierre Élite", price: 497, currency: "USD" },
     likes: 18240,
     comments: 612,
     gradient: "from-emerald-950 via-neutral-950 to-cyan-950",
@@ -33,7 +28,11 @@ export const mockVideos: MockVideo[] = [
     creatorName: "Leo Vargas",
     handle: "leov",
     caption: "Mi comunidad no es un chat suelto. Quien compra, se queda. Así se siente tener audiencia propia.",
-    product: { id: "p2", slug: "inner-circle", title: "Membresía Inner Circle", price: 49, currency: "USD" },
+    title: "Inner Circle",
+    videoUrl: "/videos/leo-inner.mp4",
+    playbackId: null,
+    thumbnailUrl: null,
+    product: { slug: "inner-circle", title: "Membresía Inner Circle", price: 49, currency: "USD" },
     likes: 9402,
     comments: 301,
     gradient: "from-cyan-950 via-neutral-950 to-neutral-900",
@@ -43,6 +42,10 @@ export const mockVideos: MockVideo[] = [
     creatorName: "Amina Rahim",
     handle: "amina",
     caption: "Dejé de pedir likes. Ahora pido un clic. El feed paga a quien crea.",
+    title: "Un clic",
+    videoUrl: "/videos/amina-clic.mp4",
+    playbackId: null,
+    thumbnailUrl: null,
     product: null,
     likes: 22119,
     comments: 880,

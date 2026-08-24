@@ -11,5 +11,5 @@ if (!process.env.NEXTAUTH_URL?.trim()) {
 export { default } from "next-auth/middleware";
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/checkout/:path*"],
+  matcher: ["/dashboard/:path*", "/checkout/:path*", "/publish", "/publish/:path*"],
 };

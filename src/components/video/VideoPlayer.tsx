@@ -1,10 +1,11 @@
 "use client";
 
-import type { MockVideo } from "@/data/mock";
+import { useRef, useState } from "react";
+import type { FeedVideo } from "@/lib/video/types";
 import { BuyButton } from "@/components/commerce/BuyButton";
 
 type VideoPlayerProps = {
-  video: MockVideo;
+  video: FeedVideo;
   variant?: "full" | "preview";
 };
 
@@ -15,6 +16,18 @@ function formatCount(value: number): string {
 
 export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
   const preview = variant === "preview";
+  const media = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+  const src = video.videoUrl;
+
+  function toggleMute() {
+    const node = media.current;
+    if (!node) return;
+    node.muted = !node.muted;
+    setMuted(node.muted);
+    if (!node.paused) return;
+    void node.play().catch(() => undefined);
+  }
 
   return (
     <article
@@ -23,8 +36,35 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
       }`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,240,255,0.18),transparent_42%),radial-gradient(circle_at_80%_80%,rgba(0,255,65,0.12),transparent_40%)]" />
-      <div className="scanlines pointer-events-none absolute inset-0 opacity-40" />
+      {src ? (
+        <video
+          ref={media}
+          className="absolute inset-0 h-full w-full object-cover"
+          src={src}
+          poster={video.thumbnailUrl ?? undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          onLoadedData={() => {
+            void media.current?.play().catch(() => undefined);
+          }}
+          onClick={toggleMute}
+        />
+      ) : null}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,240,255,0.12),transparent_42%),radial-gradient(circle_at_80%_80%,rgba(0,255,65,0.08),transparent_40%)]" />
+      <div className="scanlines pointer-events-none absolute inset-0 opacity-30" />
+
+      {src ? (
+        <button
+          type="button"
+          onClick={toggleMute}
+          className="absolute right-3 top-3 z-20 rounded-full border border-white/15 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80"
+        >
+          {muted ? "Toca para audio" : "Audio"}
+        </button>
+      ) : null}
 
       <div
         className={`absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/55 to-transparent ${

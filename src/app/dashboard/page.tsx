@@ -43,6 +43,14 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+      <div className="mt-6">
+        <a
+          href="/publish"
+          className="inline-flex min-h-12 items-center rounded-full bg-klik-cyan px-6 text-sm font-bold text-klik-black"
+        >
+          Publicar video
+        </a>
+      </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <InviteCard code={hub?.referralCode ?? ""} invitedCount={hub?.invitedCount ?? 0} />
         <Leaderboard rows={hub?.leaderboard ?? []} />

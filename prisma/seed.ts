@@ -161,6 +161,65 @@ async function main() {
     });
   }
 
+  const cierre = await prisma.product.findUniqueOrThrow({ where: { slug: "cierre-elite" } });
+  const inner = await prisma.product.findUniqueOrThrow({ where: { slug: "inner-circle" } });
+
+  const sampleVideos = [
+    {
+      id: "vid_maya_cierre",
+      creatorId: maya.id,
+      title: "El botón vende",
+      caption: "Empaqué mi curso en 18 segundos. El botón vende. Yo cobro sin salir del feed.",
+      videoUrl: "/videos/maya-cierre.mp4",
+      productId: cierre.id,
+    },
+    {
+      id: "vid_leo_inner",
+      creatorId: leo.id,
+      title: "Audiencia propia",
+      caption: "Mi comunidad no es un chat suelto. Quien compra, se queda. Así se siente tener audiencia propia.",
+      videoUrl: "/videos/leo-inner.mp4",
+      productId: inner.id,
+    },
+    {
+      id: "vid_amina_clic",
+      creatorId: amina.id,
+      title: "Un clic",
+      caption: "Dejé de pedir likes. Ahora pido un clic. El feed paga a quien crea.",
+      videoUrl: "/videos/amina-clic.mp4",
+      productId: null as string | null,
+    },
+  ];
+
+  for (const item of sampleVideos) {
+    await prisma.video.upsert({
+      where: { id: item.id },
+      update: {
+        title: item.title,
+        caption: item.caption,
+        videoUrl: item.videoUrl,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+      create: {
+        id: item.id,
+        creatorId: item.creatorId,
+        title: item.title,
+        caption: item.caption,
+        videoUrl: item.videoUrl,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+    });
+    if (item.productId) {
+      await prisma.videoProduct.upsert({
+        where: { videoId_productId: { videoId: item.id, productId: item.productId } },
+        update: { isPrimary: true },
+        create: { videoId: item.id, productId: item.productId, isPrimary: true, ctaLabel: "Comprar" },
+      });
+    }
+  }
+
   console.log(`Seed OK — plan ${plan.code}. Creador 80% · plataforma 10% · invitación 10%.`);
 }
 
