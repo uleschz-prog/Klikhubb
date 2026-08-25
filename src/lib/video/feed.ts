@@ -10,6 +10,7 @@ export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
       take: limit,
       include: {
         creator: { select: { displayName: true, username: true, name: true } },
+        tags: { include: { tag: { select: { slug: true, name: true } } } },
         products: {
           where: { isPrimary: true },
           take: 1,
@@ -32,6 +33,16 @@ export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
         thumbnailUrl: row.thumbnailUrl,
         likes: row.likeCount,
         comments: row.commentCount,
+        shares: row.shareCount,
+        favorites: 0,
+        publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),
+        tags: (() => {
+          const tagged = row.tags.map((item) => item.tag.slug);
+          if (tagged.length) return tagged;
+          const fallback = ["qlyk"];
+          if (productRow) fallback.unshift(productRow.slug.replace(/-/g, ""));
+          return fallback;
+        })(),
         gradient: videoGradient(row.id),
         product:
           productRow && productRow.status === "ACTIVE"

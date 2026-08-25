@@ -1,5 +1,5 @@
 export const brand = {
-  name: "KlikHubb",
+  name: "Qlyk",
   slogan: "El centro donde todo sucede con un solo clic.",
   colors: {
     black: "#050505",

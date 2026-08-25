@@ -30,7 +30,7 @@ export default async function PublishPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Feed</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Publica el momento</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Vertical, corto, con o sin botón de compra. Queda en el feed de KlikHubb.
+        Vertical, corto, con o sin botón de compra. Queda en el feed de Qlyk.
       </p>
       <div className="mt-8">
         <PublishVideoForm blobEnabled={isBlobConfigured()} products={products} />

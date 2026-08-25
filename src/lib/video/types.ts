@@ -16,6 +16,10 @@ export type FeedVideo = {
   thumbnailUrl: string | null;
   likes: number;
   comments: number;
+  shares: number;
+  favorites: number;
+  publishedAt: string | null;
+  tags: string[];
   gradient: string;
   product: FeedProduct | null;
 };

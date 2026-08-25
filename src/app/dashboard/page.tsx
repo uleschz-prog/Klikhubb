@@ -25,7 +25,7 @@ export default async function DashboardPage() {
           </h1>
           <p className="mt-2 max-w-xl text-sm text-white/55">
             Ganancias, puntos y las voces que suenan. Aquí se ve lo que creas y lo que cobras.
-            {hub?.demo ? " Modo local: Postgres aún no acepta el usuario klikhubb." : ""}
+            {hub?.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
           </p>
         </div>
         <LogoutButton />

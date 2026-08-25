@@ -40,7 +40,7 @@ const contrast = [
     ],
   },
   {
-    name: "KlikHubb",
+    name: "Qlyk",
     highlight: true,
     points: [
       "Tú creas. Tú cobras.",
@@ -88,7 +88,7 @@ export function LandingPage() {
               </span>
             </motion.h1>
             <motion.p {...fade} className="mt-5 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
-              KlikHubb es la red social donde el video no se queda en likes: vende, enseña y junta a tu
+              Qlyk es la red social donde el video no se queda en likes: vende, enseña y junta a tu
               gente. Publicas, tu audiencia se queda contigo y cobras sin salir del feed.
             </motion.p>
             <motion.p {...fade} className="mt-3 text-sm font-medium text-white/45">

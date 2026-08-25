@@ -61,7 +61,7 @@ export function Footer() {
         ))}
       </div>
       <div className="border-t border-white/5 py-4 text-center text-[11px] text-white/35">
-        © {new Date().getFullYear()} KlikHubb. Todos los derechos reservados.
+        © {new Date().getFullYear()} {brand.name}. Todos los derechos reservados.
       </div>
     </footer>
   );

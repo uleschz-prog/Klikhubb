@@ -21,6 +21,10 @@ export const mockVideos: FeedVideo[] = [
     product: { slug: "cierre-elite", title: "Academia Cierre Élite", price: 497, currency: "USD" },
     likes: 18240,
     comments: 612,
+    shares: 1280,
+    favorites: 4310,
+    publishedAt: "2026-08-08T12:00:00.000Z",
+    tags: ["cierre", "feed", "qlyk"],
     gradient: "from-emerald-950 via-neutral-950 to-cyan-950",
   },
   {
@@ -35,6 +39,10 @@ export const mockVideos: FeedVideo[] = [
     product: { slug: "inner-circle", title: "Membresía Inner Circle", price: 49, currency: "USD" },
     likes: 9402,
     comments: 301,
+    shares: 640,
+    favorites: 2104,
+    publishedAt: "2026-08-12T12:00:00.000Z",
+    tags: ["comunidad", "innercircle", "qlyk"],
     gradient: "from-cyan-950 via-neutral-950 to-neutral-900",
   },
   {
@@ -49,6 +57,10 @@ export const mockVideos: FeedVideo[] = [
     product: null,
     likes: 22119,
     comments: 880,
+    shares: 1902,
+    favorites: 6700,
+    publishedAt: "2026-08-18T12:00:00.000Z",
+    tags: ["unclic", "crear", "qlyk"],
     gradient: "from-neutral-900 via-emerald-950 to-black",
   },
 ];

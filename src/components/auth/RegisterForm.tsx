@@ -51,7 +51,7 @@ export function RegisterForm() {
     <main className="flex min-h-[100dvh] items-center justify-center bg-klik-black px-4 py-10">
       <div className="w-full max-w-md rounded-3xl border border-klik-line bg-klik-card p-8">
         <Logo href="/" />
-        <h1 className="mt-6 font-display text-3xl font-extrabold text-white">Tu lugar en KlikHubb</h1>
+        <h1 className="mt-6 font-display text-3xl font-extrabold text-white">Tu lugar en Qlyk</h1>
         <p className="mt-2 text-sm text-white/50">Entra al feed. Publica. Vende. Quédate con tu gente.</p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4">

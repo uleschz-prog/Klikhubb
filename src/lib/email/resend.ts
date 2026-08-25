@@ -5,7 +5,7 @@ export function isEmailConfigured() {
 }
 
 export function emailFrom() {
-  return process.env.EMAIL_FROM?.trim() || "KlikHubb <onboarding@resend.dev>";
+  return process.env.EMAIL_FROM?.trim() || "Qlyk <onboarding@resend.dev>";
 }
 
 export function waitlistNotifyTo() {

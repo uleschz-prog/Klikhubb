@@ -1,0 +1,794 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { FeedVideo } from "@/lib/video/types";
+import { formatCount, formatFeedDate, formatTimecode, initialsFrom } from "@/lib/video/format";
+import { LogoMark } from "@/components/brand/LogoMark";
+import { PlatformNav } from "@/components/layout/PlatformNav";
+import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { formatMoney } from "@/lib/commerce/split";
+
+type Panel = "none" | "comments" | "playlist" | "more";
+type Menu = "none" | "speed" | "quality" | "volume";
+
+const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+
+export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initialId?: string }) {
+  const router = useRouter();
+  const stage = useRef<HTMLDivElement>(null);
+  const media = useRef<HTMLVideoElement>(null);
+  const startY = useRef<number | null>(null);
+  const wheelLock = useRef(false);
+
+  const startIndex = Math.max(
+    0,
+    videos.findIndex((item) => item.id === initialId),
+  );
+  const [index, setIndex] = useState(startIndex === -1 ? 0 : startIndex);
+  const video = videos[index] ?? videos[0];
+
+  const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(true);
+  const [volume, setVolume] = useState(0.8);
+  const [speed, setSpeed] = useState(1);
+  const [current, setCurrent] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [continuous, setContinuous] = useState(true);
+  const [chrome, setChrome] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [followed, setFollowed] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [panel, setPanel] = useState<Panel>("none");
+  const [menu, setMenu] = useState<Menu>("none");
+  const [toast, setToast] = useState("");
+  const [likes, setLikes] = useState(video.likes);
+  const [saves, setSaves] = useState(video.favorites);
+  const [shares, setShares] = useState(video.shares);
+  const [localComments, setLocalComments] = useState<string[]>([]);
+  const [draft, setDraft] = useState("");
+
+  const tags = useMemo(() => {
+    const fromCaption = video.caption.match(/#([A-Za-z0-9_]+)/g)?.map((tag) => tag.slice(1)) ?? [];
+    return fromCaption.length ? fromCaption : video.tags;
+  }, [video]);
+
+  const go = useCallback(
+    (next: number) => {
+      const clamped = Math.max(0, Math.min(videos.length - 1, next));
+      if (clamped === index) return;
+      setIndex(clamped);
+      setLiked(false);
+      setSaved(false);
+      setFollowed(false);
+      setLocalComments([]);
+      setDraft("");
+      setPanel("none");
+      setMenu("none");
+      router.replace(`/feed?v=${videos[clamped].id}`, { scroll: false });
+    },
+    [index, router, videos],
+  );
+
+  useEffect(() => {
+    setLikes(video.likes);
+    setSaves(video.favorites);
+    setShares(video.shares);
+  }, [video]);
+
+  useEffect(() => {
+    const node = media.current;
+    if (!node) return;
+    node.muted = muted;
+    node.volume = volume;
+    node.playbackRate = speed;
+    node.loop = !continuous;
+    if (playing) void node.play().catch(() => setPlaying(false));
+    else node.pause();
+  }, [video.id, muted, volume, speed, continuous, playing]);
+
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(""), 1800);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+      if (event.key === "ArrowDown" || event.key === "j") {
+        event.preventDefault();
+        go(index + 1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        go(index - 1);
+      } else if (event.key === " ") {
+        event.preventDefault();
+        setPlaying((value) => !value);
+      } else if (event.key === "m") {
+        setMuted((value) => !value);
+      } else if (event.key === "f") {
+        void toggleFullscreen();
+      } else if (event.key === "c") {
+        setChrome((value) => !value);
+      } else if (event.key === "Escape") {
+        setPanel("none");
+        setMenu("none");
+        setChrome(true);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go, index]);
+
+  function showToast(message: string) {
+    setToast(message);
+  }
+
+  function togglePlay() {
+    setPlaying((value) => !value);
+  }
+
+  function seekRatio(ratio: number) {
+    const node = media.current;
+    if (!node || !Number.isFinite(node.duration)) return;
+    node.currentTime = Math.min(node.duration, Math.max(0, ratio * node.duration));
+  }
+
+  async function toggleFullscreen() {
+    const node = stage.current;
+    if (!node) return;
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+      return;
+    }
+    await node.requestFullscreen().catch(() => undefined);
+  }
+
+  async function togglePip() {
+    const node = media.current;
+    if (!node) return;
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      return;
+    }
+    if (typeof node.requestPictureInPicture === "function") {
+      await node.requestPictureInPicture().catch(() => showToast("Tu navegador no permite mini reproductor."));
+    }
+  }
+
+  async function shareVideo() {
+    const url = `${window.location.origin}/feed?v=${video.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: video.title, text: video.caption, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        showToast("Enlace copiado.");
+      }
+      setShares((value) => value + 1);
+    } catch {
+      await navigator.clipboard.writeText(url);
+      showToast("Enlace copiado.");
+    }
+  }
+
+  function toggleLike() {
+    setLiked((value) => {
+      setLikes((count) => count + (value ? -1 : 1));
+      return !value;
+    });
+  }
+
+  function toggleSave() {
+    setSaved((value) => {
+      setSaves((count) => count + (value ? -1 : 1));
+      return !value;
+    });
+  }
+
+  function onWheel(event: React.WheelEvent) {
+    if (Math.abs(event.deltaY) < 40) return;
+    if (wheelLock.current) return;
+    wheelLock.current = true;
+    go(index + (event.deltaY > 0 ? 1 : -1));
+    window.setTimeout(() => {
+      wheelLock.current = false;
+    }, 700);
+  }
+
+  const hidden = !chrome;
+  const commentsTotal = video.comments + localComments.length;
+
+  return (
+    <div
+      ref={stage}
+      className="relative h-[100dvh] overflow-hidden bg-black text-white"
+      onWheel={onWheel}
+      onTouchStart={(event) => {
+        startY.current = event.touches[0]?.clientY ?? null;
+      }}
+      onTouchEnd={(event) => {
+        if (startY.current == null) return;
+        const delta = startY.current - (event.changedTouches[0]?.clientY ?? startY.current);
+        startY.current = null;
+        if (Math.abs(delta) < 56) return;
+        go(index + (delta > 0 ? 1 : -1));
+      }}
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
+      {video.videoUrl ? (
+        <video
+          ref={media}
+          key={video.id}
+          className="absolute inset-0 h-full w-full object-cover"
+          src={video.videoUrl}
+          poster={video.thumbnailUrl ?? undefined}
+          autoPlay
+          muted={muted}
+          playsInline
+          preload="auto"
+          onClick={togglePlay}
+          onDoubleClick={toggleLike}
+          onTimeUpdate={(event) => setCurrent(event.currentTarget.currentTime)}
+          onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => {
+            if (continuous && index < videos.length - 1) {
+              go(index + 1);
+              return;
+            }
+            const node = media.current;
+            if (!node) return;
+            node.currentTime = 0;
+            void node.play().catch(() => undefined);
+          }}
+        />
+      ) : null}
+
+      {!hidden ? (
+        <>
+          <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+            <div className="pointer-events-auto flex items-center gap-3">
+              <Link href="/" className="flex items-center gap-2">
+                <LogoMark className="h-8 w-8 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
+              </Link>
+              <div className="flex items-center gap-2">
+                <Avatar name={video.creatorName} />
+                <div>
+                  <p className="text-sm font-semibold leading-none">{video.creatorName}</p>
+                  <p className="mt-1 text-[11px] text-white/55">Qlyk</p>
+                </div>
+              </div>
+            </div>
+            <div className="pointer-events-auto hidden md:block">
+              <PlatformNav />
+            </div>
+          </header>
+
+          <aside className="absolute right-4 top-[16%] z-30 flex flex-col items-center gap-4 overflow-visible md:right-8 md:top-[12%]">
+            <NavArrow label="Anterior" disabled={index === 0} onClick={() => go(index - 1)}>
+              <ChevronUp />
+            </NavArrow>
+            <NavArrow label="Siguiente" disabled={index === videos.length - 1} onClick={() => go(index + 1)}>
+              <ChevronDown />
+            </NavArrow>
+            <button
+              type="button"
+              onClick={() => setFollowed((value) => !value)}
+              className="relative mt-2 mb-1 overflow-visible"
+              aria-label={followed ? "Siguiendo" : "Seguir"}
+            >
+              <Avatar name={video.creatorName} size="lg" />
+              <span
+                className={`absolute -bottom-1 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold ${
+                  followed ? "bg-white text-klik-black" : "bg-[#FE2C55] text-white"
+                }`}
+              >
+                {followed ? "✓" : "+"}
+              </span>
+            </button>
+            <RailAction active={liked} label={formatCount(likes)} onClick={toggleLike}>
+              <HeartIcon filled={liked} />
+            </RailAction>
+            <RailAction label={formatCount(commentsTotal)} onClick={() => setPanel(panel === "comments" ? "none" : "comments")}>
+              <CommentIcon />
+            </RailAction>
+            <RailAction active={saved} label={formatCount(saves)} onClick={toggleSave}>
+              <StarIcon filled={saved} />
+            </RailAction>
+            <RailAction label={formatCount(shares)} onClick={() => void shareVideo()}>
+              <ShareIcon />
+            </RailAction>
+            <RailAction
+              active={listening}
+              label="Escuchar"
+              onClick={() => {
+                setListening((value) => !value);
+                setMuted(false);
+                setPlaying(true);
+                showToast(listening ? "Volviste al video." : "Modo escuchar: el audio sigue, el clip también.");
+              }}
+            >
+              <HeadphonesIcon />
+            </RailAction>
+            <RailAction label="Más" onClick={() => setPanel(panel === "more" ? "none" : "more")}>
+              <DotsIcon />
+            </RailAction>
+          </aside>
+
+          <div className="absolute bottom-[4.75rem] left-4 z-20 max-w-[min(42rem,calc(100%-7.5rem))] md:bottom-16 md:left-8">
+            <p className="text-sm font-semibold text-white drop-shadow">
+              @{video.handle}
+              {video.publishedAt ? <span className="font-normal text-white/70"> · {formatFeedDate(video.publishedAt)}</span> : null}
+            </p>
+            <p className="mt-2 text-[15px] leading-6 text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.85)]">{video.caption}</p>
+            {tags.length ? (
+              <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-[13px] font-medium text-white/90">
+                {tags.map((tag) => (
+                  <span key={tag}>#{tag}</span>
+                ))}
+              </p>
+            ) : null}
+            {video.product ? (
+              <Link
+                href={`/checkout/${video.product.slug}`}
+                className="mt-3 inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/90 ring-1 ring-white/15 backdrop-blur"
+              >
+                <CollectionIcon />
+                Serie · {video.product.title}
+              </Link>
+            ) : (
+              <p className="mt-3 text-[11px] text-white/40">Feed · Qlyk</p>
+            )}
+            {video.product ? (
+              <Link
+                href={`/checkout/${video.product.slug}`}
+                className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-green px-4 py-2.5 text-sm font-bold text-klik-black"
+              >
+                <span>Llevar {video.product.title}</span>
+                <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
+                  {formatMoney(video.product.price, video.product.currency)}
+                </span>
+              </Link>
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setChrome(true)}
+          className="absolute inset-0 z-20 cursor-pointer"
+          aria-label="Mostrar controles"
+        />
+      )}
+
+      <div className={`absolute inset-x-0 bottom-14 z-30 md:bottom-0 ${hidden ? "pointer-events-none opacity-0" : "opacity-100"}`}>
+        <button
+          type="button"
+          className="group relative block h-5 w-full"
+          aria-label="Barra de progreso"
+          onClick={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            seekRatio((event.clientX - rect.left) / rect.width);
+          }}
+        >
+          <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/25 group-hover:h-1" />
+          <span
+            className="absolute left-0 top-1/2 h-px -translate-y-1/2 bg-white group-hover:h-1"
+            style={{ width: duration ? `${(current / duration) * 100}%` : "0%" }}
+          />
+        </button>
+        <div className="hidden items-center gap-3 bg-black/55 px-4 py-2 backdrop-blur-sm md:flex">
+          <button type="button" onClick={togglePlay} className="p-1" aria-label={playing ? "Pausa" : "Reproducir"}>
+            {playing ? <PauseIcon /> : <PlayIcon />}
+          </button>
+          <p className="min-w-[7.5rem] font-mono text-xs text-white/80">
+            {formatTimecode(current)} / {formatTimecode(duration)}
+          </p>
+          <div className="flex-1" />
+          <label className="flex items-center gap-2 text-xs text-white/80">
+            <span
+              className={`relative h-5 w-9 rounded-full ${continuous ? "bg-[#FE2C55]" : "bg-white/25"}`}
+            >
+              <input
+                type="checkbox"
+                className="peer sr-only"
+                checked={continuous}
+                onChange={(event) => setContinuous(event.target.checked)}
+              />
+              <span
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${
+                  continuous ? "left-4" : "left-0.5"
+                }`}
+              />
+            </span>
+            Continuo
+          </label>
+          <BarButton onClick={() => setChrome((value) => !value)}>Limpiar</BarButton>
+          <div className="relative">
+            <BarButton onClick={() => setMenu(menu === "quality" ? "none" : "quality")}>Auto</BarButton>
+            {menu === "quality" ? (
+              <MenuCard>
+                <p className="px-3 py-2 text-xs text-white/50">Una calidad · Auto</p>
+              </MenuCard>
+            ) : null}
+          </div>
+          <div className="relative">
+            <BarButton onClick={() => setMenu(menu === "speed" ? "none" : "speed")}>Velocidad</BarButton>
+            {menu === "speed" ? (
+              <MenuCard>
+                {SPEEDS.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setSpeed(value);
+                      setMenu("none");
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-sm ${
+                      speed === value ? "text-klik-cyan" : "text-white/80 hover:bg-white/10"
+                    }`}
+                  >
+                    {value === 1 ? "Normal" : `${value}x`}
+                  </button>
+                ))}
+              </MenuCard>
+            ) : null}
+          </div>
+          <IconBtn label="Lista" onClick={() => setPanel(panel === "playlist" ? "none" : "playlist")}>
+            <ListIcon />
+          </IconBtn>
+          <IconBtn label="Mini reproductor" onClick={() => void togglePip()}>
+            <PipIcon />
+          </IconBtn>
+          <div className="relative">
+            <IconBtn
+              label={muted ? "Silencio" : "Volumen"}
+              onClick={() => setMenu(menu === "volume" ? "none" : "volume")}
+            >
+              {muted || volume === 0 ? <MuteIcon /> : <VolumeIcon />}
+            </IconBtn>
+            {menu === "volume" ? (
+              <div className="absolute bottom-10 left-1/2 flex h-28 -translate-x-1/2 items-center rounded-md bg-black/80 px-3 py-2">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={muted ? 0 : volume}
+                  onChange={(event) => {
+                    const next = Number(event.target.value);
+                    setVolume(next);
+                    setMuted(next === 0);
+                  }}
+                  className="h-24 w-4 cursor-pointer appearance-none bg-transparent"
+                  style={{ writingMode: "vertical-lr", direction: "rtl" }}
+                />
+              </div>
+            ) : null}
+          </div>
+          <IconBtn label="Pantalla completa" onClick={() => void toggleFullscreen()}>
+            <ExpandIcon />
+          </IconBtn>
+        </div>
+      </div>
+
+      {panel === "comments" ? (
+        <SidePanel title={`Comentarios · ${commentsTotal}`} onClose={() => setPanel("none")}>
+          {localComments.length === 0 ? (
+            <p className="text-sm text-white/50">Aún no hay comentarios. El primero abre la conversación.</p>
+          ) : (
+            <ul className="space-y-3">
+              {localComments.map((item, i) => (
+                <li key={`${item}-${i}`} className="rounded-xl bg-white/5 px-3 py-2 text-sm text-white/80">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
+          <form
+            className="mt-4 flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const text = draft.trim();
+              if (!text) return;
+              setLocalComments((list) => [...list, text]);
+              setDraft("");
+            }}
+          >
+            <input
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              placeholder="Escribe un comentario"
+              className="min-h-11 flex-1 rounded-full border border-white/15 bg-black/40 px-4 text-sm outline-none ring-klik-cyan focus:ring-2"
+            />
+            <button type="submit" className="rounded-full bg-klik-cyan px-4 text-sm font-bold text-klik-black">
+              Enviar
+            </button>
+          </form>
+        </SidePanel>
+      ) : null}
+
+      {panel === "playlist" ? (
+        <SidePanel title="Siguiente en el feed" onClose={() => setPanel("none")}>
+          <ul className="space-y-2">
+            {videos.map((item, i) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    go(i);
+                    setPanel("none");
+                  }}
+                  className={`w-full rounded-xl px-3 py-2 text-left text-sm ${
+                    i === index ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  <span className="block font-semibold">@{item.handle}</span>
+                  <span className="line-clamp-2 text-xs text-white/55">{item.caption}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </SidePanel>
+      ) : null}
+
+      {panel === "more" ? (
+        <SidePanel title="Más" onClose={() => setPanel("none")}>
+          <button type="button" className="block w-full rounded-xl px-3 py-3 text-left text-sm hover:bg-white/10" onClick={() => void shareVideo()}>
+            Copiar enlace
+          </button>
+          <Link href="/community" className="block rounded-xl px-3 py-3 text-sm hover:bg-white/10">
+            Ir a la comunidad
+          </Link>
+          <Link href="/publish" className="block rounded-xl px-3 py-3 text-sm hover:bg-white/10">
+            Publicar el tuyo
+          </Link>
+          <button
+            type="button"
+            className="block w-full rounded-xl px-3 py-3 text-left text-sm text-white/55 hover:bg-white/10"
+            onClick={() => {
+              showToast("Recibido. Lo revisamos.");
+              setPanel("none");
+            }}
+          >
+            Reportar
+          </button>
+        </SidePanel>
+      ) : null}
+
+      {toast ? (
+        <p className="absolute left-1/2 top-20 z-40 -translate-x-1/2 rounded-full bg-black/75 px-4 py-2 text-xs text-white">
+          {toast}
+        </p>
+      ) : null}
+
+      {!hidden ? <MobileTabBar /> : null}
+    </div>
+  );
+}
+
+function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "lg" }) {
+  const box = size === "lg" ? "h-12 w-12 text-sm" : "h-8 w-8 text-[11px]";
+  return (
+    <span className={`inline-flex ${box} items-center justify-center rounded-full bg-gradient-to-br from-klik-cyan to-klik-green font-bold text-klik-black`}>
+      {initialsFrom(name)}
+    </span>
+  );
+}
+
+function RailAction({
+  label,
+  children,
+  onClick,
+  active,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick: () => void;
+  active?: boolean;
+}) {
+  return (
+    <button type="button" onClick={onClick} className="flex w-12 flex-col items-center gap-1 overflow-visible">
+      <span
+        className={`flex h-12 w-12 items-center justify-center overflow-visible ${
+          active ? "text-[#FE2C55]" : "text-white"
+        }`}
+      >
+        {children}
+      </span>
+      <span className="text-[11px] font-medium text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.85)]">{label}</span>
+    </button>
+  );
+}
+
+function NavArrow({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-25"
+    >
+      {children}
+    </button>
+  );
+}
+
+function BarButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="px-2 py-1 text-xs text-white/85 hover:text-white">
+      {children}
+    </button>
+  );
+}
+
+function IconBtn({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-label={label} onClick={onClick} className="p-1.5 text-white/85 hover:text-white">
+      {children}
+    </button>
+  );
+}
+
+function MenuCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="absolute bottom-9 right-0 z-40 min-w-[8rem] overflow-hidden rounded-md bg-black/90 py-1 shadow-xl ring-1 ring-white/10">
+      {children}
+    </div>
+  );
+}
+
+function SidePanel({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="absolute inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-neutral-950/95 p-5 shadow-2xl ring-1 ring-white/10 backdrop-blur-md">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-lg font-bold">{title}</h2>
+        <button type="button" onClick={onClose} className="text-sm text-white/50">
+          Cerrar
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+    </div>
+  );
+}
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`h-9 w-9 overflow-visible ${filled ? "fill-[#FE2C55]" : "fill-white"}`} aria-hidden>
+      <path d="M12 20.25S4.5 15.3 3.2 10.4C2.4 7.5 4.1 5 6.8 5c1.7 0 3.1 1 3.7 2.3C11.1 6 12.5 5 14.2 5c2.7 0 4.4 2.5 3.6 5.4C16.5 15.3 12 20.25 12 20.25z" />
+    </svg>
+  );
+}
+function CommentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-white" aria-hidden>
+      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-5 4v-4.2A2.5 2.5 0 0 1 4 13.5z" />
+    </svg>
+  );
+}
+function StarIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`h-9 w-9 overflow-visible ${filled ? "fill-[#FE2C55]" : "fill-white"}`} aria-hidden>
+      <path d="M12 3.6 14.4 9l6 .7-4.5 4.1 1.3 5.9L12 16.8 6.8 19.7 8.1 13.8 3.6 9.7 9.6 9z" />
+    </svg>
+  );
+}
+function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-white" aria-hidden>
+      <path d="M14 4.5 21 12l-7 7.5V15c-6 0-9 2-11 6 1-7 5-11 11-11z" />
+    </svg>
+  );
+}
+function HeadphonesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-none stroke-white" strokeWidth="1.8" aria-hidden>
+      <path d="M4 13a8 8 0 0 1 16 0v6h-4v-5h4M4 19h4v-5H4z" />
+    </svg>
+  );
+}
+function DotsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-white" aria-hidden>
+      <circle cx="6" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="18" cy="12" r="1.6" />
+    </svg>
+  );
+}
+function ChevronUp() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2">
+      <path d="M6 14l6-6 6 6" />
+    </svg>
+  );
+}
+function ChevronDown() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2">
+      <path d="M6 10l6 6 6-6" />
+    </svg>
+  );
+}
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+      <path d="M8 5v14l12-7z" />
+    </svg>
+  );
+}
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+      <path d="M7 5h4v14H7zm6 0h4v14h-4z" />
+    </svg>
+  );
+}
+function ListIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
+      <path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01" />
+    </svg>
+  );
+}
+function PipIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <rect x="12" y="11" width="7" height="6" rx="1" />
+    </svg>
+  );
+}
+function VolumeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+      <path d="M4 9h4l5-4v14l-5-4H4zm11 1.5a4 4 0 0 1 0 3" />
+    </svg>
+  );
+}
+function MuteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
+      <path d="M4 9h4l5-4v14l-5-4H4zM16 9l5 6M21 9l-5 6" />
+    </svg>
+  );
+}
+function ExpandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
+      <path d="M4 10V4h6M20 14v6h-6M20 10V4h-6M4 14v6h6" />
+    </svg>
+  );
+}
+function CollectionIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
+      <path d="M4 7h16v12H4zM8 7V5h8v2" />
+    </svg>
+  );
+}

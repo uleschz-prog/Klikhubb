@@ -87,7 +87,7 @@ async function persist(db: DemoDB) {
 async function buildSeed(): Promise<DemoDB> {
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
   const users: DemoUser[] = [
-    u("usr_platform", "platform@klikhubb.internal", hash, "KlikHubb", "platform", "PLATFORM", null, ["ADMIN"], 0),
+    u("usr_platform", "platform@klikhubb.internal", hash, "Qlyk", "platform", "PLATFORM", null, ["ADMIN"], 0),
     u("usr_maya", "maya@klikhubb.dev", hash, "Maya Chen", "mayaclose", "MAYA", "usr_platform", ["CREATOR", "AFFILIATE"], 18420),
     u("usr_leo", "leo@klikhubb.dev", hash, "Leo Vargas", "leov", "LEO", "usr_maya", ["AFFILIATE", "STUDENT"], 15110),
     u("usr_amina", "amina@klikhubb.dev", hash, "Amina Rahim", "amina", "AMINA", "usr_leo", ["AFFILIATE", "STUDENT"], 12990),

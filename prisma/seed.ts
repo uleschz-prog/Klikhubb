@@ -8,7 +8,7 @@ async function main() {
   const plan = await prisma.compensationPlan.upsert({
     where: { code: "klikhubb-v1" },
     update: {
-      name: "KlikHubb Creator 80",
+      name: "Qlyk Creator 80",
       maxUnilevelDepth: 1,
       binaryEnabled: false,
       platformFeeRate: 0.1,
@@ -16,7 +16,7 @@ async function main() {
     },
     create: {
       code: "klikhubb-v1",
-      name: "KlikHubb Creator 80",
+      name: "Qlyk Creator 80",
       maxUnilevelDepth: 1,
       binaryEnabled: false,
       platformFeeRate: 0.1,
@@ -54,7 +54,7 @@ async function main() {
   const rewards = [
     {
       name: "Primer clic",
-      description: "Publicaste o compraste por primera vez en KlikHubb.",
+      description: "Publicaste o compraste por primera vez en Qlyk.",
       pointsCost: 0,
       rankId: spark.id,
       type: RewardType.BADGE,
@@ -86,7 +86,7 @@ async function main() {
   });
   await ensureUser({
     email: "platform@klikhubb.internal",
-    displayName: "KlikHubb",
+    displayName: "Qlyk",
     username: "platform",
     referralCode: "PLATFORM",
     roles: [RoleCode.ADMIN],

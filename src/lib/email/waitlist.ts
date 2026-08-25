@@ -85,7 +85,7 @@ export async function sendWaitlistWelcome(input: WaitlistMailInput): Promise<boo
     from: emailFrom(),
     to: input.email,
     replyTo: waitlistNotifyTo() || undefined,
-    subject: "Ya tienes tu lugar en KlikHubb",
+    subject: "Ya tienes tu lugar en Qlyk",
     html: welcomeHtml(input.email, input.intent),
   });
 
