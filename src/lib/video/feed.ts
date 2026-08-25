@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { isConnectionError } from "@/lib/demo/store";
-import { muxPlaybackUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
+import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
 
 export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
   try {
@@ -14,7 +14,7 @@ export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
         products: {
           where: { isPrimary: true },
           take: 1,
-          include: { product: { select: { slug: true, title: true, price: true, currency: true, status: true } } },
+          include: { product: { select: { slug: true, title: true, description: true, type: true, price: true, currency: true, status: true } } },
         },
       },
     });
@@ -30,7 +30,8 @@ export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
         title: row.title,
         videoUrl: row.videoUrl ?? playback,
         playbackId: row.playbackId,
-        thumbnailUrl: row.thumbnailUrl,
+        thumbnailUrl: row.thumbnailUrl ?? posterFromVideoUrl(row.videoUrl),
+        durationMs: row.durationMs,
         likes: row.likeCount,
         comments: row.commentCount,
         shares: row.shareCount,
@@ -51,6 +52,8 @@ export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
                 title: productRow.title,
                 price: Number(productRow.price),
                 currency: productRow.currency.trim(),
+                description: productRow.description,
+                type: productRow.type,
               }
             : null,
       };

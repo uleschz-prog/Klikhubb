@@ -25,5 +25,5 @@ export function formatFeedDate(iso: string | null): string {
 
 export function initialsFrom(name: string): string {
   const parts = name.trim().split(/\s+/).slice(0, 2);
-  return parts.map((part) => part.charAt(0).toUpperCase()).join("") || "K";
+  return parts.map((part) => part.charAt(0).toUpperCase()).join("") || "Q";
 }

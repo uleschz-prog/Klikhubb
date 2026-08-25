@@ -16,6 +16,7 @@ export type CatalogProduct = {
   id: string;
   slug: string;
   title: string;
+  description: string | null;
   price: number;
   currency: string;
   creatorId: string;
@@ -32,6 +33,7 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
         id: row.id,
         slug: row.slug,
         title: row.title,
+        description: row.description,
         price: Number(row.price),
         currency: row.currency.trim(),
         creatorId: row.creatorId,
@@ -49,6 +51,7 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
     id: demo.id,
     slug: demo.slug,
     title: demo.title,
+    description: null,
     price: demo.price,
     currency: demo.currency,
     creatorId: demo.creatorId,
@@ -95,6 +98,7 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       id: row.id,
       slug: row.slug,
       title: row.title,
+      description: row.description,
       price: Number(row.price),
       currency: row.currency.trim(),
       creatorId: row.creatorId,
@@ -107,6 +111,7 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       id: row.id,
       slug: row.slug,
       title: row.title,
+      description: null,
       price: row.price,
       currency: row.currency,
       creatorId: row.creatorId,
@@ -139,6 +144,8 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
         price: Number(product.price),
         currency: product.currency.trim(),
         creatorName: product.creator.displayName ?? product.creator.username ?? "Creador",
+        description: product.description,
+        type: product.type,
       },
       lines,
       mode: "postgres" as const,
@@ -159,6 +166,8 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
       price: product.price,
       currency: product.currency,
       creatorName: creator?.displayName ?? "Creador",
+      description: null,
+      type: product.type,
     },
     lines: splitSaleCommissions({
       saleAmount: product.price,

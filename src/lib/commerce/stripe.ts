@@ -25,17 +25,19 @@ export async function createStripeCheckoutSession(input: {
   buyerId: string;
   buyerEmail?: string | null;
   product: ResolvedProduct;
+  cancelPath?: string;
 }) {
   const stripe = getStripe();
   const origin = appBaseUrl();
   const currency = input.product.currency.trim().toLowerCase() || "usd";
+  const cancelPath = input.cancelPath?.startsWith("/") ? input.cancelPath : `/feed`;
 
   return stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: input.buyerEmail ?? undefined,
     client_reference_id: input.buyerId,
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/checkout/${input.product.slug}?canceled=1`,
+    cancel_url: `${origin}${cancelPath}${cancelPath.includes("?") ? "&" : "?"}canceled=1`,
     line_items: [
       {
         quantity: 1,

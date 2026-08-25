@@ -10,4 +10,12 @@ export const registerSchema = z.object({
 
 export const checkoutSchema = z.object({
   slug: z.string().trim().min(2).max(120),
+  cancelPath: z
+    .string()
+    .trim()
+    .max(300)
+    .optional()
+    .refine((value) => !value || (value.startsWith("/") && !value.startsWith("//") && !value.includes("://")), {
+      message: "Ruta inválida",
+    }),
 });

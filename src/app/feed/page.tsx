@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { listPublishedVideos } from "@/lib/video/feed";
-import { FeedTheater } from "@/components/video/FeedTheater";
+import { getSession } from "@/lib/auth/session";
+import { isStripeEnabled } from "@/lib/commerce/stripe";
+import { FeedEntry } from "@/components/explore/FeedEntry";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
 export const dynamic = "force-dynamic";
@@ -8,9 +10,9 @@ export const dynamic = "force-dynamic";
 export default async function FeedPage({
   searchParams,
 }: {
-  searchParams: { v?: string };
+  searchParams: { v?: string; tab?: string; buy?: string; canceled?: string };
 }) {
-  const videos = await listPublishedVideos();
+  const [videos, session] = await Promise.all([listPublishedVideos(), getSession()]);
 
   if (videos.length === 0) {
     return (
@@ -30,5 +32,15 @@ export default async function FeedPage({
     );
   }
 
-  return <FeedTheater videos={videos} initialId={searchParams.v} />;
+  return (
+    <FeedEntry
+      videos={videos}
+      clipId={searchParams.v}
+      tab={searchParams.tab === "following" ? "following" : "foryou"}
+      signedIn={Boolean(session?.user)}
+      stripeEnabled={isStripeEnabled()}
+      buySlug={searchParams.buy}
+      canceled={searchParams.canceled === "1"}
+    />
+  );
 }

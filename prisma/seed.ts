@@ -171,6 +171,12 @@ async function main() {
       title: "El botón vende",
       caption: "Empaqué mi curso en 18 segundos. El botón vende. Yo cobro sin salir del feed.",
       videoUrl: "/videos/maya-cierre.mp4",
+      thumbnailUrl: "/videos/maya-cierre.jpg",
+      durationMs: 5000,
+      likeCount: 18240,
+      commentCount: 612,
+      shareCount: 1280,
+      tags: ["cierre", "feed", "qlyk"],
       productId: cierre.id,
     },
     {
@@ -179,6 +185,12 @@ async function main() {
       title: "Audiencia propia",
       caption: "Mi comunidad no es un chat suelto. Quien compra, se queda. Así se siente tener audiencia propia.",
       videoUrl: "/videos/leo-inner.mp4",
+      thumbnailUrl: "/videos/leo-inner.jpg",
+      durationMs: 8000,
+      likeCount: 9402,
+      commentCount: 301,
+      shareCount: 640,
+      tags: ["comunidad", "innercircle", "qlyk"],
       productId: inner.id,
     },
     {
@@ -187,6 +199,12 @@ async function main() {
       title: "Un clic",
       caption: "Dejé de pedir likes. Ahora pido un clic. El feed paga a quien crea.",
       videoUrl: "/videos/amina-clic.mp4",
+      thumbnailUrl: "/videos/amina-clic.jpg",
+      durationMs: 8000,
+      likeCount: 22119,
+      commentCount: 880,
+      shareCount: 1902,
+      tags: ["unclic", "crear", "qlyk"],
       productId: null as string | null,
     },
   ];
@@ -198,6 +216,11 @@ async function main() {
         title: item.title,
         caption: item.caption,
         videoUrl: item.videoUrl,
+        thumbnailUrl: item.thumbnailUrl,
+        durationMs: item.durationMs,
+        likeCount: item.likeCount,
+        commentCount: item.commentCount,
+        shareCount: item.shareCount,
         status: "PUBLISHED",
         publishedAt: new Date(),
       },
@@ -207,10 +230,27 @@ async function main() {
         title: item.title,
         caption: item.caption,
         videoUrl: item.videoUrl,
+        thumbnailUrl: item.thumbnailUrl,
+        durationMs: item.durationMs,
+        likeCount: item.likeCount,
+        commentCount: item.commentCount,
+        shareCount: item.shareCount,
         status: "PUBLISHED",
         publishedAt: new Date(),
       },
     });
+    for (const slug of item.tags) {
+      const tag = await prisma.tag.upsert({
+        where: { slug },
+        update: { name: slug },
+        create: { slug, name: slug },
+      });
+      await prisma.videoTag.upsert({
+        where: { videoId_tagId: { videoId: item.id, tagId: tag.id } },
+        update: {},
+        create: { videoId: item.id, tagId: tag.id },
+      });
+    }
     if (item.productId) {
       await prisma.videoProduct.upsert({
         where: { videoId_productId: { videoId: item.id, productId: item.productId } },

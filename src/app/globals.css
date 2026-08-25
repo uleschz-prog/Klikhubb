@@ -39,9 +39,28 @@ body {
   }
 }
 
+@keyframes qlyk-drawer-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.qlyk-buy-drawer {
+  animation: qlyk-drawer-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .qlyk-buy-drawer {
+    animation: none;
   }
 }
 

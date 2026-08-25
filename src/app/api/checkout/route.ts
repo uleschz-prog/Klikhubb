@@ -43,6 +43,7 @@ export async function POST(request: Request) {
         buyerId,
         buyerEmail: session.user.email,
         product,
+        cancelPath: parsed.data.cancelPath,
       });
       if (!checkout.url) {
         return NextResponse.json({ error: "Stripe no devolvió una URL de pago." }, { status: 502 });

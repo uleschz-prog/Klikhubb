@@ -14,6 +14,7 @@ const config: Config = {
         klik: {
           black: "#050505",
           green: "#00FF41",
+          pastel: "#98D4A8",
           cyan: "#00F0FF",
           card: "#0C0C0C",
           line: "#1A1A1A",

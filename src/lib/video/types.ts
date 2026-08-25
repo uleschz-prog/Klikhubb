@@ -3,6 +3,8 @@ export type FeedProduct = {
   title: string;
   price: number;
   currency: string;
+  description: string | null;
+  type: string | null;
 };
 
 export type FeedVideo = {
@@ -14,6 +16,7 @@ export type FeedVideo = {
   videoUrl: string | null;
   playbackId: string | null;
   thumbnailUrl: string | null;
+  durationMs: number | null;
   likes: number;
   comments: number;
   shares: number;
@@ -40,6 +43,12 @@ export function videoGradient(id: string) {
 
 export function muxPlaybackUrl(playbackId: string) {
   return `https://stream.mux.com/${playbackId}.m3u8`;
+}
+
+export function posterFromVideoUrl(videoUrl: string | null): string | null {
+  if (!videoUrl) return null;
+  if (!videoUrl.startsWith("/") || !videoUrl.endsWith(".mp4")) return null;
+  return `${videoUrl.slice(0, -4)}.jpg`;
 }
 
 export function isBlobConfigured() {

@@ -5,28 +5,43 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
 import { formatCount, formatFeedDate, formatTimecode, initialsFrom } from "@/lib/video/format";
+import { isFollowing, toggleFollow } from "@/lib/video/following";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { formatMoney } from "@/lib/commerce/split";
+import { BuyDrawer, type BuyItem } from "@/components/commerce/BuyDrawer";
 
 type Panel = "none" | "comments" | "playlist" | "more";
 type Menu = "none" | "speed" | "quality" | "volume";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
-export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initialId?: string }) {
+export function FeedTheater({
+  videos,
+  initialId,
+  signedIn = false,
+  stripeEnabled = false,
+  buySlug,
+  canceled = false,
+}: {
+  videos: FeedVideo[];
+  initialId?: string;
+  signedIn?: boolean;
+  stripeEnabled?: boolean;
+  buySlug?: string;
+  canceled?: boolean;
+}) {
   const router = useRouter();
   const stage = useRef<HTMLDivElement>(null);
   const media = useRef<HTMLVideoElement>(null);
   const startY = useRef<number | null>(null);
   const wheelLock = useRef(false);
 
-  const startIndex = Math.max(
-    0,
-    videos.findIndex((item) => item.id === initialId),
-  );
-  const [index, setIndex] = useState(startIndex === -1 ? 0 : startIndex);
+  const fromClip = initialId ? videos.findIndex((item) => item.id === initialId) : -1;
+  const fromBuy = buySlug ? videos.findIndex((item) => item.product?.slug === buySlug) : -1;
+  const startIndex = fromClip >= 0 ? fromClip : fromBuy >= 0 ? fromBuy : 0;
+  const [index, setIndex] = useState(startIndex);
   const video = videos[index] ?? videos[0];
 
   const [playing, setPlaying] = useState(true);
@@ -49,11 +64,40 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
   const [shares, setShares] = useState(video.shares);
   const [localComments, setLocalComments] = useState<string[]>([]);
   const [draft, setDraft] = useState("");
+  const [shopOpen, setShopOpen] = useState(Boolean(buySlug));
 
   const tags = useMemo(() => {
     const fromCaption = video.caption.match(/#([A-Za-z0-9_]+)/g)?.map((tag) => tag.slice(1)) ?? [];
     return fromCaption.length ? fromCaption : video.tags;
   }, [video]);
+
+  const shopItem = useMemo((): BuyItem | null => {
+    const source = video.product ? video : videos.find((item) => item.product?.slug === buySlug);
+    if (!source?.product) return null;
+    return {
+      slug: source.product.slug,
+      title: source.product.title,
+      price: source.product.price,
+      currency: source.product.currency,
+      description: source.product.description,
+      type: source.product.type,
+      creatorName: source.creatorName,
+      handle: source.handle,
+      thumbnailUrl: source.thumbnailUrl,
+    };
+  }, [video, videos, buySlug]);
+
+  const closeShop = useCallback(() => {
+    setShopOpen(false);
+    router.replace(`/feed?v=${video.id}`, { scroll: false });
+  }, [router, video.id]);
+
+  function openShop() {
+    if (!video.product) return;
+    setPanel("none");
+    setShopOpen(true);
+    router.replace(`/feed?v=${video.id}&buy=${video.product.slug}`, { scroll: false });
+  }
 
   const go = useCallback(
     (next: number) => {
@@ -62,11 +106,11 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
       setIndex(clamped);
       setLiked(false);
       setSaved(false);
-      setFollowed(false);
       setLocalComments([]);
       setDraft("");
       setPanel("none");
       setMenu("none");
+      setShopOpen(false);
       router.replace(`/feed?v=${videos[clamped].id}`, { scroll: false });
     },
     [index, router, videos],
@@ -76,6 +120,7 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
     setLikes(video.likes);
     setSaves(video.favorites);
     setShares(video.shares);
+    setFollowed(isFollowing(video.handle));
   }, [video]);
 
   useEffect(() => {
@@ -125,6 +170,7 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
       } else if (event.key === "Escape") {
         setPanel("none");
         setMenu("none");
+        setShopOpen(false);
         setChrome(true);
       }
     }
@@ -262,8 +308,14 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
         <>
           <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <div className="pointer-events-auto flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2">
+              <Link href="/feed" className="flex items-center gap-2" aria-label="Qlyk">
                 <LogoMark className="h-8 w-8 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
+              </Link>
+              <Link
+                href="/feed"
+                className="hidden items-center rounded-full bg-black/50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white ring-1 ring-white/15 backdrop-blur md:inline-flex"
+              >
+                Descubrir
               </Link>
               <div className="flex items-center gap-2">
                 <Avatar name={video.creatorName} />
@@ -287,14 +339,18 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
             </NavArrow>
             <button
               type="button"
-              onClick={() => setFollowed((value) => !value)}
+              onClick={() => {
+                const next = toggleFollow(video.handle);
+                setFollowed(next);
+                showToast(next ? `Sigues a @${video.handle}` : `Dejaste de seguir a @${video.handle}`);
+              }}
               className="relative mt-2 mb-1 overflow-visible"
               aria-label={followed ? "Siguiendo" : "Seguir"}
             >
               <Avatar name={video.creatorName} size="lg" />
               <span
                 className={`absolute -bottom-1 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold ${
-                  followed ? "bg-white text-klik-black" : "bg-[#FE2C55] text-white"
+                  followed ? "bg-white text-klik-black" : "bg-klik-green text-klik-black"
                 }`}
               >
                 {followed ? "✓" : "+"}
@@ -327,6 +383,11 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
             <RailAction label="Más" onClick={() => setPanel(panel === "more" ? "none" : "more")}>
               <DotsIcon />
             </RailAction>
+            {video.product ? (
+              <RailAction label="Comprar" onClick={openShop}>
+                <BagIcon />
+              </RailAction>
+            ) : null}
           </aside>
 
           <div className="absolute bottom-[4.75rem] left-4 z-20 max-w-[min(42rem,calc(100%-7.5rem))] md:bottom-16 md:left-8">
@@ -342,27 +403,29 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
                 ))}
               </p>
             ) : null}
-            {video.product ? (
-              <Link
-                href={`/checkout/${video.product.slug}`}
-                className="mt-3 inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/90 ring-1 ring-white/15 backdrop-blur"
+            {video.product && !shopOpen ? (
+              <button
+                type="button"
+                onClick={openShop}
+                className="mt-3 inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur"
               >
                 <CollectionIcon />
                 Serie · {video.product.title}
-              </Link>
-            ) : (
+              </button>
+            ) : !video.product ? (
               <p className="mt-3 text-[11px] text-white/40">Feed · Qlyk</p>
-            )}
-            {video.product ? (
-              <Link
-                href={`/checkout/${video.product.slug}`}
-                className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-green px-4 py-2.5 text-sm font-bold text-klik-black"
+            ) : null}
+            {video.product && !shopOpen ? (
+              <button
+                type="button"
+                onClick={openShop}
+                className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-pastel px-4 py-2.5 text-sm font-bold text-klik-black"
               >
                 <span>Llevar {video.product.title}</span>
                 <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
                   {formatMoney(video.product.price, video.product.currency)}
                 </span>
-              </Link>
+              </button>
             ) : null}
           </div>
         </>
@@ -569,6 +632,17 @@ export function FeedTheater({ videos, initialId }: { videos: FeedVideo[]; initia
           </button>
         </SidePanel>
       ) : null}
+
+      <BuyDrawer
+        open={shopOpen}
+        onClose={closeShop}
+        item={shopItem}
+        signedIn={signedIn}
+        stripeEnabled={stripeEnabled}
+        loginHref={`/login?callbackUrl=${encodeURIComponent(`/feed?v=${video.id}${video.product ? `&buy=${video.product.slug}` : ""}`)}`}
+        cancelPath={`/feed?v=${video.id}${video.product ? `&buy=${video.product.slug}` : ""}`}
+        canceled={canceled}
+      />
 
       {toast ? (
         <p className="absolute left-1/2 top-20 z-40 -translate-x-1/2 rounded-full bg-black/75 px-4 py-2 text-xs text-white">
@@ -789,6 +863,13 @@ function CollectionIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
       <path d="M4 7h16v12H4zM8 7V5h8v2" />
+    </svg>
+  );
+}
+function BagIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-none stroke-white" strokeWidth="1.7">
+      <path d="M6 8h12l-1 12H7L6 8zM9 8V6.5A3 3 0 0 1 12 3.5 3 3 0 0 1 15 6.5V8" />
     </svg>
   );
 }
