@@ -1,7 +1,9 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import bcrypt from "bcryptjs";
+import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
 import { splitSaleCommissions } from "@/lib/commerce/split";
+import { fromCents, toCents } from "@/lib/money/cents";
 import type { SettledOrder } from "@/lib/commerce/settle-order";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
 
@@ -37,12 +39,45 @@ type DemoWallet = { available: number; pending: number; lifetimeEarned: number }
 
 type DemoOrder = { id: string; buyerId: string; productId: string; total: number; createdAt: string };
 
+type DemoCommission = {
+  id: string;
+  beneficiaryId: string;
+  orderId: string;
+  amount: number;
+  type: "CREATOR_SALE" | "INVITE" | "PLATFORM_FEE";
+  status: "LOCKED" | "APPROVED";
+  availableAt: string;
+  productTitle: string;
+};
+
+type DemoLedger = {
+  id: string;
+  userId: string;
+  amount: number;
+  balanceAfter: number;
+  type: string;
+  note: string | null;
+  createdAt: string;
+};
+
+type DemoPayout = {
+  id: string;
+  userId: string;
+  amount: number;
+  status: "PENDING";
+  method: string;
+  createdAt: string;
+};
+
 type DemoDB = {
   users: DemoUser[];
   products: DemoProduct[];
   wallets: Record<string, DemoWallet>;
   enrollments: { userId: string; productId: string; orderId: string }[];
   orders: DemoOrder[];
+  commissions: DemoCommission[];
+  ledger: DemoLedger[];
+  payouts: DemoPayout[];
 };
 
 const FILE = join(process.cwd(), "data", "klikhubb-demo.json");
@@ -58,9 +93,12 @@ export function isConnectionError(error: unknown): boolean {
   return (
     code.startsWith("P100") ||
     code === "P1017" ||
+    code === "57P01" ||
     name.includes("PrismaClientInitializationError") ||
     message.includes("Can't reach database") ||
-    message.includes("Authentication failed")
+    message.includes("Authentication failed") ||
+    message.includes("terminating connection") ||
+    message.includes("Connection closed")
   );
 }
 
@@ -70,6 +108,7 @@ export async function loadDemo(): Promise<DemoDB> {
   seedPromise = (async () => {
     try {
       cache = JSON.parse(await readFile(FILE, "utf8")) as DemoDB;
+      cache = normalizeDemo(cache);
       cache = await ensureDemoAdmin(cache);
       await persist(cache);
       return cache;
@@ -86,6 +125,33 @@ async function persist(db: DemoDB) {
   cache = db;
   await mkdir(join(process.cwd(), "data"), { recursive: true });
   await writeFile(FILE, JSON.stringify(db, null, 2));
+}
+
+function normalizeDemo(db: DemoDB): DemoDB {
+  db.commissions ??= [];
+  db.ledger ??= [];
+  db.payouts ??= [];
+  return db;
+}
+
+function pushLedger(
+  db: DemoDB,
+  userId: string,
+  amount: number,
+  type: string,
+  note: string | null,
+) {
+  const wallet = db.wallets[userId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
+  db.wallets[userId] = wallet;
+  db.ledger.push({
+    id: `ldg_${Math.random().toString(36).slice(2, 10)}`,
+    userId,
+    amount,
+    balanceAfter: wallet.available + wallet.pending,
+    type,
+    note,
+    createdAt: new Date().toISOString(),
+  });
 }
 
 async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
@@ -180,6 +246,9 @@ async function buildSeed(): Promise<DemoDB> {
     wallets: Object.fromEntries(users.map((user) => [user.id, { available: 0, pending: 0, lifetimeEarned: 0 }])),
     enrollments: [],
     orders: [],
+    commissions: [],
+    ledger: [],
+    payouts: [],
   };
 }
 
@@ -344,8 +413,33 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
     const beneficiaryId = line.type === "PLATFORM_FEE" ? "usr_platform" : line.beneficiaryId;
     const wallet = db.wallets[beneficiaryId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
     const amount = line.amountCents / 100;
-    wallet.pending += amount;
     wallet.lifetimeEarned += amount;
+    if (line.type === "PLATFORM_FEE") {
+      wallet.available += amount;
+      pushLedger(db, beneficiaryId, amount, "FEE", "Fee de plataforma");
+    } else {
+      wallet.pending += amount;
+      const availableAt = new Date(
+        Date.now() + COMPENSATION_PLAN_V1.holdDays * 86_400_000,
+      ).toISOString();
+      db.commissions.push({
+        id: `com_${Math.random().toString(36).slice(2, 10)}`,
+        beneficiaryId,
+        orderId,
+        amount,
+        type: line.type,
+        status: "LOCKED",
+        availableAt,
+        productTitle: product.title,
+      });
+      pushLedger(
+        db,
+        beneficiaryId,
+        amount,
+        line.type === "CREATOR_SALE" ? "SALE" : "COMMISSION",
+        line.type === "CREATOR_SALE" ? "Venta de tu producto" : "Invitación",
+      );
+    }
     db.wallets[beneficiaryId] = wallet;
   }
 
@@ -370,6 +464,7 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
 }
 
 export async function demoHub(userId: string) {
+  await demoReleaseMature(userId);
   const db = await loadDemo();
   const user = db.users.find((row) => row.id === userId);
   const wallet = db.wallets[userId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
@@ -396,5 +491,164 @@ export async function demoHub(userId: string) {
     wallet,
     leaderboard,
     demo: true as const,
+  };
+}
+
+const DEMO_MIN_PAYOUT_CENTS = 1_000;
+
+export async function demoReleaseMature(userId?: string): Promise<{ released: number; amount: number }> {
+  const db = await loadDemo();
+  const now = Date.now();
+  let released = 0;
+  let amount = 0;
+  let dirty = false;
+
+  for (const row of db.commissions) {
+    if (row.status !== "LOCKED") continue;
+    if (userId && row.beneficiaryId !== userId) continue;
+    if (new Date(row.availableAt).getTime() > now) continue;
+
+    const wallet = db.wallets[row.beneficiaryId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
+    const move = Math.min(wallet.pending, row.amount);
+    row.status = "APPROVED";
+    dirty = true;
+    if (move <= 0) continue;
+    wallet.pending -= move;
+    wallet.available += move;
+    db.wallets[row.beneficiaryId] = wallet;
+    pushLedger(db, row.beneficiaryId, move, "ADJUSTMENT", `Hold de ${COMPENSATION_PLAN_V1.holdDays} días terminado`);
+    released += 1;
+    amount += move;
+  }
+
+  const ids = userId
+    ? [userId]
+    : Object.keys(db.wallets).filter((id) => (db.wallets[id]?.pending ?? 0) > 0);
+
+  for (const id of ids) {
+    const wallet = db.wallets[id];
+    if (!wallet) continue;
+    const locked = db.commissions
+      .filter((row) => row.beneficiaryId === id && row.status === "LOCKED")
+      .reduce((sum, row) => sum + row.amount, 0);
+    const excess = wallet.pending - locked;
+    if (excess <= 0.0001) continue;
+    wallet.pending -= excess;
+    wallet.available += excess;
+    pushLedger(db, id, excess, "ADJUSTMENT", "Saldo sin hold (fee u origen directo)");
+    amount += excess;
+    dirty = true;
+  }
+
+  if (dirty) await persist(db);
+  return { released, amount };
+}
+
+export async function demoLoadWalletView(userId: string) {
+  await demoReleaseMature(userId);
+  const db = await loadDemo();
+  const wallet = db.wallets[userId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
+  const holds = db.commissions
+    .filter((row) => row.beneficiaryId === userId && row.status === "LOCKED")
+    .sort((a, b) => a.availableAt.localeCompare(b.availableAt))
+    .slice(0, 40)
+    .map((row) => ({
+      id: row.id,
+      amount: row.amount,
+      availableAt: row.availableAt,
+      kind: (row.type === "CREATOR_SALE" ? "sale" : "invite") as "sale" | "invite",
+      productTitle: row.productTitle,
+    }));
+
+  return {
+    available: wallet.available,
+    pending: wallet.pending,
+    lifetimeEarned: wallet.lifetimeEarned,
+    currency: "USD",
+    holdDays: COMPENSATION_PLAN_V1.holdDays,
+    minPayout: fromCents(DEMO_MIN_PAYOUT_CENTS),
+    nextReleaseAt: holds[0]?.availableAt ?? null,
+    holds,
+    ledger: db.ledger
+      .filter((row) => row.userId === userId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 40)
+      .map((row) => ({
+        id: row.id,
+        amount: row.amount,
+        balanceAfter: row.balanceAfter,
+        type: row.type,
+        note: row.note,
+        createdAt: row.createdAt,
+      })),
+    payouts: db.payouts
+      .filter((row) => row.userId === userId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 10)
+      .map((row) => ({
+        id: row.id,
+        amount: row.amount,
+        status: row.status,
+        method: row.method,
+        createdAt: row.createdAt,
+      })),
+    demo: true as const,
+  };
+}
+
+export async function demoRequestPayout(userId: string, requestedAmount?: number) {
+  await demoReleaseMature(userId);
+  const db = await loadDemo();
+  const wallet = db.wallets[userId];
+  if (!wallet) {
+    throw Object.assign(new Error("Aún no tienes monedero. Primero vende o invita."), {
+      code: "USER_NOT_FOUND" as const,
+    });
+  }
+
+  const availableCents = toCents(wallet.available);
+  if (availableCents < DEMO_MIN_PAYOUT_CENTS) {
+    const error = new Error(
+      `Necesitas al menos ${fromCents(DEMO_MIN_PAYOUT_CENTS).toFixed(2)} USD disponibles para retirar.`,
+    );
+    error.name = "WalletError";
+    (error as Error & { code: string }).code = "MINIMUM";
+    throw Object.assign(error, { code: "MINIMUM" as const });
+  }
+
+  const requestCents = requestedAmount == null ? availableCents : toCents(requestedAmount);
+  if (requestCents < DEMO_MIN_PAYOUT_CENTS) {
+    throw Object.assign(new Error(`El retiro mínimo es ${fromCents(DEMO_MIN_PAYOUT_CENTS).toFixed(2)} USD.`), {
+      code: "MINIMUM" as const,
+    });
+  }
+  if (requestCents > availableCents) {
+    throw Object.assign(new Error("No tienes ese saldo disponible."), { code: "INSUFFICIENT" as const });
+  }
+
+  const amount = fromCents(requestCents);
+  wallet.available -= amount;
+  const payoutId = `pay_${Math.random().toString(36).slice(2, 10)}`;
+  db.payouts.push({
+    id: payoutId,
+    userId,
+    amount,
+    status: "PENDING",
+    method: "manual",
+    createdAt: new Date().toISOString(),
+  });
+  pushLedger(
+    db,
+    userId,
+    -amount,
+    "PAYOUT",
+    "Retiro solicitado. Lo depositamos a mano mientras Stripe Connect entra.",
+  );
+  await persist(db);
+  return {
+    payoutId,
+    amount,
+    available: wallet.available,
+    pending: wallet.pending,
   };
 }

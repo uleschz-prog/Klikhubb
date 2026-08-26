@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({
     ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
     : alreadyOwned
       ? "Este producto ya estaba en tu academy. No se cobró de nuevo."
-      : "Ya pagaste. El curso quedó en tu academy. El creador ve el dinero en pendiente.";
+        : "Ya pagaste. El curso quedó en tu academy. El creador ve el dinero en el monedero, pendiente 14 días.";
 
   return (
     <PlatformShell title="Pago">

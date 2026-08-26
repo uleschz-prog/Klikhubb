@@ -11,4 +11,4 @@ export const COMPENSATION_PLAN_V1 = {
   holdDays: 14,
 } as const;
 
-export const PLATFORM_PROTECTED_PATHS = ["/dashboard", "/checkout"] as const;
+export const PLATFORM_PROTECTED_PATHS = ["/dashboard", "/checkout", "/wallet"] as const;

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { splitSaleCommissions } from "@/lib/commerce/split";
 import { CommerceError } from "@/lib/commerce/settle-order";
+import { releaseMatureCommissions } from "@/lib/commerce/wallet";
 import {
   demoFindProductBySlug,
   demoHasEnrollment,
@@ -211,6 +212,7 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
 
 export async function loadHub(userId: string) {
   try {
+    await releaseMatureCommissions(userId);
     const [wallet, stats, user, invitedCount, top] = await Promise.all([
       prisma.wallet.findUnique({ where: { userId } }),
       prisma.userStats.findUnique({ where: { userId } }),

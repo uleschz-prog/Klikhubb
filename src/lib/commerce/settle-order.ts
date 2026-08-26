@@ -165,6 +165,7 @@ export async function settlePaidOrder(input: {
             userId: platform.id,
             cents: line.amountCents,
             type: LedgerType.FEE,
+            destination: "available",
             orderId: order.id,
             note: "Fee de plataforma",
           });
@@ -191,8 +192,10 @@ export async function settlePaidOrder(input: {
         userId: line.beneficiaryId,
         cents: line.amountCents,
         type: line.type === "CREATOR_SALE" ? LedgerType.SALE : LedgerType.COMMISSION,
+        destination: "pending",
         orderId: order.id,
         commissionId: commission.id,
+        note: line.type === "CREATOR_SALE" ? "Venta de tu producto" : "Invitación",
       });
     }
 
@@ -240,23 +243,31 @@ async function creditWallet(
     userId: string;
     cents: number;
     type: LedgerType;
+    destination: "pending" | "available";
     orderId: string;
     commissionId?: string;
     note?: string;
   },
 ) {
   const amount = money(input.cents);
+  const toPending = input.destination === "pending";
   const wallet = await tx.wallet.upsert({
     where: { userId: input.userId },
     create: {
       userId: input.userId,
-      pending: amount,
+      pending: toPending ? amount : 0,
+      available: toPending ? 0 : amount,
       lifetimeEarned: amount,
     },
-    update: {
-      pending: { increment: amount },
-      lifetimeEarned: { increment: amount },
-    },
+    update: toPending
+      ? {
+          pending: { increment: amount },
+          lifetimeEarned: { increment: amount },
+        }
+      : {
+          available: { increment: amount },
+          lifetimeEarned: { increment: amount },
+        },
   });
 
   const balanceAfter = Number(wallet.available) + Number(wallet.pending);
