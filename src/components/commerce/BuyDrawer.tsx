@@ -152,7 +152,7 @@ export function BuyDrawer({
               <div className="mt-4 flex flex-col gap-2">
                 <Link
                   href="/academy"
-                  className="flex min-h-11 items-center justify-center rounded-full bg-klik-pastel text-sm font-bold text-klik-black"
+                  className="flex min-h-11 items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black"
                 >
                   Ir a Academy
                 </Link>
@@ -182,7 +182,7 @@ export function BuyDrawer({
             <div className="mt-8">
               <Link
                 href={loginHref}
-                className="flex min-h-12 items-center justify-center rounded-full bg-klik-pastel text-sm font-bold text-klik-black"
+                className="flex min-h-12 items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black"
               >
                 Entra para comprar
               </Link>

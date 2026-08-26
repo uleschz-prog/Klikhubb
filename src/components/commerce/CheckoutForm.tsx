@@ -76,7 +76,7 @@ export function CheckoutForm({
       <button
         type="submit"
         disabled={loading}
-        className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-pastel px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+        className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
       >
         <span>{loading ? "Procesando…" : stripeEnabled ? "Pagar con Stripe" : `Pagar ${title}`}</span>
         <span>{formatMoney(price, currency)}</span>

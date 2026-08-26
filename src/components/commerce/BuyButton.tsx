@@ -20,7 +20,7 @@ export function BuyButton({
   onClick,
   className = "",
 }: BuyButtonProps) {
-  const classes = `group inline-flex min-h-12 w-full items-center justify-between gap-3 rounded-full bg-klik-pastel px-5 py-3 text-sm font-bold text-klik-black ${className}`;
+  const classes = `group inline-flex min-h-12 w-full items-center justify-between gap-3 rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black ${className}`;
   const inner = (
     <>
       <span>{label}</span>

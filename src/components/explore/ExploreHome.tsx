@@ -61,7 +61,7 @@ export function ExploreHome({
 
   return (
     <div className="min-h-[100dvh] bg-[#0a0a0d] text-white">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col border-r border-white/8 bg-[#0a0a0d] px-4 py-5 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col bg-[#0a0a0d] px-4 py-5 md:flex">
         <Logo href="/feed" />
         <Link
           href="/publish"
@@ -92,7 +92,7 @@ export function ExploreHome({
       </aside>
 
       <div className="md:pl-[220px]">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/8 bg-[#0a0a0d]/92 px-4 py-3 backdrop-blur md:px-8">
+        <header className="sticky top-0 z-20 flex items-center gap-3 bg-[#0a0a0d]/92 px-4 py-3 backdrop-blur md:px-8">
           <div className="md:hidden">
             <Logo href="/feed" />
           </div>

@@ -419,7 +419,7 @@ export function FeedTheater({
               <button
                 type="button"
                 onClick={openShop}
-                className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-pastel px-4 py-2.5 text-sm font-bold text-klik-black"
+                className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-green px-4 py-2.5 text-sm font-bold text-klik-black"
               >
                 <span>Llevar {video.product.title}</span>
                 <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
