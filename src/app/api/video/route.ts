@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDbUserId } from "@/lib/auth/session";
-import { isAllowedVideoUrl } from "@/lib/video/naming";
+import { isAllowedVideoUrl, normalizeVideoUrl } from "@/lib/video/naming";
 import { publishClip } from "@/lib/video/publish";
 import { publishVideoSchema } from "@/lib/validations/video";
 
@@ -19,9 +19,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Falta un video y un texto." }, { status: 400 });
   }
 
-  const videoUrl = parsed.data.videoUrl ?? "";
+  const videoUrl = normalizeVideoUrl(parsed.data.videoUrl ?? "");
   if (!isAllowedVideoUrl(videoUrl)) {
-    return NextResponse.json({ error: "El video tiene que ser una URL https o un archivo de /videos." }, { status: 400 });
+    return NextResponse.json({ error: "Pega un YouTube, una URL https de un MP4 o un archivo de /videos." }, { status: 400 });
   }
 
   try {

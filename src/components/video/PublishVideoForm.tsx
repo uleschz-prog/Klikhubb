@@ -51,7 +51,7 @@ export function PublishVideoForm({
 
       if (!url) {
         setStatus("error");
-        setMessage("Elige un archivo o pega la URL https de un MP4.");
+        setMessage("Elige un archivo, pega un YouTube o la URL https de un MP4.");
         return;
       }
 
@@ -126,13 +126,13 @@ export function PublishVideoForm({
       </label>
 
       <label className="block">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">O pega una URL .mp4</span>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">O pega YouTube o un .mp4</span>
         <input
           type="text"
           inputMode="url"
           value={videoUrl}
           onChange={(event) => setVideoUrl(event.target.value)}
-          placeholder="https://… o /videos/clip.mp4"
+          placeholder="https://youtu.be/… o https://…mp4"
           className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan placeholder:text-white/35 focus:ring-2"
         />
       </label>
@@ -224,7 +224,7 @@ export function PublishVideoForm({
 
       {!blobEnabled ? (
         <p className="text-xs text-white/40">
-          La subida de archivo pide Vercel Blob. Mientras tanto pega una URL https de un MP4.
+          La subida de archivo pide Vercel Blob. Mientras tanto pega un YouTube o la URL https de un MP4.
         </p>
       ) : null}
 

@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import type { FeedVideo } from "@/lib/video/types";
 import { BuyButton } from "@/components/commerce/BuyButton";
+import { YouTubeStage } from "@/components/video/YouTubeStage";
+import { youtubeVideoId } from "@/lib/video/source";
 
 type VideoPlayerProps = {
   video: FeedVideo;
@@ -19,6 +21,7 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
   const media = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const src = video.videoUrl;
+  const fromYouTube = Boolean(src && youtubeVideoId(src));
 
   function toggleMute() {
     const node = media.current;
@@ -36,7 +39,9 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
       }`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
-      {src ? (
+      {src && fromYouTube ? (
+        <YouTubeStage url={src} playing muted className="absolute inset-0 h-full w-full" title={video.title} />
+      ) : src ? (
         <video
           ref={media}
           className="absolute inset-0 h-full w-full object-cover"

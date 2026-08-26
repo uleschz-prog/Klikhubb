@@ -18,7 +18,4 @@ export function hashtagsFromCaption(caption: string) {
   return unique.slice(0, 8);
 }
 
-export function isAllowedVideoUrl(url: string) {
-  if (/^https:\/\//i.test(url)) return true;
-  return /^\/videos\/[A-Za-z0-9._-]+\.(mp4|webm|mov)$/i.test(url);
-}
+export { isAllowedVideoUrl, normalizeVideoUrl } from "@/lib/video/source";

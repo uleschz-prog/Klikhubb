@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
 import { formatCount, formatFeedDate, formatTimecode } from "@/lib/video/format";
+import { youtubePoster, youtubeVideoId } from "@/lib/video/source";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const router = useRouter();
   const media = useRef<HTMLVideoElement>(null);
   const [hover, setHover] = useState(false);
-  const poster = video.thumbnailUrl ?? undefined;
+  const poster = video.thumbnailUrl ?? youtubePoster(video.videoUrl ?? "") ?? undefined;
+  const fromYouTube = Boolean(video.videoUrl && youtubeVideoId(video.videoUrl));
 
   useEffect(() => {
     if (!hover) return;
@@ -34,11 +36,11 @@ export function VideoCard({ video }: { video: FeedVideo }) {
               src={poster}
               alt=""
               className={`absolute inset-0 h-full w-full object-cover transition duration-300 ${
-                hover && video.videoUrl ? "opacity-0" : "opacity-100"
+                hover && video.videoUrl && !fromYouTube ? "opacity-0" : "opacity-100"
               }`}
             />
           ) : null}
-          {hover && video.videoUrl ? (
+          {hover && video.videoUrl && !fromYouTube ? (
             <video
               ref={media}
               className="absolute inset-0 h-full w-full object-cover"

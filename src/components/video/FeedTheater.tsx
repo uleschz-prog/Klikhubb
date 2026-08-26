@@ -19,6 +19,8 @@ import {
   commentsFromPayload,
 } from "@/lib/video/social-api";
 import type { PublicComment } from "@/lib/video/social";
+import { YouTubeStage } from "@/components/video/YouTubeStage";
+import { youtubeVideoId } from "@/lib/video/source";
 
 type Panel = "none" | "comments" | "playlist" | "more";
 type Menu = "none" | "speed" | "quality" | "volume";
@@ -51,6 +53,7 @@ export function FeedTheater({
   const startIndex = fromClip >= 0 ? fromClip : fromBuy >= 0 ? fromBuy : 0;
   const [index, setIndex] = useState(startIndex);
   const video = videos[index] ?? videos[0];
+  const fromYouTube = Boolean(video.videoUrl && youtubeVideoId(video.videoUrl));
 
   const [playing, setPlaying] = useState(true);
   const [muted, setMuted] = useState(true);
@@ -134,6 +137,8 @@ export function FeedTheater({
     setComments([]);
     setCommentsLoaded(false);
     setDraft("");
+    setCurrent(0);
+    setDuration(0);
   }, [video]);
 
   useEffect(() => {
@@ -353,7 +358,20 @@ export function FeedTheater({
       }}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
-      {video.videoUrl ? (
+      {video.videoUrl && fromYouTube ? (
+        <YouTubeStage
+          url={video.videoUrl}
+          playing={playing}
+          muted={muted}
+          title={video.title}
+          className="absolute inset-0 h-full w-full"
+          onTime={setCurrent}
+          onDuration={setDuration}
+          onEnded={() => {
+            if (continuous && index < videos.length - 1) go(index + 1);
+          }}
+        />
+      ) : video.videoUrl ? (
         <video
           ref={media}
           key={video.id}
@@ -380,6 +398,15 @@ export function FeedTheater({
             node.currentTime = 0;
             void node.play().catch(() => undefined);
           }}
+        />
+      ) : null}
+      {fromYouTube && chrome ? (
+        <button
+          type="button"
+          className="absolute inset-0 z-[15] cursor-pointer bg-transparent"
+          aria-label={playing ? "Pausa" : "Reproducir"}
+          onClick={togglePlay}
+          onDoubleClick={toggleLike}
         />
       ) : null}
 

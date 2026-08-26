@@ -1,3 +1,5 @@
+import { youtubePoster } from "@/lib/video/source";
+
 export type FeedProduct = {
   slug: string;
   title: string;
@@ -50,6 +52,8 @@ export function muxPlaybackUrl(playbackId: string) {
 
 export function posterFromVideoUrl(videoUrl: string | null): string | null {
   if (!videoUrl) return null;
+  const youtube = youtubePoster(videoUrl);
+  if (youtube) return youtube;
   if (!videoUrl.startsWith("/") || !videoUrl.endsWith(".mp4")) return null;
   return `${videoUrl.slice(0, -4)}.jpg`;
 }
