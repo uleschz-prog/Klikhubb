@@ -1,5 +1,6 @@
 import { PrismaClient, CommissionType, RewardType, ProductType, ProductStatus, RoleCode } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { ensurePlatformAdmin } from "../src/lib/auth/ensure-admin";
 
 const prisma = new PrismaClient();
 const DEMO_PASSWORD = "KlikHubb2026!";
@@ -76,6 +77,7 @@ async function main() {
   }
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const admin = await ensurePlatformAdmin(prisma);
   const maya = await ensureUser({
     email: "maya@klikhubb.dev",
     displayName: "Maya Chen",
@@ -83,6 +85,7 @@ async function main() {
     referralCode: "MAYA",
     roles: [RoleCode.CREATOR, RoleCode.STUDENT],
     passwordHash,
+    invitedById: admin.id,
   });
   await ensureUser({
     email: "platform@klikhubb.internal",

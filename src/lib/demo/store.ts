@@ -5,6 +5,8 @@ import { splitSaleCommissions } from "@/lib/commerce/split";
 import type { SettledOrder } from "@/lib/commerce/settle-order";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
 
+import { PLATFORM_ADMIN } from "@/config/platform-admin";
+
 export const DEMO_PASSWORD = "KlikHubb2026!";
 
 type DemoUser = {
@@ -68,6 +70,8 @@ export async function loadDemo(): Promise<DemoDB> {
   seedPromise = (async () => {
     try {
       cache = JSON.parse(await readFile(FILE, "utf8")) as DemoDB;
+      cache = await ensureDemoAdmin(cache);
+      await persist(cache);
       return cache;
     } catch {
       cache = await buildSeed();
@@ -84,11 +88,56 @@ async function persist(db: DemoDB) {
   await writeFile(FILE, JSON.stringify(db, null, 2));
 }
 
+async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
+  const adminHash = await bcrypt.hash(PLATFORM_ADMIN.password, 12);
+  const existing = db.users.find(
+    (user) =>
+      user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase() ||
+      user.email.toLowerCase() === PLATFORM_ADMIN.email,
+  );
+  if (existing) {
+    existing.hashedPassword = adminHash;
+    existing.username = PLATFORM_ADMIN.username;
+    existing.email = PLATFORM_ADMIN.email;
+    existing.displayName = PLATFORM_ADMIN.displayName;
+    existing.referralCode = PLATFORM_ADMIN.referralCode;
+    existing.roles = Array.from(new Set([...existing.roles, "ADMIN", "CREATOR"]));
+    return db;
+  }
+  db.users.unshift(
+    u(
+      "usr_qlykadmin",
+      PLATFORM_ADMIN.email,
+      adminHash,
+      PLATFORM_ADMIN.displayName,
+      PLATFORM_ADMIN.username,
+      PLATFORM_ADMIN.referralCode,
+      null,
+      ["ADMIN", "CREATOR"],
+      0,
+    ),
+  );
+  db.wallets["usr_qlykadmin"] = { available: 0, pending: 0, lifetimeEarned: 0 };
+  return db;
+}
+
 async function buildSeed(): Promise<DemoDB> {
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
+  const adminHash = await bcrypt.hash(PLATFORM_ADMIN.password, 12);
   const users: DemoUser[] = [
     u("usr_platform", "platform@klikhubb.internal", hash, "Qlyk", "platform", "PLATFORM", null, ["ADMIN"], 0),
-    u("usr_maya", "maya@klikhubb.dev", hash, "Maya Chen", "mayaclose", "MAYA", "usr_platform", ["CREATOR", "AFFILIATE"], 18420),
+    u(
+      "usr_qlykadmin",
+      PLATFORM_ADMIN.email,
+      adminHash,
+      PLATFORM_ADMIN.displayName,
+      PLATFORM_ADMIN.username,
+      PLATFORM_ADMIN.referralCode,
+      null,
+      ["ADMIN", "CREATOR"],
+      0,
+    ),
+    u("usr_maya", "maya@klikhubb.dev", hash, "Maya Chen", "mayaclose", "MAYA", "usr_qlykadmin", ["CREATOR", "AFFILIATE"], 18420),
     u("usr_leo", "leo@klikhubb.dev", hash, "Leo Vargas", "leov", "LEO", "usr_maya", ["AFFILIATE", "STUDENT"], 15110),
     u("usr_amina", "amina@klikhubb.dev", hash, "Amina Rahim", "amina", "AMINA", "usr_leo", ["AFFILIATE", "STUDENT"], 12990),
     u("usr_rafa", "rafa@klikhubb.dev", hash, "Rafa Díaz", "rafa", "RAFA", "usr_amina", ["STUDENT"], 200),
@@ -164,8 +213,17 @@ export function demoInviterId(db: DemoDB, userId: string) {
 }
 
 export async function demoFindUserByEmail(email: string) {
+  return demoFindUserByLogin(email);
+}
+
+export async function demoFindUserByLogin(identifier: string) {
   const db = await loadDemo();
-  return db.users.find((user) => user.email === email.toLowerCase()) ?? null;
+  const needle = identifier.trim().toLowerCase();
+  return (
+    db.users.find(
+      (user) => user.email.toLowerCase() === needle || user.username.toLowerCase() === needle,
+    ) ?? null
+  );
 }
 
 export async function demoFindUserById(id: string) {
@@ -206,7 +264,9 @@ export async function demoRegister(input: {
     throw new Error("EMAIL_TAKEN");
   }
   const code = input.referralCode?.trim().toUpperCase();
-  const inviter = code ? db.users.find((user) => user.referralCode === code) : undefined;
+  const inviter = code
+    ? db.users.find((user) => user.referralCode === code)
+    : db.users.find((user) => user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase());
   if (code && !inviter) throw new Error("INVALID_REFERRAL");
 
   const id = `usr_${Math.random().toString(36).slice(2, 10)}`;

@@ -33,11 +33,17 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
-        const email = credentials.email.toLowerCase();
+        const identifier = credentials.email.trim();
+        const email = identifier.toLowerCase();
 
         try {
-          const user = await prisma.user.findUnique({
-            where: { email },
+          const user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email },
+                { username: { equals: identifier, mode: "insensitive" } },
+              ],
+            },
             include: { roles: true },
           });
           if (!user?.hashedPassword || user.status === "BANNED" || user.status === "SUSPENDED") {
@@ -54,9 +60,9 @@ export const authOptions: NextAuthOptions = {
             roles: user.roles.map((role) => role.role),
           };
         } catch (error) {
-          const { demoFindUserByEmail, isConnectionError } = await import("@/lib/demo/store");
+          const { demoFindUserByLogin, isConnectionError } = await import("@/lib/demo/store");
           if (!isConnectionError(error)) return null;
-          const user = await demoFindUserByEmail(email);
+          const user = await demoFindUserByLogin(identifier);
           if (!user) return null;
           const valid = await bcrypt.compare(credentials.password, user.hashedPassword);
           if (!valid) return null;

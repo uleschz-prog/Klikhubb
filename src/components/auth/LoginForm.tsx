@@ -36,13 +36,14 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
       <div className="w-full max-w-md rounded-3xl border border-klik-line bg-klik-card p-8">
         <Logo href="/" />
         <h1 className="mt-6 font-display text-3xl font-extrabold text-white">Entra a tu feed</h1>
-        <p className="mt-2 text-sm text-white/50">La red social donde tu público te paga. Usa una cuenta demo o crea la tuya.</p>
+        <p className="mt-2 text-sm text-white/50">La red social donde tu público te paga. Entra con tu usuario o crea tu cuenta.</p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <label className="block text-xs font-semibold uppercase tracking-wider text-white/45">
-            Email
+            Usuario o email
             <input
-              type="email"
+              type="text"
+              autoComplete="username"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -88,7 +89,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
         <p className="mt-4 rounded-2xl border border-white/5 bg-black/40 p-3 text-[11px] leading-5 text-white/40">
           Demo comprador: rafa@klikhubb.dev · KlikHubb2026!
           <br />
-          Creadora: maya@klikhubb.dev · mismo password. Código de amiga: MAYA
+          Creadora: maya@klikhubb.dev · mismo password. Código de invitación: QLYKADMIN
         </p>
       </div>
     </main>

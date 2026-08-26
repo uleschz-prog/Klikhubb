@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import type { RoleCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { findDefaultInviterId } from "@/lib/auth/ensure-admin";
 
 const INTENT_ROLES: Record<"CREATOR" | "ENTREPRENEUR" | "BOTH", RoleCode[]> = {
   CREATOR: ["CREATOR", "STUDENT"],
@@ -32,6 +33,8 @@ export async function registerUser(input: {
       throw new Error("INVALID_REFERRAL");
     }
     invitedById = inviter.id;
+  } else {
+    invitedById = await findDefaultInviterId();
   }
 
   const username = await uniqueUsername(input.displayName);

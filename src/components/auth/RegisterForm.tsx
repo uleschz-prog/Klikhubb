@@ -58,7 +58,7 @@ export function RegisterForm() {
           <Field label="Nombre" value={displayName} onChange={setDisplayName} />
           <Field label="Email" type="email" value={email} onChange={setEmail} />
           <Field label="Contraseña" type="password" value={password} onChange={setPassword} />
-          <Field label="Código de un amigo (opcional)" value={referralCode} onChange={setReferralCode} required={false} placeholder="MAYA" />
+          <Field label="Código de un amigo (opcional)" value={referralCode} onChange={setReferralCode} required={false} placeholder="QLYKADMIN" />
 
           <fieldset>
             <legend className="text-xs font-semibold uppercase tracking-wider text-white/45">Cómo entras</legend>
