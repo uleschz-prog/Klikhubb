@@ -30,7 +30,7 @@ export default async function PublishPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Feed</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Publica y vende</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Un video corto. Un producto. El botón de compra vive dentro del clip.
+        Un video corto. Un producto. El botón de compra vive dentro del clip. Sube el archivo o pega un YouTube.
       </p>
       <div className="mt-8">
         <PublishVideoForm blobEnabled={isBlobConfigured()} products={products} />

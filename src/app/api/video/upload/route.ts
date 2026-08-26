@@ -21,9 +21,10 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async () => ({
-        allowedContentTypes: ["video/mp4", "video/webm", "video/quicktime"],
+        allowedContentTypes: ["video/mp4", "video/webm", "video/quicktime", "video/x-m4v", "video/*"],
         maximumSizeInBytes: 400 * 1024 * 1024,
         addRandomSuffix: true,
+        cacheControlMaxAge: 60 * 60 * 24 * 30,
         tokenPayload: JSON.stringify({ userId }),
       }),
     });

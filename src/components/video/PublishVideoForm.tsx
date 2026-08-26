@@ -25,6 +25,7 @@ export function PublishVideoForm({
   const [file, setFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [status, setStatus] = useState<"idle" | "uploading" | "saving" | "ok" | "error">("idle");
+  const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
 
   const usingExisting = Boolean(productSlug);
@@ -41,10 +42,19 @@ export function PublishVideoForm({
           setMessage("Para subir un archivo hay que activar Vercel Blob (BLOB_READ_WRITE_TOKEN).");
           return;
         }
+        if (file.size > 400 * 1024 * 1024) {
+          setStatus("error");
+          setMessage("El video puede pesar hasta 400 MB.");
+          return;
+        }
         setStatus("uploading");
-        const blob = await upload(file.name, file, {
+        setProgress(0);
+        const blob = await upload(clipFileName(file), file, {
           access: "public",
+          multipart: true,
+          contentType: file.type || undefined,
           handleUploadUrl: "/api/video/upload",
+          onUploadProgress: ({ percentage }) => setProgress(Math.round(percentage)),
         });
         url = blob.url;
       }
@@ -119,10 +129,17 @@ export function PublishVideoForm({
         <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Video</span>
         <input
           type="file"
-          accept="video/mp4,video/webm,video/quicktime"
+          accept="video/mp4,video/webm,video/quicktime,video/*"
           onChange={(event) => setFile(event.target.files?.[0] ?? null)}
           className="mt-2 block w-full text-sm text-white/70 file:mr-3 file:rounded-full file:border-0 file:bg-klik-cyan file:px-4 file:py-2 file:text-xs file:font-bold file:text-klik-black"
         />
+        {file ? (
+          <p className="mt-2 text-xs text-white/45">
+            {file.name} · {formatBytes(file.size)}
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-white/40">MP4, MOV o WebM. Hasta 400 MB. Desde el rollo o la cámara.</p>
+        )}
       </label>
 
       <label className="block">
@@ -226,6 +243,14 @@ export function PublishVideoForm({
         <p className="text-xs text-white/40">
           La subida de archivo pide Vercel Blob. Mientras tanto pega un YouTube o la URL https de un MP4.
         </p>
+      ) : (
+        <p className="text-xs text-white/40">También puedes pegar un YouTube si el clip ya está en la red.</p>
+      )}
+
+      {status === "uploading" ? (
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="h-full bg-klik-green transition-[width]" style={{ width: `${progress}%` }} />
+        </div>
       ) : null}
 
       <button
@@ -233,7 +258,13 @@ export function PublishVideoForm({
         disabled={busy || status === "ok"}
         className="min-h-12 rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
       >
-        {status === "uploading" ? "Subiendo…" : status === "saving" ? "Publicando…" : status === "ok" ? "En el feed" : "Publicar"}
+        {status === "uploading"
+          ? `Subiendo… ${progress}%`
+          : status === "saving"
+            ? "Publicando…"
+            : status === "ok"
+              ? "En el feed"
+              : "Publicar"}
       </button>
 
       {message ? (
@@ -241,4 +272,18 @@ export function PublishVideoForm({
       ) : null}
     </form>
   );
+}
+
+function clipFileName(file: File) {
+  const raw = file.name.trim() || "clip";
+  const safe = raw.replace(/[^\w.\-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+  if (/\.(mp4|webm|mov|m4v)$/i.test(safe)) return safe;
+  const ext = file.type.includes("webm") ? "webm" : file.type.includes("quicktime") || file.type.includes("m4v") ? "mov" : "mp4";
+  return `${safe || "clip"}.${ext}`;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
