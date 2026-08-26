@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId } from "@/lib/auth/session";
 import { isBlobConfigured } from "@/lib/video/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const session = await getSession();
-  if (!session?.user?.id) {
+  const userId = await getDbUserId();
+  if (!userId) {
     return NextResponse.json({ error: "Inicia sesión para publicar." }, { status: 401 });
   }
   if (!isBlobConfigured()) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         allowedContentTypes: ["video/mp4", "video/webm", "video/quicktime"],
         maximumSizeInBytes: 400 * 1024 * 1024,
         addRandomSuffix: true,
-        tokenPayload: JSON.stringify({ userId: session.user.id }),
+        tokenPayload: JSON.stringify({ userId }),
       }),
     });
     return NextResponse.json(json);

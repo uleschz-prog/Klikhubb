@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
+import { getDbUserId } from "@/lib/auth/session";
+import { isAllowedVideoUrl } from "@/lib/video/naming";
+import { publishClip } from "@/lib/video/publish";
 import { publishVideoSchema } from "@/lib/validations/video";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const session = await getSession();
-  const userId = session?.user?.id;
+  const userId = await getDbUserId();
   if (!userId) {
     return NextResponse.json({ error: "Inicia sesión para publicar." }, { status: 401 });
   }
@@ -19,44 +19,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Falta un video y un texto." }, { status: 400 });
   }
 
-  const videoUrl = parsed.data.videoUrl!;
-  if (!/^https:\/\//i.test(videoUrl)) {
-    return NextResponse.json({ error: "El video tiene que ser una URL https." }, { status: 400 });
+  const videoUrl = parsed.data.videoUrl ?? "";
+  if (!isAllowedVideoUrl(videoUrl)) {
+    return NextResponse.json({ error: "El video tiene que ser una URL https o un archivo de /videos." }, { status: 400 });
   }
 
-  const title = (parsed.data.title?.trim() || parsed.data.caption).slice(0, 120);
-  const productSlug = parsed.data.productSlug?.trim();
-
-  let productId: string | null = null;
-  if (productSlug) {
-    const product = await prisma.product.findFirst({
-      where: { slug: productSlug, creatorId: userId, status: "ACTIVE" },
-      select: { id: true },
-    });
-    if (!product) {
-      return NextResponse.json({ error: "Ese producto no es tuyo o no está activo." }, { status: 400 });
-    }
-    productId = product.id;
-  }
-
-  const video = await prisma.video.create({
-    data: {
+  try {
+    const video = await publishClip({
       creatorId: userId,
-      title,
       caption: parsed.data.caption,
       videoUrl,
-      status: "PUBLISHED",
-      publishedAt: new Date(),
-      ...(productId
-        ? {
-            products: {
-              create: { productId, isPrimary: true, ctaLabel: "Comprar" },
-            },
-          }
-        : {}),
-    },
-    select: { id: true },
-  });
-
-  return NextResponse.json({ ok: true, id: video.id });
+      title: parsed.data.title,
+      productSlug: parsed.data.productSlug,
+      offer: parsed.data.offer,
+    });
+    return NextResponse.json({ ok: true, id: video.id });
+  } catch (error) {
+    if (error instanceof Error && error.message === "PRODUCT_NOT_YOURS") {
+      return NextResponse.json({ error: "Ese producto no es tuyo o no está activo." }, { status: 400 });
+    }
+    console.error(error);
+    return NextResponse.json({ error: "No se pudo publicar." }, { status: 500 });
+  }
 }
