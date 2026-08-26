@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listPublishedVideos } from "@/lib/video/feed";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId, getSession } from "@/lib/auth/session";
 import { isStripeEnabled } from "@/lib/commerce/stripe";
 import { FeedEntry } from "@/components/explore/FeedEntry";
 import { PlatformShell } from "@/components/layout/PlatformShell";
@@ -13,7 +13,8 @@ export default async function FeedPage({
   searchParams: { v?: string; tab?: string; buy?: string; canceled?: string };
 }) {
   const session = await getSession();
-  const videos = await listPublishedVideos(40, session?.user?.id);
+  const viewerId = await getDbUserId();
+  const videos = await listPublishedVideos(40, viewerId ?? undefined);
 
   if (videos.length === 0) {
     return (

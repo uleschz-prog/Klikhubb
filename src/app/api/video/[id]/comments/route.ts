@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId } from "@/lib/auth/session";
 import { commentSchema } from "@/lib/validations/social";
 import { addVideoComment, listVideoComments, SocialError } from "@/lib/video/social";
 
@@ -20,8 +20,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 }
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const session = await getSession();
-  const userId = session?.user?.id;
+  const userId = await getDbUserId();
   if (!userId) {
     return NextResponse.json({ error: "Inicia sesión para comentar." }, { status: 401 });
   }
@@ -36,8 +35,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const result = await addVideoComment(params.id, userId, parsed.data.body);
     return NextResponse.json(result);
   } catch (error) {
-    if (error instanceof SocialError && error.code === "NOT_FOUND") {
-      return NextResponse.json({ error: error.message }, { status: 404 });
+    if (error instanceof SocialError) {
+      const status = error.code === "NOT_FOUND" ? 404 : 401;
+      return NextResponse.json({ error: error.message }, { status });
     }
     console.error(error);
     return NextResponse.json({ error: "No se pudo publicar el comentario." }, { status: 500 });

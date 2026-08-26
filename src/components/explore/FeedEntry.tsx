@@ -36,10 +36,16 @@ export function FeedEntry({
     return <div className="min-h-[100dvh] bg-[#0a0a0d]" aria-hidden />;
   }
 
+  const theaterVideos =
+    tab === "following" && !clipId ? videos.filter((video) => video.followedByMe) : videos;
+
   if (clipId || buySlug || !desktop) {
+    if (!clipId && !buySlug && tab === "following" && theaterVideos.length === 0) {
+      return <ExploreHome videos={videos} tab={tab} signedIn={signedIn} />;
+    }
     return (
       <FeedTheater
-        videos={videos}
+        videos={theaterVideos}
         initialId={clipId}
         signedIn={signedIn}
         stripeEnabled={stripeEnabled}

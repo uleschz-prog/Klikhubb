@@ -16,6 +16,7 @@ export async function listPublishedVideos(limit = 40, viewerId?: string): Promis
           take: 1,
           include: { product: { select: { slug: true, title: true, description: true, type: true, price: true, currency: true, status: true } } },
         },
+        _count: { select: { comments: true } },
       },
     });
 
@@ -56,7 +57,7 @@ export async function listPublishedVideos(limit = 40, viewerId?: string): Promis
         thumbnailUrl: row.thumbnailUrl ?? posterFromVideoUrl(row.videoUrl),
         durationMs: row.durationMs,
         likes: row.likeCount,
-        comments: row.commentCount,
+        comments: row._count.comments,
         shares: row.shareCount,
         favorites: 0,
         publishedAt: (row.publishedAt ?? row.createdAt).toISOString(),

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId } from "@/lib/auth/session";
 import { followSchema } from "@/lib/validations/social";
 import { SocialError, toggleFollowByHandle } from "@/lib/video/social";
 
@@ -7,8 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const session = await getSession();
-  const userId = session?.user?.id;
+  const userId = await getDbUserId();
   if (!userId) {
     return NextResponse.json({ error: "Inicia sesión para seguir." }, { status: 401 });
   }
@@ -24,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof SocialError) {
-      const status = error.code === "NOT_FOUND" ? 404 : error.code === "SELF" ? 400 : 400;
+      const status = error.code === "NOT_FOUND" ? 404 : error.code === "SELF" ? 400 : 401;
       return NextResponse.json({ error: error.message }, { status });
     }
     console.error(error);

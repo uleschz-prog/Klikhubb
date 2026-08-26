@@ -24,6 +24,9 @@ export async function toggleVideoLike(videoId: string, userId: string) {
   });
   if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
 
+  const actor = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!actor) throw new SocialError("Vuelve a entrar para guardar el like.", "UNAUTHORIZED");
+
   const existing = await prisma.videoLike.findUnique({
     where: { videoId_userId: { videoId, userId } },
   });
@@ -54,6 +57,9 @@ export async function toggleVideoLike(videoId: string, userId: string) {
 }
 
 export async function toggleFollowByHandle(followerId: string, handle: string) {
+  const actor = await prisma.user.findUnique({ where: { id: followerId }, select: { id: true } });
+  if (!actor) throw new SocialError("Vuelve a entrar para seguir.", "UNAUTHORIZED");
+
   const username = handle.replace(/^@/, "").trim();
   const target = await prisma.user.findFirst({
     where: { username: { equals: username, mode: "insensitive" } },
@@ -92,20 +98,23 @@ export async function listFollowingHandles(userId: string) {
 export async function listVideoComments(videoId: string) {
   const video = await prisma.video.findUnique({
     where: { id: videoId },
-    select: { id: true, commentCount: true },
+    select: { id: true },
   });
   if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
 
-  const rows = await prisma.videoComment.findMany({
-    where: { videoId, parentId: null },
-    orderBy: { createdAt: "asc" },
-    take: 80,
-    include: { author: { select: { displayName: true, username: true, name: true } } },
-  });
+  const [rows, commentCount] = await Promise.all([
+    prisma.videoComment.findMany({
+      where: { videoId, parentId: null },
+      orderBy: { createdAt: "asc" },
+      take: 80,
+      include: { author: { select: { displayName: true, username: true, name: true } } },
+    }),
+    prisma.videoComment.count({ where: { videoId } }),
+  ]);
 
   return {
     comments: rows.map(toPublicComment),
-    commentCount: video.commentCount,
+    commentCount,
   };
 }
 
@@ -116,17 +125,20 @@ export async function addVideoComment(videoId: string, userId: string, body: str
   });
   if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
 
+  const actor = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!actor) throw new SocialError("Vuelve a entrar para comentar.", "UNAUTHORIZED");
+
   const created = await prisma.$transaction(async (tx) => {
     const comment = await tx.videoComment.create({
       data: { videoId, authorId: userId, body },
       include: { author: { select: { displayName: true, username: true, name: true } } },
     });
-    const updated = await tx.video.update({
+    const commentCount = await tx.videoComment.count({ where: { videoId } });
+    await tx.video.update({
       where: { id: videoId },
-      data: { commentCount: { increment: 1 } },
-      select: { commentCount: true },
+      data: { commentCount },
     });
-    return { comment, commentCount: updated.commentCount };
+    return { comment, commentCount };
   });
 
   return {

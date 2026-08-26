@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { hasDatabaseUrl, prisma } from "@/lib/prisma";
+import { hydrateAuthToken } from "@/lib/auth/resolve-user";
 
 const googleConfigured =
   Boolean(process.env.GOOGLE_CLIENT_ID) && Boolean(process.env.GOOGLE_CLIENT_SECRET);
@@ -81,8 +82,9 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.roles = user.roles ?? [];
+        if (user.email) token.email = user.email;
       }
-      return token;
+      return hydrateAuthToken(token);
     },
     async session({ session, token }) {
       if (session.user) {
