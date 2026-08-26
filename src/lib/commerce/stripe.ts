@@ -1,12 +1,18 @@
 import Stripe from "stripe";
 import { siteUrl } from "@/config/site";
 import { toCents } from "@/lib/money/cents";
+import { resolveLiveUserId } from "@/lib/auth/resolve-user";
 import { CommerceError, settlePaidOrder, type SettledOrder } from "@/lib/commerce/settle-order";
 import { demoEnrollmentOrderId, demoSettleOrder, isConnectionError } from "@/lib/demo/store";
 import type { ResolvedProduct } from "@/lib/commerce/catalog";
 
 export function isStripeEnabled() {
   return Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+}
+
+/** En Vercel producción no se regala el acceso: hace falta tarjeta. */
+export function isLivePaymentsRequired() {
+  return process.env.VERCEL_ENV === "production";
 }
 
 export function appBaseUrl() {
@@ -34,6 +40,7 @@ export async function createStripeCheckoutSession(input: {
 
   return stripe.checkout.sessions.create({
     mode: "payment",
+    locale: "es",
     customer_email: input.buyerEmail ?? undefined,
     client_reference_id: input.buyerId,
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -51,8 +58,17 @@ export async function createStripeCheckoutSession(input: {
         },
       },
     ],
+    payment_intent_data: {
+      description: `Qlyk · ${input.product.title}`,
+      metadata: {
+        buyerId: input.buyerId,
+        productId: input.product.id,
+        slug: input.product.slug,
+      },
+    },
     metadata: {
       buyerId: input.buyerId,
+      buyerEmail: input.buyerEmail ?? "",
       productId: input.product.id,
       slug: input.product.slug,
       catalog: input.product.source,
@@ -78,7 +94,10 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
     return { unpaid: true, alreadyOwned: false, settled: null };
   }
 
-  const buyerId = session.metadata?.buyerId;
+  const buyerId = await resolveLiveUserId(
+    session.metadata?.buyerId,
+    session.metadata?.buyerEmail || session.customer_email,
+  );
   const productId = session.metadata?.productId;
   const slug = session.metadata?.slug;
   const catalog = session.metadata?.catalog === "demo" ? "demo" : "postgres";

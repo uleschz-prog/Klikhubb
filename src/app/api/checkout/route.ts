@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId, getSession } from "@/lib/auth/session";
 import { assertCanPurchase, resolveProduct } from "@/lib/commerce/catalog";
-import { createStripeCheckoutSession, isStripeEnabled } from "@/lib/commerce/stripe";
+import { createStripeCheckoutSession, isLivePaymentsRequired, isStripeEnabled } from "@/lib/commerce/stripe";
 import { CommerceError, settlePaidOrder } from "@/lib/commerce/settle-order";
 import { demoSettleOrder } from "@/lib/demo/store";
 import { checkoutSchema } from "@/lib/validations/auth";
@@ -11,7 +11,8 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const session = await getSession();
-  if (!session?.user?.id) {
+  const buyerId = await getDbUserId();
+  if (!session?.user || !buyerId) {
     return NextResponse.json({ error: "Inicia sesión para comprar." }, { status: 401 });
   }
 
@@ -22,7 +23,6 @@ export async function POST(request: Request) {
   }
 
   const slug = parsed.data.slug;
-  const buyerId = session.user.id;
   const product = await resolveProduct(slug);
   if (!product) {
     return NextResponse.json({ error: "Producto no encontrado." }, { status: 404 });
@@ -55,6 +55,13 @@ export async function POST(request: Request) {
     }
   }
 
+  if (isLivePaymentsRequired()) {
+    return NextResponse.json(
+      { error: "El pago con tarjeta aún no está activo. Falta conectar Stripe." },
+      { status: 503 },
+    );
+  }
+
   try {
     if (product.source === "postgres") {
       const settled = await settlePaidOrder({
@@ -77,7 +84,7 @@ export async function POST(request: Request) {
 
 function mapCommerceError(error: unknown) {
   if (error instanceof CommerceError) {
-    const status = error.code === "ALREADY_OWNED" ? 409 : 400;
+    const status = error.code === "ALREADY_OWNED" ? 409 : error.code === "USER_NOT_FOUND" ? 401 : 400;
     return NextResponse.json({ error: error.message, code: error.code }, { status });
   }
   const code = error instanceof Error ? error.message : "";

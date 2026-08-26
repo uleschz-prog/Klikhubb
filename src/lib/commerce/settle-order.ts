@@ -31,6 +31,38 @@ export type SettledOrder = {
   }[];
 };
 
+async function settledFromProviderRef(
+  tx: Prisma.TransactionClient,
+  provider: string,
+  providerRef: string,
+): Promise<SettledOrder | null> {
+  const payment = await tx.payment.findUnique({
+    where: { provider_providerRef: { provider, providerRef } },
+    include: {
+      order: {
+        include: {
+          items: { include: { product: { select: { title: true } } }, take: 1 },
+          commissions: true,
+        },
+      },
+    },
+  });
+  const order = payment?.order;
+  if (!order) return null;
+  return {
+    orderId: order.id,
+    productTitle: order.items[0]?.product.title ?? "Producto",
+    total: Number(order.total),
+    currency: order.currency.trim(),
+    lines: order.commissions.map((line) => ({
+      type: line.type,
+      level: line.level,
+      amountCents: toCents(Number(line.amount)),
+      beneficiaryId: line.beneficiaryId,
+    })),
+  };
+}
+
 /**
  * Marca una venta como pagada y escribe el 80/10/10 + wallet + enrollment
  * en la misma transacción. Stripe (o el provider demo) solo llama esto
@@ -43,6 +75,9 @@ export async function settlePaidOrder(input: {
   providerRef: string;
 }): Promise<SettledOrder> {
   return prisma.$transaction(async (tx) => {
+    const replayed = await settledFromProviderRef(tx, input.provider, input.providerRef);
+    if (replayed) return replayed;
+
     const owned = await tx.enrollment.findUnique({
       where: { userId_productId: { userId: input.buyerId, productId: input.productId } },
     });

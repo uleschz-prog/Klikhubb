@@ -28,10 +28,10 @@ export default async function CheckoutSuccessPage({
 
   const headline = unpaid ? "Estamos confirmando el pago" : "Ya estás dentro";
   const body = unpaid
-    ? "Stripe aún no confirmó el pago. En cuanto lo haga, entras a la academia y a la comunidad."
+    ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
     : alreadyOwned
       ? "Este producto ya estaba en tu academy. No se cobró de nuevo."
-      : "Ya pagaste. Entras a la academia y a la comunidad. El creador cobra en automático.";
+      : "Ya pagaste. El curso quedó en tu academy. El creador ve el dinero en pendiente.";
 
   return (
     <PlatformShell title="Pago">

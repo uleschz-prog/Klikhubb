@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CheckoutStage } from "@/components/commerce/CheckoutStage";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutPreview } from "@/lib/commerce/catalog";
 import { isStripeEnabled } from "@/lib/commerce/stripe";
 
@@ -14,9 +14,16 @@ export default async function CheckoutPage({
   searchParams: { canceled?: string };
 }) {
   const session = await getSession();
-  if (!session?.user?.id) notFound();
+  if (!session?.user) {
+    redirect(`/login?callbackUrl=${encodeURIComponent(`/checkout/${params.slug}`)}`);
+  }
 
-  const preview = await getCheckoutPreview(params.slug, session.user.id);
+  const buyerId = await getDbUserId();
+  if (!buyerId) {
+    redirect(`/login?callbackUrl=${encodeURIComponent(`/checkout/${params.slug}`)}`);
+  }
+
+  const preview = await getCheckoutPreview(params.slug, buyerId);
   if (!preview) notFound();
 
   return (

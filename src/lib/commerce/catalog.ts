@@ -6,6 +6,7 @@ import {
   demoHasEnrollment,
   demoHub,
   demoInviterId,
+  demoListEnrollments,
   demoListProducts,
   isConnectionError,
   loadDemo,
@@ -117,6 +118,36 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       creatorId: row.creatorId,
       type: row.type,
     }));
+  }
+}
+
+export type AcademyEnrollment = {
+  slug: string;
+  title: string;
+  description: string | null;
+  type: string;
+  enrolledAt: string;
+};
+
+export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]> {
+  try {
+    const rows = await prisma.enrollment.findMany({
+      where: { userId, status: "ACTIVE" },
+      orderBy: { createdAt: "desc" },
+      include: {
+        product: { select: { slug: true, title: true, description: true, type: true } },
+      },
+    });
+    return rows.map((row) => ({
+      slug: row.product.slug,
+      title: row.product.title,
+      description: row.product.description,
+      type: row.product.type,
+      enrolledAt: row.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    if (!isConnectionError(error)) throw error;
+    return demoListEnrollments(userId);
   }
 }
 

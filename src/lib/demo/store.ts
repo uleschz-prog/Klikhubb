@@ -251,6 +251,22 @@ export async function demoListProducts() {
   return db.products;
 }
 
+export async function demoListEnrollments(userId: string) {
+  const db = await loadDemo();
+  return db.enrollments
+    .filter((row) => row.userId === userId)
+    .map((row) => {
+      const product = db.products.find((item) => item.id === row.productId);
+      return {
+        slug: product?.slug ?? row.productId,
+        title: product?.title ?? "Producto",
+        description: null,
+        type: product?.type ?? "COURSE",
+        enrolledAt: db.orders.find((order) => order.id === row.orderId)?.createdAt ?? new Date().toISOString(),
+      };
+    });
+}
+
 export async function demoRegister(input: {
   email: string;
   password: string;

@@ -78,13 +78,13 @@ export function CheckoutForm({
         disabled={loading}
         className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
       >
-        <span>{loading ? "Procesando…" : stripeEnabled ? "Pagar con Stripe" : `Pagar ${title}`}</span>
+        <span>{loading ? "Procesando…" : stripeEnabled ? "Pagar con tarjeta" : `Pagar ${title}`}</span>
         <span>{formatMoney(price, currency)}</span>
       </button>
       <p className="text-center text-[11px] text-white/35">
         {stripeEnabled
-          ? "Stripe confirma el cargo. El acceso llega cuando el pago queda listo."
-          : "Un clic y ya estás dentro. El video no se va."}
+          ? "Stripe cobra la tarjeta. El acceso llega cuando el pago queda listo."
+          : "Este entorno aún no tiene Stripe. El acceso se abre sin tarjeta, solo para pruebas."}
       </p>
     </form>
   );

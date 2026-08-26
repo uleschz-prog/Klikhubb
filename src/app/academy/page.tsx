@@ -1,28 +1,74 @@
+import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { mockCourses } from "@/data/mock";
+import { getDbUserId } from "@/lib/auth/session";
+import { listMyAcademy } from "@/lib/commerce/catalog";
 
-export default function AcademyPage() {
+const TYPE_LABEL: Record<string, string> = {
+  COURSE: "Academia",
+  MEMBERSHIP: "Membresía",
+  DIGITAL: "Digital",
+  PHYSICAL: "Físico",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function AcademyPage() {
+  const userId = await getDbUserId();
+  const enrollments = userId ? await listMyAcademy(userId) : [];
+
   return (
     <PlatformShell title="Academy">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Educación</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Academy</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        El video te descubre. La academia te queda. Lecciones y membresías ligadas a lo que compraste.
+        El video te descubre. La academia te queda. Aquí está solo lo que ya pagaste.
       </p>
-      <div className="mt-8 space-y-3">
-        {mockCourses.map((course, index) => (
-          <article
-            key={course.slug}
-            className="flex items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4"
+
+      {!userId ? (
+        <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
+          <h2 className="font-display text-2xl font-extrabold">Entra para ver tu academy</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
+            El acceso se guarda en tu cuenta, no en el teléfono.
+          </p>
+          <Link
+            href="/login?callbackUrl=/academy"
+            className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
-            <div>
-              <p className="font-display text-xs text-klik-green">Módulo {String(index + 1).padStart(2, "0")}</p>
-              <h2 className="mt-1 font-display text-lg font-bold">{course.title}</h2>
-            </div>
-            <span className="text-sm text-white/45">{course.students} alumnos</span>
-          </article>
-        ))}
-      </div>
+            Entrar
+          </Link>
+        </div>
+      ) : enrollments.length === 0 ? (
+        <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
+          <h2 className="font-display text-2xl font-extrabold">Todavía no tienes academias</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
+            En el feed, toca Llevar. Cuando Stripe confirma el pago, el curso aparece aquí.
+          </p>
+          <Link
+            href="/feed"
+            className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
+          >
+            Ir al feed
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-8 space-y-3">
+          {enrollments.map((course) => (
+            <article
+              key={course.slug}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4"
+            >
+              <div>
+                <p className="font-display text-xs text-klik-green">
+                  {TYPE_LABEL[course.type] ?? course.type} · Acceso activo
+                </p>
+                <h2 className="mt-1 font-display text-lg font-bold">{course.title}</h2>
+                {course.description ? <p className="mt-1 text-sm text-white/50">{course.description}</p> : null}
+              </div>
+              <span className="shrink-0 text-sm text-white/45">Tuyo</span>
+            </article>
+          ))}
+        </div>
+      )}
     </PlatformShell>
   );
 }

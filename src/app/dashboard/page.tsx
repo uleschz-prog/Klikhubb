@@ -2,15 +2,14 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { InviteCard } from "@/components/social/InviteCard";
 import { Leaderboard } from "@/components/gamification/Leaderboard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { getSession } from "@/lib/auth/session";
+import { getDbUserId } from "@/lib/auth/session";
 import { loadHub } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/split";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const session = await getSession();
-  const userId = session?.user?.id;
+  const userId = await getDbUserId();
   const hub = userId ? await loadHub(userId) : null;
 
   const wallet = hub?.wallet ?? { available: 0, pending: 0, lifetimeEarned: 0 };
