@@ -1,0 +1,162 @@
+import { prisma } from "@/lib/prisma";
+
+export class SocialError extends Error {
+  constructor(
+    message: string,
+    public readonly code: "NOT_FOUND" | "SELF" | "UNAUTHORIZED",
+  ) {
+    super(message);
+  }
+}
+
+export type PublicComment = {
+  id: string;
+  body: string;
+  handle: string;
+  authorName: string;
+  createdAt: string;
+};
+
+export async function toggleVideoLike(videoId: string, userId: string) {
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { id: true, likeCount: true },
+  });
+  if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
+
+  const existing = await prisma.videoLike.findUnique({
+    where: { videoId_userId: { videoId, userId } },
+  });
+
+  if (existing) {
+    await prisma.$transaction([
+      prisma.videoLike.delete({ where: { videoId_userId: { videoId, userId } } }),
+      prisma.video.updateMany({
+        where: { id: videoId, likeCount: { gt: 0 } },
+        data: { likeCount: { decrement: 1 } },
+      }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.videoLike.create({ data: { videoId, userId } }),
+      prisma.video.update({
+        where: { id: videoId },
+        data: { likeCount: { increment: 1 } },
+      }),
+    ]);
+  }
+
+  const next = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { likeCount: true },
+  });
+  return { liked: !existing, likeCount: next?.likeCount ?? video.likeCount };
+}
+
+export async function toggleFollowByHandle(followerId: string, handle: string) {
+  const username = handle.replace(/^@/, "").trim();
+  const target = await prisma.user.findFirst({
+    where: { username: { equals: username, mode: "insensitive" } },
+    select: { id: true, username: true },
+  });
+  if (!target?.username) throw new SocialError("Ese creador no existe.", "NOT_FOUND");
+  if (target.id === followerId) throw new SocialError("No puedes seguirte a ti mismo.", "SELF");
+
+  const existing = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId, followingId: target.id } },
+  });
+
+  if (existing) {
+    await prisma.follow.delete({
+      where: { followerId_followingId: { followerId, followingId: target.id } },
+    });
+    return { following: false, handle: target.username };
+  }
+
+  await prisma.follow.create({
+    data: { followerId, followingId: target.id },
+  });
+  return { following: true, handle: target.username };
+}
+
+export async function listFollowingHandles(userId: string) {
+  const rows = await prisma.follow.findMany({
+    where: { followerId: userId },
+    select: { following: { select: { username: true } } },
+  });
+  return rows
+    .map((row) => row.following.username)
+    .filter((handle): handle is string => Boolean(handle));
+}
+
+export async function listVideoComments(videoId: string) {
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { id: true, commentCount: true },
+  });
+  if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
+
+  const rows = await prisma.videoComment.findMany({
+    where: { videoId, parentId: null },
+    orderBy: { createdAt: "asc" },
+    take: 80,
+    include: { author: { select: { displayName: true, username: true, name: true } } },
+  });
+
+  return {
+    comments: rows.map(toPublicComment),
+    commentCount: video.commentCount,
+  };
+}
+
+export async function addVideoComment(videoId: string, userId: string, body: string) {
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { id: true },
+  });
+  if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
+
+  const created = await prisma.$transaction(async (tx) => {
+    const comment = await tx.videoComment.create({
+      data: { videoId, authorId: userId, body },
+      include: { author: { select: { displayName: true, username: true, name: true } } },
+    });
+    const updated = await tx.video.update({
+      where: { id: videoId },
+      data: { commentCount: { increment: 1 } },
+      select: { commentCount: true },
+    });
+    return { comment, commentCount: updated.commentCount };
+  });
+
+  return {
+    comment: toPublicComment(created.comment),
+    commentCount: created.commentCount,
+  };
+}
+
+export async function registerShare(videoId: string) {
+  const video = await prisma.video.findUnique({ where: { id: videoId }, select: { id: true } });
+  if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
+  const updated = await prisma.video.update({
+    where: { id: videoId },
+    data: { shareCount: { increment: 1 } },
+    select: { shareCount: true },
+  });
+  return { shareCount: updated.shareCount };
+}
+
+function toPublicComment(row: {
+  id: string;
+  body: string;
+  createdAt: Date;
+  author: { displayName: string | null; username: string | null; name: string | null };
+}): PublicComment {
+  return {
+    id: row.id,
+    body: row.body,
+    handle: row.author.username ?? "qlyk",
+    authorName: row.author.displayName ?? row.author.name ?? "Miembro",
+    createdAt: row.createdAt.toISOString(),
+  };
+}

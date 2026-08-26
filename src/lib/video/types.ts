@@ -9,8 +9,11 @@ export type FeedProduct = {
 
 export type FeedVideo = {
   id: string;
+  creatorId: string;
   creatorName: string;
   handle: string;
+  likedByMe?: boolean;
+  followedByMe?: boolean;
   caption: string;
   title: string;
   videoUrl: string | null;

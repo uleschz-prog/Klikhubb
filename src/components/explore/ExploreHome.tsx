@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
-import { listFollowing } from "@/lib/video/following";
+import { apiListFollowing } from "@/lib/video/social-api";
 import { Logo } from "@/components/brand/Logo";
 import { VideoCard } from "@/components/explore/VideoCard";
 
@@ -32,8 +32,15 @@ export function ExploreHome({
   const [following, setFollowing] = useState<string[]>([]);
 
   useEffect(() => {
-    setFollowing(listFollowing());
-  }, []);
+    if (!signedIn) {
+      setFollowing([]);
+      return;
+    }
+    void apiListFollowing().then(({ ok, payload }) => {
+      if (!ok || !Array.isArray(payload.handles)) return;
+      setFollowing(payload.handles.filter((item): item is string => typeof item === "string"));
+    });
+  }, [signedIn]);
 
   const tags = useMemo(() => {
     const counts = new Map<string, number>();
@@ -154,16 +161,20 @@ export function ExploreHome({
 
           {tab === "following" && following.length === 0 ? (
             <div className="rounded-2xl border border-white/10 px-6 py-16 text-center">
-              <h1 className="font-display text-2xl font-extrabold">Todavía no sigues a nadie</h1>
+              <h1 className="font-display text-2xl font-extrabold">
+                {signedIn ? "Todavía no sigues a nadie" : "Entra para ver a quién sigues"}
+              </h1>
               <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-                Entra a un video y toca el + bajo el avatar. Quien sigas aparece aquí.
+                {signedIn
+                  ? "Entra a un video y toca el + bajo el avatar. Quien sigas aparece aquí."
+                  : "El follow se guarda en tu cuenta. Entra y toca el + en un clip."}
               </p>
               <button
                 type="button"
-                onClick={() => router.push("/feed")}
+                onClick={() => router.push(signedIn ? "/feed" : "/login?callbackUrl=/feed?tab=following")}
                 className="mt-6 rounded-full bg-klik-green px-5 py-2.5 text-sm font-bold text-klik-black"
               >
-                Ir a Para ti
+                {signedIn ? "Ir a Para ti" : "Entrar"}
               </button>
             </div>
           ) : visible.length === 0 ? (

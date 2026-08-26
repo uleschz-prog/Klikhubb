@@ -12,7 +12,8 @@ export default async function FeedPage({
 }: {
   searchParams: { v?: string; tab?: string; buy?: string; canceled?: string };
 }) {
-  const [videos, session] = await Promise.all([listPublishedVideos(), getSession()]);
+  const session = await getSession();
+  const videos = await listPublishedVideos(40, session?.user?.id);
 
   if (videos.length === 0) {
     return (

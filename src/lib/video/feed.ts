@@ -2,14 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { isConnectionError } from "@/lib/demo/store";
 import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
 
-export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
+export async function listPublishedVideos(limit = 40, viewerId?: string): Promise<FeedVideo[]> {
   try {
     const rows = await prisma.video.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { publishedAt: "desc" },
       take: limit,
       include: {
-        creator: { select: { displayName: true, username: true, name: true } },
+        creator: { select: { id: true, displayName: true, username: true, name: true } },
         tags: { include: { tag: { select: { slug: true, name: true } } } },
         products: {
           where: { isPrimary: true },
@@ -19,13 +19,36 @@ export async function listPublishedVideos(limit = 40): Promise<FeedVideo[]> {
       },
     });
 
+    const videoIds = rows.map((row) => row.id);
+    const creatorIds = Array.from(new Set(rows.map((row) => row.creator.id)));
+    const likedIds = new Set<string>();
+    const followedIds = new Set<string>();
+
+    if (viewerId && videoIds.length) {
+      const [likes, follows] = await Promise.all([
+        prisma.videoLike.findMany({
+          where: { userId: viewerId, videoId: { in: videoIds } },
+          select: { videoId: true },
+        }),
+        prisma.follow.findMany({
+          where: { followerId: viewerId, followingId: { in: creatorIds } },
+          select: { followingId: true },
+        }),
+      ]);
+      likes.forEach((row) => likedIds.add(row.videoId));
+      follows.forEach((row) => followedIds.add(row.followingId));
+    }
+
     return rows.map((row) => {
       const productRow = row.products[0]?.product;
       const playback = row.playbackId ? muxPlaybackUrl(row.playbackId) : null;
       return {
         id: row.id,
+        creatorId: row.creator.id,
         creatorName: row.creator.displayName ?? row.creator.name ?? "Creador",
         handle: row.creator.username ?? "klik",
+        likedByMe: likedIds.has(row.id),
+        followedByMe: followedIds.has(row.creator.id),
         caption: row.caption ?? row.title,
         title: row.title,
         videoUrl: row.videoUrl ?? playback,

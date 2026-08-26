@@ -5,12 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
 import { formatCount, formatFeedDate, formatTimecode, initialsFrom } from "@/lib/video/format";
-import { isFollowing, toggleFollow } from "@/lib/video/following";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { formatMoney } from "@/lib/commerce/split";
 import { BuyDrawer, type BuyItem } from "@/components/commerce/BuyDrawer";
+import {
+  apiAddComment,
+  apiListComments,
+  apiRegisterShare,
+  apiToggleFollow,
+  apiToggleLike,
+  commentsFromPayload,
+} from "@/lib/video/social-api";
+import type { PublicComment } from "@/lib/video/social";
 
 type Panel = "none" | "comments" | "playlist" | "more";
 type Menu = "none" | "speed" | "quality" | "volume";
@@ -52,9 +60,9 @@ export function FeedTheater({
   const [duration, setDuration] = useState(0);
   const [continuous, setContinuous] = useState(true);
   const [chrome, setChrome] = useState(true);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(Boolean(video.likedByMe));
   const [saved, setSaved] = useState(false);
-  const [followed, setFollowed] = useState(false);
+  const [followed, setFollowed] = useState(Boolean(video.followedByMe));
   const [listening, setListening] = useState(false);
   const [panel, setPanel] = useState<Panel>("none");
   const [menu, setMenu] = useState<Menu>("none");
@@ -62,7 +70,9 @@ export function FeedTheater({
   const [likes, setLikes] = useState(video.likes);
   const [saves, setSaves] = useState(video.favorites);
   const [shares, setShares] = useState(video.shares);
-  const [localComments, setLocalComments] = useState<string[]>([]);
+  const [comments, setComments] = useState<PublicComment[]>([]);
+  const [commentCount, setCommentCount] = useState(video.comments);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [draft, setDraft] = useState("");
   const [shopOpen, setShopOpen] = useState(Boolean(buySlug));
 
@@ -104,9 +114,7 @@ export function FeedTheater({
       const clamped = Math.max(0, Math.min(videos.length - 1, next));
       if (clamped === index) return;
       setIndex(clamped);
-      setLiked(false);
       setSaved(false);
-      setLocalComments([]);
       setDraft("");
       setPanel("none");
       setMenu("none");
@@ -120,8 +128,27 @@ export function FeedTheater({
     setLikes(video.likes);
     setSaves(video.favorites);
     setShares(video.shares);
-    setFollowed(isFollowing(video.handle));
+    setLiked(Boolean(video.likedByMe));
+    setFollowed(Boolean(video.followedByMe));
+    setCommentCount(video.comments);
+    setComments([]);
+    setCommentsLoaded(false);
+    setDraft("");
   }, [video]);
+
+  useEffect(() => {
+    if (panel !== "comments" || commentsLoaded) return;
+    let cancelled = false;
+    void apiListComments(video.id).then(({ payload }) => {
+      if (cancelled) return;
+      setComments(commentsFromPayload(payload));
+      if (typeof payload.commentCount === "number") setCommentCount(payload.commentCount);
+      setCommentsLoaded(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [panel, video.id, commentsLoaded]);
 
   useEffect(() => {
     const node = media.current;
@@ -224,17 +251,69 @@ export function FeedTheater({
         showToast("Enlace copiado.");
       }
       setShares((value) => value + 1);
+      void apiRegisterShare(video.id).then(({ ok, payload }) => {
+        if (ok && typeof payload.shareCount === "number") setShares(payload.shareCount);
+      });
     } catch {
       await navigator.clipboard.writeText(url);
       showToast("Enlace copiado.");
+      setShares((value) => value + 1);
+      void apiRegisterShare(video.id).then(({ ok, payload }) => {
+        if (ok && typeof payload.shareCount === "number") setShares(payload.shareCount);
+      });
     }
   }
 
-  function toggleLike() {
-    setLiked((value) => {
-      setLikes((count) => count + (value ? -1 : 1));
-      return !value;
-    });
+  function loginForClip() {
+    router.push(`/login?callbackUrl=${encodeURIComponent(`/feed?v=${video.id}`)}`);
+  }
+
+  async function toggleLike() {
+    if (!signedIn) {
+      loginForClip();
+      return;
+    }
+    const nextLiked = !liked;
+    setLiked(nextLiked);
+    setLikes((count) => count + (nextLiked ? 1 : -1));
+    const { ok, status, payload } = await apiToggleLike(video.id);
+    if (status === 401) {
+      setLiked(!nextLiked);
+      setLikes((count) => count + (nextLiked ? -1 : 1));
+      loginForClip();
+      return;
+    }
+    if (!ok) {
+      setLiked(!nextLiked);
+      setLikes((count) => count + (nextLiked ? -1 : 1));
+      showToast(typeof payload.error === "string" ? payload.error : "No se pudo guardar el like.");
+      return;
+    }
+    if (typeof payload.likeCount === "number") setLikes(payload.likeCount);
+    if (typeof payload.liked === "boolean") setLiked(payload.liked);
+  }
+
+  async function onFollow() {
+    if (!signedIn) {
+      loginForClip();
+      return;
+    }
+    const next = !followed;
+    setFollowed(next);
+    const { ok, status, payload } = await apiToggleFollow(video.handle);
+    if (status === 401) {
+      setFollowed(!next);
+      loginForClip();
+      return;
+    }
+    if (!ok) {
+      setFollowed(!next);
+      showToast(typeof payload.error === "string" ? payload.error : "No se pudo actualizar el follow.");
+      return;
+    }
+    const following = payload.following === true;
+    setFollowed(following);
+    showToast(following ? `Sigues a @${video.handle}` : `Dejaste de seguir a @${video.handle}`);
   }
 
   function toggleSave() {
@@ -255,7 +334,7 @@ export function FeedTheater({
   }
 
   const hidden = !chrome;
-  const commentsTotal = video.comments + localComments.length;
+  const commentsTotal = commentCount;
 
   return (
     <div
@@ -339,11 +418,7 @@ export function FeedTheater({
             </NavArrow>
             <button
               type="button"
-              onClick={() => {
-                const next = toggleFollow(video.handle);
-                setFollowed(next);
-                showToast(next ? `Sigues a @${video.handle}` : `Dejaste de seguir a @${video.handle}`);
-              }}
+              onClick={() => void onFollow()}
               className="relative mt-2 mb-1 overflow-visible"
               aria-label={followed ? "Siguiendo" : "Seguir"}
             >
@@ -356,7 +431,7 @@ export function FeedTheater({
                 {followed ? "✓" : "+"}
               </span>
             </button>
-            <RailAction active={liked} label={formatCount(likes)} onClick={toggleLike}>
+            <RailAction active={liked} label={formatCount(likes)} onClick={() => void toggleLike()}>
               <HeartIcon filled={liked} />
             </RailAction>
             <RailAction label={formatCount(commentsTotal)} onClick={() => setPanel(panel === "comments" ? "none" : "comments")}>
@@ -551,13 +626,14 @@ export function FeedTheater({
 
       {panel === "comments" ? (
         <SidePanel title={`Comentarios · ${commentsTotal}`} onClose={() => setPanel("none")}>
-          {localComments.length === 0 ? (
+          {comments.length === 0 ? (
             <p className="text-sm text-white/50">Aún no hay comentarios. El primero abre la conversación.</p>
           ) : (
             <ul className="space-y-3">
-              {localComments.map((item, i) => (
-                <li key={`${item}-${i}`} className="rounded-xl bg-white/5 px-3 py-2 text-sm text-white/80">
-                  {item}
+              {comments.map((item) => (
+                <li key={item.id} className="rounded-xl bg-white/5 px-3 py-2 text-sm text-white/80">
+                  <p className="text-[11px] font-semibold text-white/45">@{item.handle}</p>
+                  <p className="mt-1">{item.body}</p>
                 </li>
               ))}
             </ul>
@@ -568,8 +644,25 @@ export function FeedTheater({
               event.preventDefault();
               const text = draft.trim();
               if (!text) return;
-              setLocalComments((list) => [...list, text]);
-              setDraft("");
+              if (!signedIn) {
+                loginForClip();
+                return;
+              }
+              void apiAddComment(video.id, text).then(({ ok, status, payload }) => {
+                if (status === 401) {
+                  loginForClip();
+                  return;
+                }
+                if (!ok) {
+                  showToast(typeof payload.error === "string" ? payload.error : "No se pudo comentar.");
+                  return;
+                }
+                const created = payload.comment as PublicComment | undefined;
+                if (created?.id) setComments((list) => [...list, created]);
+                if (typeof payload.commentCount === "number") setCommentCount(payload.commentCount);
+                else setCommentCount((value) => value + 1);
+                setDraft("");
+              });
             }}
           >
             <input

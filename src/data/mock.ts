@@ -11,6 +11,7 @@ export type MockProduct = {
 export const mockVideos: FeedVideo[] = [
   {
     id: "v1",
+    creatorId: "usr_maya",
     creatorName: "Maya Chen",
     handle: "mayaclose",
     caption: "Empaqué mi curso en 18 segundos. El botón vende. Yo cobro sin salir del feed.",
@@ -30,6 +31,7 @@ export const mockVideos: FeedVideo[] = [
   },
   {
     id: "v2",
+    creatorId: "usr_leo",
     creatorName: "Leo Vargas",
     handle: "leov",
     caption: "Mi comunidad no es un chat suelto. Quien compra, se queda. Así se siente tener audiencia propia.",
@@ -49,6 +51,7 @@ export const mockVideos: FeedVideo[] = [
   },
   {
     id: "v3",
+    creatorId: "usr_amina",
     creatorName: "Amina Rahim",
     handle: "amina",
     caption: "Dejé de pedir likes. Ahora pido un clic. El feed paga a quien crea.",
