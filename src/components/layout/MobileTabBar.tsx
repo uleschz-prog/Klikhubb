@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const tabs = [
-  { href: "/feed", label: "Feed" },
+  { href: "/play", label: "Play" },
+  { href: "/feed", label: "Tienda" },
   { href: "/marketplace", label: "Market" },
   { href: "/academy", label: "Academy" },
-  { href: "/community", label: "Comunidad" },
   { href: "/dashboard", label: "Hub" },
 ];
 

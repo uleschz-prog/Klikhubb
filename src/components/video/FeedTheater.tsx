@@ -34,6 +34,8 @@ export function FeedTheater({
   stripeEnabled = false,
   buySlug,
   canceled = false,
+  home = "shop",
+  feedTab = "foryou",
 }: {
   videos: FeedVideo[];
   initialId?: string;
@@ -41,12 +43,24 @@ export function FeedTheater({
   stripeEnabled?: boolean;
   buySlug?: string;
   canceled?: boolean;
+  home?: "play" | "shop";
+  feedTab?: "foryou" | "following";
 }) {
   const router = useRouter();
   const stage = useRef<HTMLDivElement>(null);
   const media = useRef<HTMLVideoElement>(null);
   const startY = useRef<number | null>(null);
   const wheelLock = useRef(false);
+  const basePath = home === "play" ? "/play" : "/feed";
+
+  const clipHref = useCallback(
+    (id: string, extra: Record<string, string> = {}) => {
+      const params = new URLSearchParams({ v: id, ...extra });
+      if (home === "play" && feedTab === "following") params.set("tab", "following");
+      return `${basePath}?${params.toString()}`;
+    },
+    [basePath, feedTab, home],
+  );
 
   const fromClip = initialId ? videos.findIndex((item) => item.id === initialId) : -1;
   const fromBuy = buySlug ? videos.findIndex((item) => item.product?.slug === buySlug) : -1;
@@ -102,14 +116,14 @@ export function FeedTheater({
 
   const closeShop = useCallback(() => {
     setShopOpen(false);
-    router.replace(`/feed?v=${video.id}`, { scroll: false });
-  }, [router, video.id]);
+    router.replace(clipHref(video.id), { scroll: false });
+  }, [clipHref, router, video.id]);
 
   function openShop() {
     if (!video.product) return;
     setPanel("none");
     setShopOpen(true);
-    router.replace(`/feed?v=${video.id}&buy=${video.product.slug}`, { scroll: false });
+    router.replace(clipHref(video.id, { buy: video.product.slug }), { scroll: false });
   }
 
   const go = useCallback(
@@ -122,9 +136,9 @@ export function FeedTheater({
       setPanel("none");
       setMenu("none");
       setShopOpen(false);
-      router.replace(`/feed?v=${videos[clamped].id}`, { scroll: false });
+      router.replace(clipHref(videos[clamped].id), { scroll: false });
     },
-    [index, router, videos],
+    [clipHref, index, router, videos],
   );
 
   useEffect(() => {
@@ -247,7 +261,7 @@ export function FeedTheater({
   }
 
   async function shareVideo() {
-    const url = `${window.location.origin}/feed?v=${video.id}`;
+    const url = `${window.location.origin}${clipHref(video.id)}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: video.title, text: video.caption, url });
@@ -270,7 +284,7 @@ export function FeedTheater({
   }
 
   function loginForClip() {
-    router.push(`/login?callbackUrl=${encodeURIComponent(`/feed?v=${video.id}`)}`);
+    router.push(`/login?callbackUrl=${encodeURIComponent(clipHref(video.id))}`);
   }
 
   async function toggleLike() {
@@ -414,23 +428,27 @@ export function FeedTheater({
         <>
           <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <div className="pointer-events-auto flex items-center gap-3">
-              <Link href="/feed" className="flex items-center gap-2" aria-label="Qlyk">
+              <Link href={basePath} className="flex items-center gap-2" aria-label="Qlyk">
                 <LogoMark className="h-8 w-8 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
               </Link>
-              <Link
-                href="/feed"
-                className="hidden items-center rounded-full bg-black/50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white ring-1 ring-white/15 backdrop-blur md:inline-flex"
-              >
-                Descubrir
-              </Link>
-              <div className="flex items-center gap-2">
-                <Avatar name={video.creatorName} />
-                <div>
-                  <p className="text-sm font-semibold leading-none">{video.creatorName}</p>
-                  <p className="mt-1 text-[11px] text-white/55">Qlyk</p>
-                </div>
-              </div>
             </div>
+            <nav className="pointer-events-auto absolute left-1/2 top-[max(0.85rem,env(safe-area-inset-top))] flex -translate-x-1/2 items-center gap-4 text-[13px] font-semibold">
+              <Link
+                href="/play"
+                className={home === "play" && feedTab !== "following" ? "text-white" : "text-white/50"}
+              >
+                Play
+              </Link>
+              <Link
+                href="/play?tab=following"
+                className={home === "play" && feedTab === "following" ? "text-white" : "text-white/50"}
+              >
+                Siguiendo
+              </Link>
+              <Link href="/feed" className={home === "shop" ? "text-white" : "text-white/50"}>
+                Tienda
+              </Link>
+            </nav>
             <div className="pointer-events-auto hidden md:block">
               <PlatformNav />
             </div>
@@ -759,8 +777,8 @@ export function FeedTheater({
         item={shopItem}
         signedIn={signedIn}
         stripeEnabled={stripeEnabled}
-        loginHref={`/login?callbackUrl=${encodeURIComponent(`/feed?v=${video.id}${video.product ? `&buy=${video.product.slug}` : ""}`)}`}
-        cancelPath={`/feed?v=${video.id}${video.product ? `&buy=${video.product.slug}` : ""}`}
+        loginHref={`/login?callbackUrl=${encodeURIComponent(clipHref(video.id, video.product ? { buy: video.product.slug } : {}))}`}
+        cancelPath={clipHref(video.id, video.product ? { buy: video.product.slug } : {})}
         canceled={canceled}
       />
 
@@ -770,6 +788,13 @@ export function FeedTheater({
         </p>
       ) : null}
 
+      <Link
+        href={home === "play" ? "/publish?lane=play" : "/publish"}
+        aria-label={home === "play" ? "Subir un clip" : "Publicar y vender"}
+        className="absolute bottom-[4.6rem] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-klik-green text-3xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-8 md:right-8"
+      >
+        +
+      </Link>
       {!hidden ? <MobileTabBar /> : null}
     </div>
   );

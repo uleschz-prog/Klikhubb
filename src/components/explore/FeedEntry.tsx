@@ -45,6 +45,7 @@ export function FeedEntry({
     }
     return (
       <FeedTheater
+        home="shop"
         videos={theaterVideos}
         initialId={clipId}
         signedIn={signedIn}

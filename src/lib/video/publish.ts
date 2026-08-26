@@ -28,10 +28,12 @@ export async function publishClip(input: {
     type: ProductType;
     description?: string;
   };
+  lane?: "PLAY" | "SHOP";
 }) {
   await ensureCreatorAccount(input.creatorId);
   const title = (input.title?.trim() || input.caption).slice(0, 120);
   const tags = hashtagsFromCaption(input.caption);
+  const lane = input.lane ?? (input.offer || input.productSlug ? "SHOP" : "PLAY");
 
   return prisma.$transaction(async (tx) => {
     let productId: string | null = null;
@@ -73,6 +75,7 @@ export async function publishClip(input: {
         videoUrl: input.videoUrl,
         thumbnailUrl: posterFromVideoUrl(input.videoUrl),
         status: "PUBLISHED",
+        lane,
         publishedAt: new Date(),
         ...(productId
           ? {
@@ -82,7 +85,7 @@ export async function publishClip(input: {
             }
           : {}),
       },
-      select: { id: true },
+      select: { id: true, lane: true },
     });
 
     for (const slug of tags) {

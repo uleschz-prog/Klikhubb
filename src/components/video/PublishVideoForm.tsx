@@ -10,13 +10,16 @@ type OfferType = "COURSE" | "MEMBERSHIP" | "DIGITAL";
 export function PublishVideoForm({
   blobEnabled,
   products,
+  lane = "SHOP",
 }: {
   blobEnabled: boolean;
   products: ProductOption[];
+  lane?: "PLAY" | "SHOP";
 }) {
   const router = useRouter();
+  const play = lane === "PLAY";
   const [caption, setCaption] = useState("");
-  const [sell, setSell] = useState(true);
+  const [sell, setSell] = useState(!play);
   const [productSlug, setProductSlug] = useState("");
   const [offerTitle, setOfferTitle] = useState("");
   const [offerPrice, setOfferPrice] = useState("49");
@@ -69,6 +72,7 @@ export function PublishVideoForm({
       const body: Record<string, unknown> = {
         caption,
         videoUrl: url,
+        lane: sell ? "SHOP" : "PLAY",
       };
       if (sell && usingExisting) {
         body.productSlug = productSlug;
@@ -92,7 +96,7 @@ export function PublishVideoForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const payload = (await response.json()) as { error?: string; id?: string };
+      const payload = (await response.json()) as { error?: string; id?: string; lane?: string };
       if (!response.ok) {
         setStatus("error");
         setMessage(payload.error ?? "No se pudo publicar.");
@@ -100,7 +104,8 @@ export function PublishVideoForm({
       }
       setStatus("ok");
       setMessage("Ya está en el feed.");
-      router.push(payload.id ? `/feed?v=${payload.id}` : "/feed");
+      const dest = payload.lane === "PLAY" || (play && !sell) ? "/play" : "/feed";
+      router.push(payload.id ? `${dest}?v=${payload.id}` : dest);
       router.refresh();
     } catch {
       setStatus("error");

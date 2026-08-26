@@ -28,6 +28,7 @@ export const mockVideos: FeedVideo[] = [
     publishedAt: "2026-08-08T12:00:00.000Z",
     tags: ["cierre", "feed", "qlyk"],
     gradient: "from-emerald-950 via-neutral-950 to-cyan-950",
+    lane: "SHOP",
   },
   {
     id: "v2",
@@ -48,6 +49,7 @@ export const mockVideos: FeedVideo[] = [
     publishedAt: "2026-08-12T12:00:00.000Z",
     tags: ["comunidad", "innercircle", "qlyk"],
     gradient: "from-cyan-950 via-neutral-950 to-neutral-900",
+    lane: "SHOP",
   },
   {
     id: "v3",
@@ -68,6 +70,7 @@ export const mockVideos: FeedVideo[] = [
     publishedAt: "2026-08-18T12:00:00.000Z",
     tags: ["unclic", "crear", "qlyk"],
     gradient: "from-neutral-900 via-emerald-950 to-black",
+    lane: "PLAY",
   },
 ];
 

@@ -9,6 +9,7 @@ import { Logo } from "@/components/brand/Logo";
 import { VideoCard } from "@/components/explore/VideoCard";
 
 const NAV = [
+  { href: "/play", label: "Play", icon: "play" },
   { href: "/feed", tab: "foryou" as const, label: "Para ti", icon: "spark" },
   { href: "/feed?tab=following", tab: "following" as const, label: "Siguiendo", icon: "follow" },
   { href: "/marketplace", label: "Marketplace", icon: "bag" },
@@ -78,7 +79,10 @@ export function ExploreHome({
         </Link>
         <nav className="mt-6 space-y-1">
           {NAV.map((item) => {
-            const isCurrent = item.tab != null && item.tab === tab;
+            const isCurrent =
+              item.href === "/play"
+                ? false
+                : item.tab != null && item.tab === tab;
             return (
               <Link
                 key={item.label}
@@ -194,6 +198,14 @@ export function ExploreHome({
 
 function NavIcon({ name, active }: { name: string; active: boolean }) {
   const stroke = active ? "#00F0FF" : "currentColor";
+  if (name === "play") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill={active ? "#00F0FF" : "none"} stroke={stroke} strokeWidth="1.8">
+        <rect x="7" y="3" width="10" height="18" rx="3" />
+        <path d="M10.5 10.5l4 2.5-4 2.5z" fill={active ? "#050505" : "currentColor"} stroke="none" />
+      </svg>
+    );
+  }
   if (name === "spark") {
     return (
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill={active ? "#00F0FF" : "none"} stroke={stroke} strokeWidth="1.8">

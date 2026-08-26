@@ -2,10 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { isConnectionError } from "@/lib/demo/store";
 import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
 
-export async function listPublishedVideos(limit = 40, viewerId?: string): Promise<FeedVideo[]> {
+export async function listPublishedVideos(
+  limit = 40,
+  viewerId?: string,
+  lane?: "PLAY" | "SHOP",
+): Promise<FeedVideo[]> {
   try {
     const rows = await prisma.video.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", ...(lane ? { lane } : {}) },
       orderBy: { publishedAt: "desc" },
       take: limit,
       include: {
@@ -69,6 +73,7 @@ export async function listPublishedVideos(limit = 40, viewerId?: string): Promis
           return fallback;
         })(),
         gradient: videoGradient(row.id),
+        lane: row.lane,
         product:
           productRow && productRow.status === "ACTIVE"
             ? {

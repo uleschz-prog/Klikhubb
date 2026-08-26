@@ -14,6 +14,7 @@ export const publishVideoSchema = z
     videoUrl: z.string().trim().min(8).max(2000).optional(),
     productSlug: z.string().trim().max(80).optional(),
     offer: publishOfferSchema.optional(),
+    lane: z.enum(["PLAY", "SHOP"]).optional(),
   })
   .refine((value) => Boolean(value.videoUrl), { message: "Falta el video.", path: ["videoUrl"] })
   .refine((value) => !(value.offer && value.productSlug), {

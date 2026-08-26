@@ -57,6 +57,11 @@ enum VideoStatus {
   ARCHIVED
 }
 
+enum VideoLane {
+  PLAY
+  SHOP
+}
+
 enum ProductType {
   DIGITAL
   PHYSICAL
@@ -324,6 +329,7 @@ model Video {
   likeCount    Int         @default(0)
   commentCount Int         @default(0)
   shareCount   Int         @default(0)
+  lane         VideoLane   @default(SHOP)
   publishedAt  DateTime?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -337,6 +343,7 @@ model Video {
   lessons  Lesson[]
 
   @@index([status, publishedAt(sort: Desc)], map: "videos_feed_idx")
+  @@index([status, lane, publishedAt(sort: Desc)], map: "videos_lane_feed_idx")
   @@index([creatorId, publishedAt(sort: Desc)])
   @@map("videos")
 }

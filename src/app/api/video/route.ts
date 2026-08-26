@@ -32,8 +32,9 @@ export async function POST(request: Request) {
       title: parsed.data.title,
       productSlug: parsed.data.productSlug,
       offer: parsed.data.offer,
+      lane: parsed.data.lane,
     });
-    return NextResponse.json({ ok: true, id: video.id });
+    return NextResponse.json({ ok: true, id: video.id, lane: video.lane });
   } catch (error) {
     if (error instanceof Error && error.message === "PRODUCT_NOT_YOURS") {
       return NextResponse.json({ error: "Ese producto no es tuyo o no está activo." }, { status: 400 });

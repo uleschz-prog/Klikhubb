@@ -8,6 +8,7 @@ import { Logo } from "@/components/brand/Logo";
 const nav = [
   { href: "#porque", label: "Por qué" },
   { href: "#como-funciona", label: "Cómo se siente" },
+  { href: "/play", label: "Play" },
   { href: "/feed", label: "Ver el feed" },
 ];
 

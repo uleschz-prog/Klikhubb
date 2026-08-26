@@ -29,6 +29,7 @@ export type FeedVideo = {
   publishedAt: string | null;
   tags: string[];
   gradient: string;
+  lane: "PLAY" | "SHOP";
   product: FeedProduct | null;
 };
 
