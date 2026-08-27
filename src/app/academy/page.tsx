@@ -21,7 +21,8 @@ export default async function AcademyPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Educación</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Academy</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        El video te descubre. La academia te queda. Aquí está solo lo que ya pagaste.
+        El video te descubre. La academia te queda. Entra y ves las lecciones de lo que ya pagaste o de lo
+        que tú publicaste.
       </p>
 
       {!userId ? (
@@ -53,19 +54,29 @@ export default async function AcademyPage() {
       ) : (
         <div className="mt-8 space-y-3">
           {enrollments.map((course) => (
-            <article
+            <Link
               key={course.slug}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4"
+              href={`/academy/${course.slug}`}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4 transition hover:border-klik-cyan/40"
             >
               <div>
                 <p className="font-display text-xs text-klik-green">
-                  {TYPE_LABEL[course.type] ?? course.type} · Acceso activo
+                  {TYPE_LABEL[course.type] ?? course.type}
+                  {course.role === "creator" ? " · Tu curso" : " · Acceso activo"}
                 </p>
                 <h2 className="mt-1 font-display text-lg font-bold">{course.title}</h2>
                 {course.description ? <p className="mt-1 text-sm text-white/50">{course.description}</p> : null}
+                <p className="mt-2 text-xs text-white/40">
+                  {course.lessonCount === 0
+                    ? "Sin lecciones todavía"
+                    : `${course.lessonCount} ${course.lessonCount === 1 ? "lección" : "lecciones"}`}
+                  {course.role === "student" && course.progressPct > 0
+                    ? ` · ${Math.round(course.progressPct)}% visto`
+                    : ""}
+                </p>
               </div>
-              <span className="shrink-0 text-sm text-white/45">Tuyo</span>
-            </article>
+              <span className="shrink-0 text-sm font-semibold text-klik-cyan">Ver</span>
+            </Link>
           ))}
         </div>
       )}

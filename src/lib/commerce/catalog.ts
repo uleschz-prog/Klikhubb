@@ -128,24 +128,68 @@ export type AcademyEnrollment = {
   description: string | null;
   type: string;
   enrolledAt: string;
+  role: "student" | "creator";
+  lessonCount: number;
+  progressPct: number;
 };
 
 export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]> {
   try {
-    const rows = await prisma.enrollment.findMany({
-      where: { userId, status: "ACTIVE" },
-      orderBy: { createdAt: "desc" },
-      include: {
-        product: { select: { slug: true, title: true, description: true, type: true } },
-      },
-    });
-    return rows.map((row) => ({
+    const [rows, owned] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { userId, status: "ACTIVE" },
+        orderBy: { createdAt: "desc" },
+        include: {
+          product: {
+            select: {
+              slug: true,
+              title: true,
+              description: true,
+              type: true,
+              course: { select: { lessonCount: true } },
+              _count: { select: { videos: true } },
+            },
+          },
+        },
+      }),
+      prisma.product.findMany({
+        where: {
+          creatorId: userId,
+          status: "ACTIVE",
+          type: { in: ["COURSE", "MEMBERSHIP", "DIGITAL"] },
+        },
+        orderBy: { createdAt: "desc" },
+        include: { course: { select: { lessonCount: true } }, _count: { select: { videos: true } } },
+      }),
+    ]);
+
+    const enrolled: AcademyEnrollment[] = rows.map((row) => ({
       slug: row.product.slug,
       title: row.product.title,
       description: row.product.description,
       type: row.product.type,
       enrolledAt: row.createdAt.toISOString(),
+      role: "student" as const,
+      lessonCount: row.product.course?.lessonCount || row.product._count.videos,
+      progressPct: Number(row.progressPct),
     }));
+
+    const enrolledSlugs = new Set(enrolled.map((row) => row.slug));
+    for (const product of owned) {
+      if (enrolledSlugs.has(product.slug)) continue;
+      enrolled.push({
+        slug: product.slug,
+        title: product.title,
+        description: product.description,
+        type: product.type,
+        enrolledAt: product.createdAt.toISOString(),
+        role: "creator",
+        lessonCount: product.course?.lessonCount || product._count.videos,
+        progressPct: 0,
+      });
+    }
+
+    return enrolled;
   } catch (error) {
     if (!isConnectionError(error)) throw error;
     return demoListEnrollments(userId);

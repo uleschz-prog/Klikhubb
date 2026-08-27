@@ -97,7 +97,7 @@ export async function publishClip(input: {
       await tx.videoTag.create({ data: { videoId: video.id, tagId: tag.id } });
     }
 
-    if (productId && productType === "COURSE") {
+    if (productId && (productType === "COURSE" || productType === "MEMBERSHIP" || productType === "DIGITAL")) {
       const existingCourse = await tx.course.findUnique({
         where: { productId },
         include: { modules: { orderBy: { sortOrder: "asc" }, take: 1 } },
@@ -123,21 +123,25 @@ export async function publishClip(input: {
           },
         });
       } else {
-        const moduleId = existingCourse.modules[0]?.id;
-        if (moduleId) {
-          await tx.lesson.create({
-            data: {
-              moduleId,
-              title,
-              videoId: video.id,
-              sortOrder: existingCourse.lessonCount,
-            },
+        let moduleId = existingCourse.modules[0]?.id;
+        if (!moduleId) {
+          const created = await tx.courseModule.create({
+            data: { courseId: existingCourse.id, title: "Empieza aquí", sortOrder: 0 },
           });
-          await tx.course.update({
-            where: { id: existingCourse.id },
-            data: { lessonCount: { increment: 1 } },
-          });
+          moduleId = created.id;
         }
+        await tx.lesson.create({
+          data: {
+            moduleId,
+            title,
+            videoId: video.id,
+            sortOrder: existingCourse.lessonCount,
+          },
+        });
+        await tx.course.update({
+          where: { id: existingCourse.id },
+          data: { lessonCount: { increment: 1 } },
+        });
       }
     }
 

@@ -98,6 +98,21 @@ export function youtubeEmbedSrc(
   return `https://www.youtube.com/embed/${id}?${params.toString()}`;
 }
 
+/** Embed with controls for Academy — not the muted loop used in the feed. */
+export function youtubeLessonEmbedSrc(raw: string) {
+  const id = youtubeVideoId(raw);
+  if (!id) return null;
+  const params = new URLSearchParams({
+    rel: "0",
+    modestbranding: "1",
+    playsinline: "1",
+    controls: "1",
+  });
+  const start = youtubeStartSeconds(raw);
+  if (start) params.set("start", String(start));
+  return `https://www.youtube.com/embed/${id}?${params.toString()}`;
+}
+
 export function isAllowedVideoUrl(url: string) {
   const value = normalizeVideoUrl(url);
   if (youtubeVideoId(value)) return true;

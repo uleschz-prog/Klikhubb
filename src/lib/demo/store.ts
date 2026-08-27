@@ -332,6 +332,9 @@ export async function demoListEnrollments(userId: string) {
         description: null,
         type: product?.type ?? "COURSE",
         enrolledAt: db.orders.find((order) => order.id === row.orderId)?.createdAt ?? new Date().toISOString(),
+        role: "student" as const,
+        lessonCount: 0,
+        progressPct: 0,
       };
     });
 }
