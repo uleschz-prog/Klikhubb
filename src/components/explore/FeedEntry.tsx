@@ -16,7 +16,7 @@ export function FeedEntry({
 }: {
   videos: FeedVideo[];
   clipId?: string;
-  tab: "foryou" | "following";
+  tab: "foryou" | "following" | "saved";
   signedIn: boolean;
   stripeEnabled: boolean;
   buySlug?: string;
@@ -37,15 +37,20 @@ export function FeedEntry({
   }
 
   const theaterVideos =
-    tab === "following" && !clipId ? videos.filter((video) => video.followedByMe) : videos;
+    tab === "following" && !clipId
+      ? videos.filter((video) => video.followedByMe)
+      : tab === "saved" && !clipId
+        ? videos.filter((video) => video.savedByMe)
+        : videos;
 
   if (clipId || buySlug || !desktop) {
-    if (!clipId && !buySlug && tab === "following" && theaterVideos.length === 0) {
+    if (!clipId && !buySlug && theaterVideos.length === 0) {
       return <ExploreHome videos={videos} tab={tab} signedIn={signedIn} />;
     }
     return (
       <FeedTheater
         home="shop"
+        feedTab={tab}
         videos={theaterVideos}
         initialId={clipId}
         signedIn={signedIn}

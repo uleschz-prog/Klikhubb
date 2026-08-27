@@ -16,6 +16,7 @@ import {
   apiRegisterShare,
   apiToggleFollow,
   apiToggleLike,
+  apiToggleSave,
   commentsFromPayload,
 } from "@/lib/video/social-api";
 import type { PublicComment } from "@/lib/video/social";
@@ -44,7 +45,7 @@ export function FeedTheater({
   buySlug?: string;
   canceled?: boolean;
   home?: "play" | "shop";
-  feedTab?: "foryou" | "following";
+  feedTab?: "foryou" | "following" | "saved";
 }) {
   const router = useRouter();
   const stage = useRef<HTMLDivElement>(null);
@@ -56,7 +57,8 @@ export function FeedTheater({
   const clipHref = useCallback(
     (id: string, extra: Record<string, string> = {}) => {
       const params = new URLSearchParams({ v: id, ...extra });
-      if (home === "play" && feedTab === "following") params.set("tab", "following");
+      if (feedTab === "following") params.set("tab", "following");
+      if (feedTab === "saved") params.set("tab", "saved");
       return `${basePath}?${params.toString()}`;
     },
     [basePath, feedTab, home],
@@ -78,7 +80,7 @@ export function FeedTheater({
   const [continuous, setContinuous] = useState(true);
   const [chrome, setChrome] = useState(true);
   const [liked, setLiked] = useState(Boolean(video.likedByMe));
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(Boolean(video.savedByMe));
   const [followed, setFollowed] = useState(Boolean(video.followedByMe));
   const [listening, setListening] = useState(false);
   const [panel, setPanel] = useState<Panel>("none");
@@ -131,7 +133,6 @@ export function FeedTheater({
       const clamped = Math.max(0, Math.min(videos.length - 1, next));
       if (clamped === index) return;
       setIndex(clamped);
-      setSaved(false);
       setDraft("");
       setPanel("none");
       setMenu("none");
@@ -146,6 +147,7 @@ export function FeedTheater({
     setSaves(video.favorites);
     setShares(video.shares);
     setLiked(Boolean(video.likedByMe));
+    setSaved(Boolean(video.savedByMe));
     setFollowed(Boolean(video.followedByMe));
     setCommentCount(video.comments);
     setComments([]);
@@ -335,11 +337,30 @@ export function FeedTheater({
     showToast(following ? `Sigues a @${video.handle}` : `Dejaste de seguir a @${video.handle}`);
   }
 
-  function toggleSave() {
-    setSaved((value) => {
-      setSaves((count) => count + (value ? -1 : 1));
-      return !value;
-    });
+  async function toggleSave() {
+    if (!signedIn) {
+      loginForClip();
+      return;
+    }
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+    setSaves((count) => count + (nextSaved ? 1 : -1));
+    const { ok, status, payload } = await apiToggleSave(video.id);
+    if (status === 401) {
+      setSaved(!nextSaved);
+      setSaves((count) => count + (nextSaved ? -1 : 1));
+      loginForClip();
+      return;
+    }
+    if (!ok) {
+      setSaved(!nextSaved);
+      setSaves((count) => count + (nextSaved ? -1 : 1));
+      showToast(typeof payload.error === "string" ? payload.error : "No se pudo guardar el clip.");
+      return;
+    }
+    if (typeof payload.saveCount === "number") setSaves(payload.saveCount);
+    if (typeof payload.saved === "boolean") setSaved(payload.saved);
+    showToast(payload.saved === true ? "Guardado." : "Quitado de guardados.");
   }
 
   function onWheel(event: React.WheelEvent) {
@@ -432,10 +453,10 @@ export function FeedTheater({
                 <LogoMark className="h-8 w-8 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
               </Link>
             </div>
-            <nav className="pointer-events-auto absolute left-1/2 top-[max(0.85rem,env(safe-area-inset-top))] flex -translate-x-1/2 items-center gap-4 text-[13px] font-semibold">
+            <nav className="pointer-events-auto absolute left-1/2 top-[max(0.85rem,env(safe-area-inset-top))] flex -translate-x-1/2 items-center gap-3 text-[12px] font-semibold sm:gap-4 sm:text-[13px]">
               <Link
                 href="/play"
-                className={home === "play" && feedTab !== "following" ? "text-white" : "text-white/50"}
+                className={home === "play" && feedTab === "foryou" ? "text-white" : "text-white/50"}
               >
                 Play
               </Link>
@@ -444,6 +465,12 @@ export function FeedTheater({
                 className={home === "play" && feedTab === "following" ? "text-white" : "text-white/50"}
               >
                 Siguiendo
+              </Link>
+              <Link
+                href="/play?tab=saved"
+                className={home === "play" && feedTab === "saved" ? "text-white" : "text-white/50"}
+              >
+                Guardados
               </Link>
               <Link href="/feed" className={home === "shop" ? "text-white" : "text-white/50"}>
                 Tienda
@@ -476,13 +503,23 @@ export function FeedTheater({
                 {followed ? "✓" : "+"}
               </span>
             </button>
-            <RailAction active={liked} label={formatCount(likes)} onClick={() => void toggleLike()}>
+            <RailAction
+              active={liked}
+              label={formatCount(likes)}
+              ariaLabel={liked ? "Quitar like" : "Like"}
+              onClick={() => void toggleLike()}
+            >
               <HeartIcon filled={liked} />
             </RailAction>
             <RailAction label={formatCount(commentsTotal)} onClick={() => setPanel(panel === "comments" ? "none" : "comments")}>
               <CommentIcon />
             </RailAction>
-            <RailAction active={saved} label={formatCount(saves)} onClick={toggleSave}>
+            <RailAction
+              active={saved}
+              label={formatCount(saves)}
+              ariaLabel={saved ? "Quitar de guardados" : "Guardar"}
+              onClick={() => void toggleSave()}
+            >
               <StarIcon filled={saved} />
             </RailAction>
             <RailAction label={formatCount(shares)} onClick={() => void shareVideo()}>
@@ -814,14 +851,21 @@ function RailAction({
   children,
   onClick,
   active,
+  ariaLabel,
 }: {
   label: string;
   children: React.ReactNode;
   onClick: () => void;
   active?: boolean;
+  ariaLabel?: string;
 }) {
   return (
-    <button type="button" onClick={onClick} className="flex w-12 flex-col items-center gap-1 overflow-visible">
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={onClick}
+      className="flex w-12 flex-col items-center gap-1 overflow-visible"
+    >
       <span
         className={`flex h-12 w-12 items-center justify-center overflow-visible ${
           active ? "text-[#FE2C55]" : "text-white"

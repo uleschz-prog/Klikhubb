@@ -228,6 +228,7 @@ model User {
 
   enrollments   Enrollment[]
   videoLikes    VideoLike[]
+  videoSaves    VideoSave[]
   videoComments VideoComment[]
   videoViews    VideoViewEvent[]
 
@@ -329,6 +330,7 @@ model Video {
   likeCount    Int         @default(0)
   commentCount Int         @default(0)
   shareCount   Int         @default(0)
+  saveCount    Int         @default(0)
   lane         VideoLane   @default(SHOP)
   publishedAt  DateTime?
   createdAt    DateTime    @default(now())
@@ -337,6 +339,7 @@ model Video {
   creator  User           @relation(fields: [creatorId], references: [id], onDelete: Restrict)
   products VideoProduct[]
   likes    VideoLike[]
+  saves    VideoSave[]
   comments VideoComment[]
   views    VideoViewEvent[]
   tags     VideoTag[]
@@ -374,6 +377,19 @@ model VideoLike {
   @@id([videoId, userId])
   @@index([userId])
   @@map("video_likes")
+}
+
+model VideoSave {
+  videoId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, userId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("video_saves")
 }
 
 model VideoComment {

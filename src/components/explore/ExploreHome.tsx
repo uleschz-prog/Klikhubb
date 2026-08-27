@@ -12,6 +12,7 @@ const NAV = [
   { href: "/play", label: "Play", icon: "play" },
   { href: "/feed", tab: "foryou" as const, label: "Para ti", icon: "spark" },
   { href: "/feed?tab=following", tab: "following" as const, label: "Siguiendo", icon: "follow" },
+  { href: "/feed?tab=saved", tab: "saved" as const, label: "Guardados", icon: "star" },
   { href: "/marketplace", label: "Marketplace", icon: "bag" },
   { href: "/academy", label: "Academy", icon: "book" },
   { href: "/community", label: "Comunidad", icon: "people" },
@@ -24,7 +25,7 @@ export function ExploreHome({
   signedIn,
 }: {
   videos: FeedVideo[];
-  tab?: "foryou" | "following";
+  tab?: "foryou" | "following" | "saved";
   signedIn: boolean;
 }) {
   const router = useRouter();
@@ -55,6 +56,7 @@ export function ExploreHome({
     const needle = query.trim().toLowerCase();
     return videos.filter((video) => {
       if (tab === "following" && !following.includes(video.handle)) return false;
+      if (tab === "saved" && !video.savedByMe) return false;
       if (tag !== "todo" && !video.tags.includes(tag)) return false;
       if (!needle) return true;
       return (
@@ -175,7 +177,31 @@ export function ExploreHome({
               </p>
               <button
                 type="button"
-                onClick={() => router.push(signedIn ? "/feed" : "/login?callbackUrl=/feed?tab=following")}
+                onClick={() =>
+                  router.push(
+                    signedIn ? "/feed" : `/login?callbackUrl=${encodeURIComponent("/feed?tab=following")}`,
+                  )
+                }
+                className="mt-6 rounded-full bg-klik-green px-5 py-2.5 text-sm font-bold text-klik-black"
+              >
+                {signedIn ? "Ir a Para ti" : "Entrar"}
+              </button>
+            </div>
+          ) : tab === "saved" && visible.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 px-6 py-16 text-center">
+              <h1 className="font-display text-2xl font-extrabold">
+                {signedIn ? "Todavía no guardas nada" : "Entra para ver tus guardados"}
+              </h1>
+              <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
+                {signedIn
+                  ? "En un clip, toca la estrella. Aquí se queda aunque recargues."
+                  : "La estrella se guarda en tu cuenta. Entra y toca la estrella en un clip."}
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(signedIn ? "/feed" : `/login?callbackUrl=${encodeURIComponent("/feed?tab=saved")}`)
+                }
                 className="mt-6 rounded-full bg-klik-green px-5 py-2.5 text-sm font-bold text-klik-black"
               >
                 {signedIn ? "Ir a Para ti" : "Entrar"}
@@ -218,6 +244,13 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke={stroke} strokeWidth="1.8">
         <circle cx="12" cy="8" r="3.2" />
         <path d="M5.5 19c.8-3.2 3-5 6.5-5s5.7 1.8 6.5 5" />
+      </svg>
+    );
+  }
+  if (name === "star") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill={active ? "#00F0FF" : "none"} stroke={stroke} strokeWidth="1.8">
+        <path d="M12 3.6l2.3 4.8 5.3.7-3.8 3.7.9 5.3L12 15.8 7.3 18.1l.9-5.3-3.8-3.7 5.3-.7z" />
       </svg>
     );
   }

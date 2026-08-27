@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listPublishedVideos } from "@/lib/video/feed";
+import { listPublishedVideos, listSavedVideos } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { isStripeEnabled } from "@/lib/commerce/stripe";
 import { FeedEntry } from "@/components/explore/FeedEntry";
@@ -14,9 +14,14 @@ export default async function FeedPage({
 }) {
   const session = await getSession();
   const viewerId = await getDbUserId();
-  const videos = await listPublishedVideos(40, viewerId ?? undefined);
+  const tab =
+    searchParams.tab === "following" ? "following" : searchParams.tab === "saved" ? "saved" : "foryou";
+  const videos =
+    tab === "saved" && viewerId
+      ? await listSavedVideos(40, viewerId)
+      : await listPublishedVideos(40, viewerId ?? undefined);
 
-  if (videos.length === 0) {
+  if (tab === "foryou" && videos.length === 0) {
     return (
       <PlatformShell title="Feed" flush>
         <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
@@ -38,7 +43,7 @@ export default async function FeedPage({
     <FeedEntry
       videos={videos}
       clipId={searchParams.v}
-      tab={searchParams.tab === "following" ? "following" : "foryou"}
+      tab={tab}
       signedIn={Boolean(session?.user)}
       stripeEnabled={isStripeEnabled()}
       buySlug={searchParams.buy}

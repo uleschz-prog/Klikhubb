@@ -15,6 +15,7 @@ export type FeedVideo = {
   creatorName: string;
   handle: string;
   likedByMe?: boolean;
+  savedByMe?: boolean;
   followedByMe?: boolean;
   caption: string;
   title: string;

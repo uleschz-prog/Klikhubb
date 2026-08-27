@@ -9,6 +9,10 @@ export async function apiToggleLike(videoId: string) {
   return readJson(await fetch(`/api/video/${videoId}/like`, { method: "POST" }));
 }
 
+export async function apiToggleSave(videoId: string) {
+  return readJson(await fetch(`/api/video/${videoId}/save`, { method: "POST" }));
+}
+
 export async function apiToggleFollow(handle: string) {
   return readJson(
     await fetch("/api/follow", {

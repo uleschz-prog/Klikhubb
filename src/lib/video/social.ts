@@ -56,6 +56,45 @@ export async function toggleVideoLike(videoId: string, userId: string) {
   return { liked: !existing, likeCount: next?.likeCount ?? video.likeCount };
 }
 
+export async function toggleVideoSave(videoId: string, userId: string) {
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { id: true, saveCount: true },
+  });
+  if (!video) throw new SocialError("Video no encontrado.", "NOT_FOUND");
+
+  const actor = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!actor) throw new SocialError("Vuelve a entrar para guardar el clip.", "UNAUTHORIZED");
+
+  const existing = await prisma.videoSave.findUnique({
+    where: { videoId_userId: { videoId, userId } },
+  });
+
+  if (existing) {
+    await prisma.$transaction([
+      prisma.videoSave.delete({ where: { videoId_userId: { videoId, userId } } }),
+      prisma.video.updateMany({
+        where: { id: videoId, saveCount: { gt: 0 } },
+        data: { saveCount: { decrement: 1 } },
+      }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.videoSave.create({ data: { videoId, userId } }),
+      prisma.video.update({
+        where: { id: videoId },
+        data: { saveCount: { increment: 1 } },
+      }),
+    ]);
+  }
+
+  const next = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { saveCount: true },
+  });
+  return { saved: !existing, saveCount: next?.saveCount ?? video.saveCount };
+}
+
 export async function toggleFollowByHandle(followerId: string, handle: string) {
   const actor = await prisma.user.findUnique({ where: { id: followerId }, select: { id: true } });
   if (!actor) throw new SocialError("Vuelve a entrar para seguir.", "UNAUTHORIZED");
