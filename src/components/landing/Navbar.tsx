@@ -7,16 +7,19 @@ import { Logo } from "@/components/brand/Logo";
 
 const nav = [
   { href: "#porque", label: "Por qué" },
-  { href: "#como-funciona", label: "Cómo se siente" },
-  { href: "/play", label: "Play" },
-  { href: "/feed", label: "Ver el feed" },
+  { href: "#como-funciona", label: "Cómo" },
+  { href: "/feed", label: "Feed" },
 ];
 
-export function Navbar() {
+export function Navbar({ transparent = false }: { transparent?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-klik-black/80 backdrop-blur-md">
+    <header
+      className={`sticky top-0 z-50 border-b backdrop-blur-md ${
+        transparent ? "border-white/5 bg-klik-black/35" : "border-white/5 bg-klik-black/80"
+      }`}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Logo />
         <nav className="hidden items-center gap-8 md:flex">
@@ -30,10 +33,10 @@ export function Navbar() {
             </Link>
           ))}
           <Link
-            href="#lista-espera"
+            href="#registro"
             className="rounded-full bg-klik-green px-4 py-2 text-xs font-bold uppercase tracking-wider text-klik-black"
           >
-            Quiero mi lugar
+            Crear cuenta
           </Link>
         </nav>
         <button
@@ -70,11 +73,11 @@ export function Navbar() {
                 </Link>
               ))}
               <Link
-                href="#lista-espera"
+                href="#registro"
                 onClick={() => setOpen(false)}
                 className="rounded-full bg-klik-green px-4 py-3 text-center text-sm font-bold text-klik-black"
               >
-                Quiero mi lugar
+                Crear cuenta
               </Link>
             </div>
           </motion.div>
