@@ -167,12 +167,6 @@ enum RewardType {
   PHYSICAL
 }
 
-enum WaitlistIntent {
-  CREATOR
-  ENTREPRENEUR
-  BOTH
-}
-
 // ---------------------------------------------------------------------------
 // Auth (NextAuth Prisma Adapter) + Users
 // ---------------------------------------------------------------------------
@@ -953,22 +947,4 @@ model UserStats {
   @@index([points(sort: Desc)], map: "user_stats_leaderboard_idx")
   @@index([rankId])
   @@map("user_stats")
-}
-
-// ---------------------------------------------------------------------------
-// Growth — lista de espera del lanzamiento
-// ---------------------------------------------------------------------------
-
-model WaitlistEntry {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  intent       WaitlistIntent @default(BOTH)
-  source       String         @default("landing")
-  referralCode String?
-  locale       String         @default("es")
-  createdAt    DateTime       @default(now())
-
-  @@index([createdAt])
-  @@index([intent])
-  @@map("waitlist_entries")
 }

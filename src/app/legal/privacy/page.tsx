@@ -6,7 +6,7 @@ export default function PrivacyPage() {
       <Logo />
       <h1 className="mt-8 font-display text-3xl font-extrabold text-white">Privacidad</h1>
       <p className="mt-4 text-sm leading-7">
-        Recogemos email de lista de espera, datos de cuenta y eventos de producto necesarios para operar
+        Recogemos email, nombre, usuario, idioma, zona horaria y eventos de producto necesarios para operar
         el feed, las compras y la comunidad. No vendemos tu lista. La política completa se publica antes
         del launch público.
       </p>

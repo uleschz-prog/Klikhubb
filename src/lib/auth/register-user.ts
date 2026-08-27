@@ -14,12 +14,15 @@ export async function registerUser(input: {
   email: string;
   username: string;
   password: string;
-  displayName?: string;
+  displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   referralCode?: string;
+  locale?: string;
+  timezone?: string;
 }) {
   const email = input.email.toLowerCase();
   const username = input.username.toLowerCase();
+  const displayName = input.displayName.trim();
 
   const existingEmail = await prisma.user.findUnique({ where: { email } });
   if (existingEmail) {
@@ -47,9 +50,10 @@ export async function registerUser(input: {
     invitedById = await findDefaultInviterId();
   }
 
-  const displayName = input.displayName?.trim() || formatDisplayName(username);
   const hashedPassword = await bcrypt.hash(input.password, 12);
   const roles = INTENT_ROLES[input.intent];
+  const locale = input.locale?.trim().slice(0, 10) || "es";
+  const timezone = input.timezone?.trim().slice(0, 64) || "UTC";
 
   const user = await prisma.user.create({
     data: {
@@ -58,6 +62,8 @@ export async function registerUser(input: {
       displayName,
       username,
       hashedPassword,
+      locale,
+      timezone,
       status: "ACTIVE",
       referralCode: randomBytes(4).toString("hex").toUpperCase(),
       invitedById,
@@ -68,9 +74,4 @@ export async function registerUser(input: {
   });
 
   return { id: user.id, email: user.email, username: user.username, referralCode: user.referralCode };
-}
-
-function formatDisplayName(username: string) {
-  const cleaned = username.replace(/_/g, " ").trim();
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }

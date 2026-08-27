@@ -120,7 +120,7 @@ export function LandingPage() {
             <h2 className="mt-6 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
               Tu cuenta gratis.
             </h2>
-            <p className="mt-4 max-w-md text-white/55">Tres campos. Entras al feed. Empiezas a crear.</p>
+            <p className="mt-4 max-w-md text-white/55">Tu perfil, tu feed y tu monedero. Sin lista de espera.</p>
             <div className="mt-10 w-full">
               <Suspense fallback={null}>
                 <PremiumRegisterForm variant="section" />

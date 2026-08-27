@@ -364,9 +364,11 @@ export async function demoRegister(input: {
   email: string;
   username: string;
   password: string;
-  displayName?: string;
+  displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   referralCode?: string;
+  locale?: string;
+  timezone?: string;
 }) {
   const db = await loadDemo();
   const email = input.email.toLowerCase();

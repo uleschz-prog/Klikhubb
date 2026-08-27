@@ -9,7 +9,7 @@ export default function TermsPage() {
         Qlyk es una red social con comercio y academia. El creador recibe el 85% de cada venta.
         Qlyk (Qlykadmin) cobra siempre un 10% de servicio. Si alguien invitó al comprador, recibe
         el 5% de esa compra. Si no hubo invitación, ese 5% también es del creador. No hay planes
-        multinivel. El acceso beta está sujeto a lista de espera. Las ganancias se acreditan tras
+        multinivel. El registro es directo y gratuito. Las ganancias se acreditan tras
         un hold de 14 días. El documento completo se publica antes del launch público.
       </p>
     </main>

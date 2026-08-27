@@ -9,8 +9,9 @@ export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
+    const first = parsed.error.issues[0]?.message;
     return NextResponse.json(
-      { error: "Revisa email, usuario (3–20) y contraseña de 8+ caracteres." },
+      { error: first ?? "Revisa los datos del registro." },
       { status: 400 },
     );
   }
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
     displayName: parsed.data.displayName,
     intent: parsed.data.intent,
     referralCode: parsed.data.referralCode?.trim() || undefined,
+    locale: parsed.data.locale,
+    timezone: parsed.data.timezone,
   };
 
   try {
