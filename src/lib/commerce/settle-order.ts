@@ -1,5 +1,6 @@
 import { CommissionType, LedgerType, Prisma } from "@prisma/client";
 import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { PLATFORM_ADMIN } from "@/config/platform-admin";
 import { joinMembershipCommunity } from "@/lib/community";
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/money/cents";
@@ -65,9 +66,10 @@ async function settledFromProviderRef(
 }
 
 /**
- * Marca una venta como pagada y escribe el 80/10/10 + wallet + enrollment
+ * Marca una venta como pagada y escribe el 85/10/5 + wallet + enrollment
  * en la misma transacción. Stripe (o el provider demo) solo llama esto
  * después de confirmar el cargo.
+ * El 10% de plataforma se acredita a Qlykadmin.
  */
 export async function settlePaidOrder(input: {
   buyerId: string;
@@ -102,10 +104,38 @@ export async function settlePaidOrder(input: {
     const currency = product.currency.trim();
     const saleAmount = Number(product.price);
     const saleCents = toCents(saleAmount);
+    const platform =
+      (await tx.user.findFirst({
+        where: {
+          OR: [
+            { email: PLATFORM_ADMIN.email },
+            { username: { equals: PLATFORM_ADMIN.username, mode: "insensitive" } },
+            { referralCode: { equals: PLATFORM_ADMIN.referralCode, mode: "insensitive" } },
+          ],
+        },
+      })) ??
+      (await tx.user.findFirst({
+        where: { email: "platform@klikhubb.internal" },
+      }));
+
+    // Si el comprador no tiene invitación, cuelga de Qlykadmin (usuario raíz).
+    if (!buyer.invitedById) {
+      if (platform && platform.id !== input.buyerId) {
+        await tx.user.update({
+          where: { id: input.buyerId },
+          data: { invitedById: platform.id },
+        });
+        buyer.invitedById = platform.id;
+      }
+    }
+
+    // El 5% es para un amigo real. Si el invitador es Qlykadmin, split lo
+    // ignora y el creador se queda 90% + plataforma 10%.
     const lines = splitSaleCommissions({
       saleAmount,
       creatorId: product.creatorId,
       inviterId: buyer.invitedById,
+      platformUserId: platform?.id ?? null,
     });
 
     const now = new Date();
@@ -167,10 +197,6 @@ export async function settlePaidOrder(input: {
       );
     }
 
-    const platform = await tx.user.findFirst({
-      where: { email: "platform@klikhubb.internal" },
-    });
-
     for (const line of lines) {
       if (line.amountCents <= 0) continue;
 
@@ -182,7 +208,7 @@ export async function settlePaidOrder(input: {
             type: LedgerType.FEE,
             destination: "available",
             orderId: order.id,
-            note: "Fee de plataforma",
+            note: "Fee de plataforma Qlyk",
           });
         }
         continue;
