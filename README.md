@@ -23,4 +23,4 @@ La landing queda en `http://localhost:3000`. `/dashboard` está protegido por mi
 
 ## Modelo de dinero
 
-Cada venta: creador 80% + plataforma 10% + invitación 10% (un solo amigo). Si nadie invitó al comprador, el creador se queda el 90%.
+Cada venta: creador 85% + plataforma 10% + invitación 5% (un solo amigo). Si nadie invitó al comprador, el creador se queda el 90%. El 10% de plataforma lo recibe siempre Qlykadmin (usuario raíz de la red).

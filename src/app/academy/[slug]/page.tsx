@@ -59,6 +59,9 @@ export default async function AcademyCoursePage({
               title={selected.title}
               videoUrl={selected.videoUrl}
               thumbnailUrl={selected.thumbnailUrl}
+              content={selected.content}
+              resourceUrl={selected.resourceUrl}
+              resourceName={selected.resourceName}
             />
           ) : (
             <div className="flex aspect-video items-center justify-center rounded-2xl border border-klik-line bg-klik-card px-6 text-center">
@@ -66,15 +69,15 @@ export default async function AcademyCoursePage({
                 <p className="font-display text-xl font-bold">Aún no hay lecciones</p>
                 <p className="mt-2 text-sm text-white/50">
                   {course.role === "creator"
-                    ? "Publica un video y pégalo a este producto. Aparece aquí como lección."
+                    ? "Abre el Studio y agrega módulos, videos o archivos."
                     : "El creador todavía no subió el contenido. En cuanto lo haga, lo ves aquí."}
                 </p>
                 {course.role === "creator" ? (
                   <Link
-                    href="/publish"
+                    href={`/studio/${course.slug}`}
                     className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
                   >
-                    Publicar lección
+                    Abrir Studio
                   </Link>
                 ) : null}
               </div>
@@ -107,7 +110,14 @@ export default async function AcademyCoursePage({
                       <span className={`mt-0.5 font-display text-xs ${active ? "text-klik-cyan" : "text-white/35"}`}>
                         {String(index + 1).padStart(2, "0")}
                       </span>
-                      <span className="font-semibold leading-5">{lesson.title}</span>
+                      <span>
+                        <span className="font-semibold leading-5">{lesson.title}</span>
+                        {lesson.isFreePreview ? (
+                          <span className="mt-1 block text-[10px] uppercase tracking-wider text-klik-green">
+                            Preview
+                          </span>
+                        ) : null}
+                      </span>
                     </Link>
                   </li>
                 );

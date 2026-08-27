@@ -1,17 +1,19 @@
-import { Logo } from "@/components/brand/Logo";
+import type { Metadata } from "next";
+import { LegalDocument } from "@/components/legal/LegalDocument";
+import { termsIntro, termsRelated, termsSections } from "@/content/legal/terms-content";
+
+export const metadata: Metadata = {
+  title: "Términos de Uso",
+  description: "Condiciones de uso de Qlyk: registro, contenido, compras, compensación 85/10/5 y responsabilidades.",
+};
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-16 text-white/70">
-      <Logo />
-      <h1 className="mt-8 font-display text-3xl font-extrabold text-white">Términos de uso</h1>
-      <p className="mt-4 text-sm leading-7">
-        Qlyk es una red social con comercio y academia. El creador recibe la mayor parte de cada
-        venta. Qlyk cobra una comisión de servicio. Si alguien invitó al comprador, puede recibir
-        un reconocimiento por esa compra. No hay planes multinivel. El acceso beta está sujeto a lista
-        de espera. Las ganancias se acreditan tras un hold de 14 días. El documento completo se publica
-        antes del launch público.
-      </p>
-    </main>
+    <LegalDocument
+      title="Términos de Uso"
+      intro={termsIntro}
+      sections={termsSections}
+      related={termsRelated}
+    />
   );
 }
