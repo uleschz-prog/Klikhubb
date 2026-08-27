@@ -67,14 +67,14 @@ export async function loadAcademyCourse(
     });
 
     const lessons: AcademyLesson[] = [];
-    for (const module of course?.modules ?? []) {
-      for (const lesson of module.lessons) {
+    for (const courseModule of course?.modules ?? []) {
+      for (const lesson of courseModule.lessons) {
         lessons.push({
           id: lesson.id,
           title: lesson.title || lesson.video?.title || "Lección",
           videoUrl: lesson.video?.videoUrl ?? null,
           thumbnailUrl: lesson.video?.thumbnailUrl ?? null,
-          moduleTitle: module.title,
+          moduleTitle: courseModule.title,
           sortOrder: lesson.sortOrder,
         });
       }
@@ -156,10 +156,10 @@ async function ensureLessonsFromVideos(productId: string) {
       include: { modules: { orderBy: { sortOrder: "asc" }, take: 1 } },
     });
   } else if (course.modules.length === 0) {
-    const module = await prisma.courseModule.create({
+    const courseModule = await prisma.courseModule.create({
       data: { courseId: course.id, title: "Empieza aquí", sortOrder: 0 },
     });
-    course.modules = [module];
+    course.modules = [courseModule];
   }
 
   const moduleId = course.modules[0]?.id;
