@@ -161,6 +161,7 @@ async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
       user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase() ||
       user.email.toLowerCase() === PLATFORM_ADMIN.email,
   );
+  let adminId = existing?.id;
   if (existing) {
     existing.hashedPassword = adminHash;
     existing.username = PLATFORM_ADMIN.username;
@@ -168,22 +169,31 @@ async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
     existing.displayName = PLATFORM_ADMIN.displayName;
     existing.referralCode = PLATFORM_ADMIN.referralCode;
     existing.roles = Array.from(new Set([...existing.roles, "ADMIN", "CREATOR"]));
-    return db;
+    existing.invitedById = null;
+  } else {
+    adminId = "usr_qlykadmin";
+    db.users.unshift(
+      u(
+        adminId,
+        PLATFORM_ADMIN.email,
+        adminHash,
+        PLATFORM_ADMIN.displayName,
+        PLATFORM_ADMIN.username,
+        PLATFORM_ADMIN.referralCode,
+        null,
+        ["ADMIN", "CREATOR"],
+        0,
+      ),
+    );
+    db.wallets[adminId] = { available: 0, pending: 0, lifetimeEarned: 0 };
   }
-  db.users.unshift(
-    u(
-      "usr_qlykadmin",
-      PLATFORM_ADMIN.email,
-      adminHash,
-      PLATFORM_ADMIN.displayName,
-      PLATFORM_ADMIN.username,
-      PLATFORM_ADMIN.referralCode,
-      null,
-      ["ADMIN", "CREATOR"],
-      0,
-    ),
-  );
-  db.wallets["usr_qlykadmin"] = { available: 0, pending: 0, lifetimeEarned: 0 };
+
+  // Todos los demás descienden de Qlykadmin si no tienen invitador.
+  for (const user of db.users) {
+    if (user.id === adminId) continue;
+    if (user.email === "platform@klikhubb.internal") continue;
+    if (!user.invitedById) user.invitedById = adminId!;
+  }
   return db;
 }
 
@@ -281,6 +291,17 @@ export function demoInviterId(db: DemoDB, userId: string) {
   return user?.invitedById ?? user?.sponsorId ?? null;
 }
 
+/** Qlykadmin (raíz). Recibe el 10% de plataforma; no el 5% de invitación. */
+export function demoPlatformUserId(db: DemoDB) {
+  return (
+    db.users.find(
+      (user) =>
+        user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase() ||
+        user.email.toLowerCase() === PLATFORM_ADMIN.email,
+    )?.id ?? "usr_qlykadmin"
+  );
+}
+
 export async function demoFindUserByEmail(email: string) {
   return demoFindUserByLogin(email);
 }
@@ -341,15 +362,22 @@ export async function demoListEnrollments(userId: string) {
 
 export async function demoRegister(input: {
   email: string;
+  username: string;
   password: string;
   displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   referralCode?: string;
+  locale?: string;
+  timezone?: string;
 }) {
   const db = await loadDemo();
   const email = input.email.toLowerCase();
+  const username = input.username.toLowerCase();
   if (db.users.some((user) => user.email === email)) {
     throw new Error("EMAIL_TAKEN");
+  }
+  if (db.users.some((user) => user.username.toLowerCase() === username)) {
+    throw new Error("USERNAME_TAKEN");
   }
   const code = input.referralCode?.trim().toUpperCase();
   const inviter = code
@@ -364,12 +392,14 @@ export async function demoRegister(input: {
       : input.intent === "ENTREPRENEUR"
         ? ["STUDENT"]
         : ["CREATOR", "STUDENT"];
-  const username = email.split("@")[0]?.replace(/[^a-z0-9]/gi, "").slice(0, 16) || "klik";
+  const displayName =
+    input.displayName?.trim() ||
+    username.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
   const user: DemoUser = {
     id,
     email,
     hashedPassword: await bcrypt.hash(input.password, 12),
-    displayName: input.displayName,
+    displayName,
     username,
     referralCode: id.slice(-8).toUpperCase(),
     invitedById: inviter?.id ?? null,
@@ -395,10 +425,18 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
     throw new Error("ALREADY_OWNED");
   }
 
+  const platformUserId = demoPlatformUserId(db);
+  const buyer = db.users.find((row) => row.id === input.buyerId);
+  // Huérfanos cuelgan de Qlykadmin (usuario raíz).
+  if (buyer && !buyer.invitedById && buyer.id !== platformUserId) {
+    buyer.invitedById = platformUserId;
+  }
+
   const lines = splitSaleCommissions({
     saleAmount: product.price,
     creatorId: product.creatorId,
     inviterId: demoInviterId(db, input.buyerId),
+    platformUserId,
   });
 
   const orderId = `ord_${Math.random().toString(36).slice(2, 10)}`;
@@ -413,13 +451,14 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
 
   for (const line of lines) {
     if (line.amountCents <= 0) continue;
-    const beneficiaryId = line.type === "PLATFORM_FEE" ? "usr_platform" : line.beneficiaryId;
+    const beneficiaryId = line.type === "PLATFORM_FEE" ? platformUserId : line.beneficiaryId;
     const wallet = db.wallets[beneficiaryId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
+    db.wallets[beneficiaryId] = wallet;
     const amount = line.amountCents / 100;
     wallet.lifetimeEarned += amount;
     if (line.type === "PLATFORM_FEE") {
       wallet.available += amount;
-      pushLedger(db, beneficiaryId, amount, "FEE", "Fee de plataforma");
+      pushLedger(db, beneficiaryId, amount, "FEE", "Fee de plataforma Qlyk");
     } else {
       wallet.pending += amount;
       const availableAt = new Date(
@@ -446,7 +485,6 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
     db.wallets[beneficiaryId] = wallet;
   }
 
-  const buyer = db.users.find((user) => user.id === input.buyerId);
   if (buyer) {
     buyer.points += Math.max(10, Math.round(product.price / 10));
   }

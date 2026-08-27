@@ -12,15 +12,28 @@ const INTENT_ROLES: Record<"CREATOR" | "ENTREPRENEUR" | "BOTH", RoleCode[]> = {
 
 export async function registerUser(input: {
   email: string;
+  username: string;
   password: string;
   displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   referralCode?: string;
+  locale?: string;
+  timezone?: string;
 }) {
   const email = input.email.toLowerCase();
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
+  const username = input.username.toLowerCase();
+  const displayName = input.displayName.trim();
+
+  const existingEmail = await prisma.user.findUnique({ where: { email } });
+  if (existingEmail) {
     throw new Error("EMAIL_TAKEN");
+  }
+
+  const existingUsername = await prisma.user.findFirst({
+    where: { username: { equals: username, mode: "insensitive" } },
+  });
+  if (existingUsername) {
+    throw new Error("USERNAME_TAKEN");
   }
 
   let invitedById: string | undefined;
@@ -37,39 +50,28 @@ export async function registerUser(input: {
     invitedById = await findDefaultInviterId();
   }
 
-  const username = await uniqueUsername(input.displayName);
   const hashedPassword = await bcrypt.hash(input.password, 12);
   const roles = INTENT_ROLES[input.intent];
+  const locale = input.locale?.trim().slice(0, 10) || "es";
+  const timezone = input.timezone?.trim().slice(0, 64) || "UTC";
 
   const user = await prisma.user.create({
     data: {
       email,
-      name: input.displayName,
-      displayName: input.displayName,
+      name: displayName,
+      displayName,
       username,
       hashedPassword,
+      locale,
+      timezone,
       status: "ACTIVE",
       referralCode: randomBytes(4).toString("hex").toUpperCase(),
       invitedById,
       roles: { create: roles.map((role) => ({ role })) },
+      wallet: { create: {} },
+      stats: { create: {} },
     },
   });
 
   return { id: user.id, email: user.email, username: user.username, referralCode: user.referralCode };
-}
-
-async function uniqueUsername(displayName: string) {
-  const base =
-    displayName
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "")
-      .slice(0, 16) || "klik";
-  for (let i = 0; i < 8; i += 1) {
-    const candidate = i === 0 ? base : `${base}${i + 1}`;
-    const taken = await prisma.user.findUnique({ where: { username: candidate } });
-    if (!taken) return candidate;
-  }
-  return `${base}${randomBytes(2).toString("hex")}`;
 }

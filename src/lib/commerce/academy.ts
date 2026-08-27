@@ -6,6 +6,10 @@ export type AcademyLesson = {
   title: string;
   videoUrl: string | null;
   thumbnailUrl: string | null;
+  content: string | null;
+  resourceUrl: string | null;
+  resourceName: string | null;
+  isFreePreview: boolean;
   moduleTitle: string;
   sortOrder: number;
 };
@@ -38,7 +42,8 @@ export async function loadAcademyCourse(
         status: true,
       },
     });
-    if (!product || product.status !== "ACTIVE") return "not_found";
+    if (!product) return "not_found";
+    if (product.status !== "ACTIVE" && product.creatorId !== userId) return "not_found";
 
     const isCreator = product.creatorId === userId;
     const enrollment = await prisma.enrollment.findUnique({
@@ -74,6 +79,10 @@ export async function loadAcademyCourse(
           title: lesson.title || lesson.video?.title || "Lección",
           videoUrl: lesson.video?.videoUrl ?? null,
           thumbnailUrl: lesson.video?.thumbnailUrl ?? null,
+          content: lesson.content,
+          resourceUrl: lesson.resourceUrl,
+          resourceName: lesson.resourceName,
+          isFreePreview: lesson.isFreePreview,
           moduleTitle: courseModule.title,
           sortOrder: lesson.sortOrder,
         });
@@ -92,6 +101,10 @@ export async function loadAcademyCourse(
           title: row.video.title,
           videoUrl: row.video.videoUrl,
           thumbnailUrl: row.video.thumbnailUrl,
+          content: null,
+          resourceUrl: null,
+          resourceName: null,
+          isFreePreview: false,
           moduleTitle: "Contenido",
           sortOrder: row.sortOrder,
         });

@@ -18,12 +18,24 @@ export default async function AcademyPage() {
 
   return (
     <PlatformShell title="Academy">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Educación</p>
-      <h1 className="mt-2 font-display text-3xl font-extrabold">Academy</h1>
-      <p className="mt-2 max-w-xl text-sm text-white/55">
-        El video te descubre. La academia te queda. Entra y ves las lecciones de lo que ya pagaste o de lo
-        que tú publicaste.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Educación</p>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">Academy</h1>
+          <p className="mt-2 max-w-xl text-sm text-white/55">
+            El video te descubre. La academia te queda. Entra y ves las lecciones de lo que ya pagaste o de lo
+            que tú publicaste.
+          </p>
+        </div>
+        {userId ? (
+          <Link
+            href="/studio"
+            className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+          >
+            Abrir Studio
+          </Link>
+        ) : null}
+      </div>
 
       {!userId ? (
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
