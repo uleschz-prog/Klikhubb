@@ -362,15 +362,20 @@ export async function demoListEnrollments(userId: string) {
 
 export async function demoRegister(input: {
   email: string;
+  username: string;
   password: string;
-  displayName: string;
+  displayName?: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   referralCode?: string;
 }) {
   const db = await loadDemo();
   const email = input.email.toLowerCase();
+  const username = input.username.toLowerCase();
   if (db.users.some((user) => user.email === email)) {
     throw new Error("EMAIL_TAKEN");
+  }
+  if (db.users.some((user) => user.username.toLowerCase() === username)) {
+    throw new Error("USERNAME_TAKEN");
   }
   const code = input.referralCode?.trim().toUpperCase();
   const inviter = code
@@ -385,12 +390,14 @@ export async function demoRegister(input: {
       : input.intent === "ENTREPRENEUR"
         ? ["STUDENT"]
         : ["CREATOR", "STUDENT"];
-  const username = email.split("@")[0]?.replace(/[^a-z0-9]/gi, "").slice(0, 16) || "klik";
+  const displayName =
+    input.displayName?.trim() ||
+    username.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
   const user: DemoUser = {
     id,
     email,
     hashedPassword: await bcrypt.hash(input.password, 12),
-    displayName: input.displayName,
+    displayName,
     username,
     referralCode: id.slice(-8).toUpperCase(),
     invitedById: inviter?.id ?? null,

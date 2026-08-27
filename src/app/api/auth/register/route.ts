@@ -10,13 +10,14 @@ export async function POST(request: Request) {
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Revisa nombre, email y una contraseña de 8+ caracteres." },
+      { error: "Revisa email, usuario (3–20) y contraseña de 8+ caracteres." },
       { status: 400 },
     );
   }
 
   const payload = {
     email: parsed.data.email,
+    username: parsed.data.username,
     password: parsed.data.password,
     displayName: parsed.data.displayName,
     intent: parsed.data.intent,
@@ -47,6 +48,9 @@ function mapRegisterError(error: unknown) {
   const code = error instanceof Error ? error.message : "";
   if (code === "EMAIL_TAKEN") {
     return NextResponse.json({ error: "Ese email ya está registrado." }, { status: 409 });
+  }
+  if (code === "USERNAME_TAKEN") {
+    return NextResponse.json({ error: "Ese usuario ya existe. Prueba otro." }, { status: 409 });
   }
   if (code === "INVALID_REFERRAL") {
     return NextResponse.json({ error: "Ese código de amigo no existe." }, { status: 400 });

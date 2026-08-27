@@ -33,10 +33,10 @@ export function Navbar({ transparent = false }: { transparent?: boolean }) {
             </Link>
           ))}
           <Link
-            href="#lista-espera"
+            href="#registro"
             className="rounded-full bg-klik-green px-4 py-2 text-xs font-bold uppercase tracking-wider text-klik-black"
           >
-            Quiero mi lugar
+            Crear cuenta
           </Link>
         </nav>
         <button
@@ -73,11 +73,11 @@ export function Navbar({ transparent = false }: { transparent?: boolean }) {
                 </Link>
               ))}
               <Link
-                href="#lista-espera"
+                href="#registro"
                 onClick={() => setOpen(false)}
                 className="rounded-full bg-klik-green px-4 py-3 text-center text-sm font-bold text-klik-black"
               >
-                Quiero mi lugar
+                Crear cuenta
               </Link>
             </div>
           </motion.div>
