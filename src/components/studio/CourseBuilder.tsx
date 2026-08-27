@@ -293,9 +293,17 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
                 {String(moduleIndex + 1).padStart(2, "0")}
               </span>
               <input
+                key={mod.id + mod.title}
                 defaultValue={mod.title}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    (event.target as HTMLInputElement).blur();
+                  }
+                }}
                 onBlur={(event) => renameModule(mod, event.target.value)}
                 className="min-w-0 flex-1 bg-transparent font-display text-lg font-bold text-white outline-none focus:text-klik-cyan"
+                title="Edita y pulsa Enter o haz clic fuera para guardar"
               />
               <button
                 type="button"
