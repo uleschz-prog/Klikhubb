@@ -1,0 +1,14 @@
+{
+  "name": "Qlyk (KlikHubb)",
+  "install": "./scripts/cloud-setup.sh",
+  "start": "./scripts/cloud-start.sh",
+  "terminals": [
+    {
+      "name": "next-dev",
+      "command": "npm run dev"
+    }
+  ],
+  "ports": [
+    { "name": "Next.js", "port": 3000 }
+  ]
+}
