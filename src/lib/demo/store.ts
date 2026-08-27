@@ -476,7 +476,6 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
     db.wallets[beneficiaryId] = wallet;
   }
 
-  const buyer = db.users.find((user) => user.id === input.buyerId);
   if (buyer) {
     buyer.points += Math.max(10, Math.round(product.price / 10));
   }
