@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 
 type Variant = "hero" | "section" | "page";
 
@@ -164,15 +165,15 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
         <span className={compact ? "sr-only" : "text-xs font-semibold uppercase tracking-wider text-white/45"}>
           Contraseña
         </span>
-        <input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           required
           minLength={8}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Contraseña · 8+ caracteres"
-          className={inputClass}
+          inputClassName={inputClass}
+          wrapperClassName={compact ? "" : "mt-2"}
         />
       </label>
 
