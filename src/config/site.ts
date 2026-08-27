@@ -21,4 +21,9 @@ export const site = {
   url: siteUrl(),
   description:
     "La red social donde publicas, vendes y tu gente se queda contigo. Video, comunidad y academia en un clic.",
+  share: {
+    title: "Qlyk — Del video al pago. Sin salir del feed.",
+    description:
+      "Publica, vende y cobra en el mismo feed. Cuenta gratis, registro directo.",
+  },
 } as const;
