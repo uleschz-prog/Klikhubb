@@ -1,5 +1,6 @@
 import { CommissionType, LedgerType, Prisma } from "@prisma/client";
 import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { joinMembershipCommunity } from "@/lib/community";
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/money/cents";
 import { splitSaleCommissions } from "@/lib/commerce/split";
@@ -151,6 +152,20 @@ export async function settlePaidOrder(input: {
         status: "ACTIVE",
       },
     });
+
+    if (product.type === "MEMBERSHIP") {
+      await joinMembershipCommunity(
+        tx,
+        {
+          id: product.id,
+          slug: product.slug,
+          title: product.title,
+          description: product.description,
+          creatorId: product.creatorId,
+        },
+        input.buyerId,
+      );
+    }
 
     const platform = await tx.user.findFirst({
       where: { email: "platform@klikhubb.internal" },

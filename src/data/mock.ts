@@ -87,9 +87,3 @@ export const mockCourses = [
   { slug: "inner-circle", title: "Inner Circle", price: 49, students: 4200 },
   { slug: "red-binaria", title: "De view a cliente", price: 197, students: 860 },
 ];
-
-export const mockPosts = [
-  { id: "c1", author: "Maya Chen", title: "¿Cómo estructuran el CTA en videos de 15s?", replies: 34 },
-  { id: "c2", author: "Leo Vargas", title: "Lo que cambió cuando mi audiencia dejó de ser un número", replies: 18 },
-  { id: "c3", author: "Amina Rahim", title: "Plantilla de bienvenida para quien acaba de comprar", replies: 22 },
-];
