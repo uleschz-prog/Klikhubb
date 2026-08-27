@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 
 type HeroDemoVideoProps = {
   className?: string;
-  /** Si true, el video llena el contenedor (hero full-bleed). */
   fill?: boolean;
 };
 
@@ -47,13 +46,13 @@ export function HeroDemoVideo({ className = "", fill = true }: HeroDemoVideoProp
       <img
         src="/videos/qlyk-hero-demo.jpg"
         alt=""
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+        className={`absolute inset-0 h-full w-full object-cover object-[68%_center] transition-opacity duration-700 md:object-[72%_center] ${
           ready ? "opacity-0" : "opacity-100"
         }`}
       />
       <video
         ref={media}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+        className={`absolute inset-0 h-full w-full object-cover object-[68%_center] transition-opacity duration-700 md:object-[72%_center] ${
           ready ? "opacity-100" : "opacity-0"
         }`}
         src="/videos/qlyk-hero-demo.mp4"
@@ -65,9 +64,10 @@ export function HeroDemoVideo({ className = "", fill = true }: HeroDemoVideoProp
         preload="auto"
         aria-label="Demo de Qlyk: del video al pago en el feed"
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-klik-black via-klik-black/70 to-klik-black/20" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-klik-black via-transparent to-klik-black/35" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(0,240,255,0.12),transparent_45%),radial-gradient(circle_at_20%_80%,rgba(0,255,65,0.1),transparent_40%)]" />
+      {/* Lectura a la izquierda, video visible a la derecha */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-klik-black via-klik-black/55 to-transparent md:via-klik-black/40" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-klik-black/90 via-transparent to-klik-black/30" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(0,240,255,0.16),transparent_42%),radial-gradient(circle_at_20%_85%,rgba(0,255,65,0.1),transparent_38%)]" />
       <button
         type="button"
         onClick={toggleMute}

@@ -66,15 +66,6 @@ body {
   animation-delay: 0.24s;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-rise,
-  .hero-rise-delay-1,
-  .hero-rise-delay-2,
-  .hero-rise-delay-3 {
-    animation: none;
-  }
-}
-
 @keyframes qlyk-drawer-in {
   from {
     transform: translateX(100%);
@@ -95,6 +86,10 @@ body {
     scroll-behavior: auto;
   }
 
+  .hero-rise,
+  .hero-rise-delay-1,
+  .hero-rise-delay-2,
+  .hero-rise-delay-3,
   .qlyk-buy-drawer {
     animation: none;
   }
