@@ -513,6 +513,9 @@ model Lesson {
   title          String
   videoId        String?
   content        String? @db.Text
+  /// Archivo descargable (PDF, ZIP, etc.) — independiente del video de la lección.
+  resourceUrl    String?
+  resourceName   String?
   durationMs     Int?
   sortOrder      Int     @default(0)
   isFreePreview  Boolean @default(false)
