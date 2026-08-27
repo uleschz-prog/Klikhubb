@@ -34,7 +34,14 @@ export function LandingPage() {
       <Navbar transparent />
 
       <main>
-        <section className="relative isolate min-h-[100svh] overflow-hidden">
+        <section
+          className="relative isolate min-h-[100svh] overflow-hidden"
+          style={{
+            backgroundImage: "url(/videos/qlyk-hero-demo.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "70% center",
+          }}
+        >
           <HeroDemoVideo />
 
           <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 md:justify-center md:pb-24 md:pt-24">
