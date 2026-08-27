@@ -9,13 +9,9 @@ export function HeroDemoVideo() {
   useEffect(() => {
     const node = media.current;
     if (!node) return;
+
     node.muted = true;
-    const play = () => {
-      void node.play().catch(() => undefined);
-    };
-    play();
-    node.addEventListener("canplay", play);
-    return () => node.removeEventListener("canplay", play);
+    void node.play().catch(() => undefined);
   }, []);
 
   function toggleMute() {
@@ -27,15 +23,10 @@ export function HeroDemoVideo() {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 h-full min-h-[100svh] w-full overflow-hidden">
-      <img
-        src="/videos/qlyk-hero-demo.jpg"
-        alt=""
-        className="absolute inset-0 z-0 h-full w-full object-cover object-[70%_center]"
-      />
+    <div className="pointer-events-none absolute inset-0 z-0 h-full min-h-[100svh] w-full overflow-hidden bg-klik-black">
       <video
         ref={media}
-        className="absolute inset-0 z-[1] h-full w-full object-cover object-[70%_center]"
+        className="absolute inset-0 h-full w-full object-cover object-[70%_center] [transform:translateZ(0)]"
         src="/videos/qlyk-hero-demo.mp4"
         poster="/videos/qlyk-hero-demo.jpg"
         autoPlay
