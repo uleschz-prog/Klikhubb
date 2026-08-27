@@ -9,28 +9,41 @@ async function main() {
   const plan = await prisma.compensationPlan.upsert({
     where: { code: "klikhubb-v1" },
     update: {
-      name: "Qlyk Creator 80",
+      name: "Qlyk Creator 85",
       maxUnilevelDepth: 1,
       binaryEnabled: false,
       platformFeeRate: 0.1,
-      creatorRate: 0.8,
+      creatorRate: 0.85,
     },
     create: {
       code: "klikhubb-v1",
-      name: "Qlyk Creator 80",
+      name: "Qlyk Creator 85",
       maxUnilevelDepth: 1,
       binaryEnabled: false,
       platformFeeRate: 0.1,
-      creatorRate: 0.8,
+      creatorRate: 0.85,
       holdDays: 14,
       isActive: true,
       levels: {
         create: [
-          { level: 0, type: CommissionType.CREATOR_SALE, rate: 0.8 },
-          { level: 1, type: CommissionType.DIRECT, rate: 0.1 },
+          { level: 0, type: CommissionType.CREATOR_SALE, rate: 0.85 },
+          { level: 1, type: CommissionType.DIRECT, rate: 0.05 },
         ],
       },
     },
+  });
+
+  // Sincroniza niveles del plan si ya existían con tasas viejas (80/10).
+  await prisma.commissionLevel.deleteMany({ where: { planId: plan.id } });
+  await prisma.commissionLevel.createMany({
+    data: [
+      { planId: plan.id, level: 0, type: CommissionType.CREATOR_SALE, rate: 0.85 },
+      { planId: plan.id, level: 1, type: CommissionType.DIRECT, rate: 0.05 },
+    ],
+  });
+  await prisma.compensationPlan.update({
+    where: { id: plan.id },
+    data: { holdDays: 14, isActive: true },
   });
 
   const ranks = [
@@ -263,7 +276,7 @@ async function main() {
     }
   }
 
-  console.log(`Seed OK — plan ${plan.code}. Creador 80% · plataforma 10% · invitación 10%.`);
+  console.log(`Seed OK — plan ${plan.code}. Creador 85% · plataforma 10% · invitación 5%.`);
 }
 
 async function ensureUser(input: {

@@ -4,7 +4,8 @@ export function InviteCard({ code, invitedCount }: { code: string; invitedCount:
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Invita, no reclutes</p>
       <h3 className="mt-1 font-display text-xl font-bold text-white">Trae a tu gente</h3>
       <p className="mt-3 text-sm leading-6 text-white/60">
-        Si un amigo entra con tu código y compra, también ganas. Un solo gracias. Sin reclutar a nadie.
+        Si un amigo entra con tu código y compra, ganas el 5% de esa venta. Un solo gracias. Sin
+        reclutar a nadie. Qlyk siempre se queda el 10% de servicio.
       </p>
       {code ? (
         <p className="mt-5 rounded-2xl border border-klik-cyan/25 bg-klik-cyan/5 px-4 py-3 font-display text-2xl font-extrabold tracking-wide text-klik-cyan">
