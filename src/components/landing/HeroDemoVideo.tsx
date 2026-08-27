@@ -11,12 +11,27 @@ type HeroDemoVideoProps = {
 export function HeroDemoVideo({ className = "", fill = true }: HeroDemoVideoProps) {
   const media = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const node = media.current;
     if (!node) return;
-    node.muted = true;
-    void node.play().catch(() => undefined);
+
+    const tryPlay = () => {
+      node.muted = true;
+      void node
+        .play()
+        .then(() => setReady(true))
+        .catch(() => undefined);
+    };
+
+    tryPlay();
+    node.addEventListener("loadeddata", tryPlay);
+    node.addEventListener("canplay", tryPlay);
+    return () => {
+      node.removeEventListener("loadeddata", tryPlay);
+      node.removeEventListener("canplay", tryPlay);
+    };
   }, []);
 
   function toggleMute() {
@@ -29,9 +44,18 @@ export function HeroDemoVideo({ className = "", fill = true }: HeroDemoVideoProp
 
   return (
     <div className={`relative overflow-hidden ${fill ? "absolute inset-0" : "h-full w-full"} ${className}`}>
+      <img
+        src="/videos/qlyk-hero-demo.jpg"
+        alt=""
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+          ready ? "opacity-0" : "opacity-100"
+        }`}
+      />
       <video
         ref={media}
-        className="h-full w-full object-cover"
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+          ready ? "opacity-100" : "opacity-0"
+        }`}
         src="/videos/qlyk-hero-demo.mp4"
         poster="/videos/qlyk-hero-demo.jpg"
         autoPlay
@@ -41,8 +65,8 @@ export function HeroDemoVideo({ className = "", fill = true }: HeroDemoVideoProp
         preload="auto"
         aria-label="Demo de Qlyk: del video al pago en el feed"
       />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-klik-black via-klik-black/75 to-klik-black/25" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-klik-black via-transparent to-klik-black/40" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-klik-black via-klik-black/70 to-klik-black/20" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-klik-black via-transparent to-klik-black/35" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(0,240,255,0.12),transparent_45%),radial-gradient(circle_at_20%_80%,rgba(0,255,65,0.1),transparent_40%)]" />
       <button
         type="button"
