@@ -10,23 +10,33 @@ export type CommissionLine = {
   amountCents: number;
 };
 
-function isRealInviter(inviterId: string | null | undefined, creatorId: string) {
+function isRealInviter(
+  inviterId: string | null | undefined,
+  creatorId: string,
+  platformUserId?: string | null,
+) {
   if (!inviterId) return false;
   if (inviterId === creatorId) return false;
   if (inviterId === "platform" || inviterId === "usr_platform") return false;
+  // Qlykadmin es raíz y ya cobra el 10% de plataforma; no recibe el 5% de invitación.
+  if (platformUserId && inviterId === platformUserId) return false;
   return true;
 }
 
-/** 80% creador · 10% plataforma · 10% a quien invitó (o al creador si nadie lo hizo). */
+/** 85% creador · 10% plataforma · 5% a quien invitó (o al creador si nadie lo hizo). */
 export function splitSaleCommissions(input: {
   saleAmount: number;
   creatorId: string;
   inviterId?: string | null;
+  /** Usuario raíz (Qlykadmin). Si es el invitador, no se paga el 5%. */
+  platformUserId?: string | null;
   plan?: typeof COMPENSATION_PLAN_V1;
 }): CommissionLine[] {
   const plan = input.plan ?? COMPENSATION_PLAN_V1;
   const saleCents = toCents(input.saleAmount);
-  const inviterId = isRealInviter(input.inviterId, input.creatorId) ? input.inviterId : null;
+  const inviterId = isRealInviter(input.inviterId, input.creatorId, input.platformUserId)
+    ? input.inviterId
+    : null;
 
   if (inviterId) {
     const [creatorCents, inviteCents, platformCents] = allocateByRates(saleCents, [
