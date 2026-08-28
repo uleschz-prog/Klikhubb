@@ -71,7 +71,7 @@ export function youtubeWatchUrl(raw: string) {
 
 export function youtubePoster(raw: string) {
   const id = youtubeVideoId(raw);
-  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null;
+  return id ? `https://i.ytimg.com/vi/${id}/maxresdefault.jpg` : null;
 }
 
 export function youtubeEmbedSrc(
@@ -91,6 +91,8 @@ export function youtubeEmbedSrc(
     loop: "1",
     playlist: id,
     enablejsapi: "1",
+    /** Mejor calidad en móvil / PWA — la calidad final la fija la API setPlaybackQuality */
+    vq: "hd720",
   });
   const start = youtubeStartSeconds(raw);
   if (start) params.set("start", String(start));

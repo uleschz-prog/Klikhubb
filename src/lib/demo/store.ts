@@ -20,6 +20,7 @@ type DemoUser = {
   referralCode: string;
   invitedById: string | null;
   sponsorId?: string | null;
+  image?: string | null;
   roles: string[];
   points: number;
 };
@@ -362,15 +363,22 @@ export async function demoListEnrollments(userId: string) {
 
 export async function demoRegister(input: {
   email: string;
+  username: string;
   password: string;
   displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   referralCode?: string;
+  locale?: string;
+  timezone?: string;
 }) {
   const db = await loadDemo();
   const email = input.email.toLowerCase();
+  const username = input.username.toLowerCase();
   if (db.users.some((user) => user.email === email)) {
     throw new Error("EMAIL_TAKEN");
+  }
+  if (db.users.some((user) => user.username.toLowerCase() === username)) {
+    throw new Error("USERNAME_TAKEN");
   }
   const code = input.referralCode?.trim().toUpperCase();
   const inviter = code
@@ -385,12 +393,14 @@ export async function demoRegister(input: {
       : input.intent === "ENTREPRENEUR"
         ? ["STUDENT"]
         : ["CREATOR", "STUDENT"];
-  const username = email.split("@")[0]?.replace(/[^a-z0-9]/gi, "").slice(0, 16) || "klik";
+  const displayName =
+    input.displayName?.trim() ||
+    username.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
   const user: DemoUser = {
     id,
     email,
     hashedPassword: await bcrypt.hash(input.password, 12),
-    displayName: input.displayName,
+    displayName,
     username,
     referralCode: id.slice(-8).toUpperCase(),
     invitedById: inviter?.id ?? null,
@@ -495,6 +505,15 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
   };
 }
 
+export async function demoUpdateAvatar(userId: string, imageUrl: string | null) {
+  const db = await loadDemo();
+  const user = db.users.find((row) => row.id === userId);
+  if (!user) throw new Error("USER_NOT_FOUND");
+  user.image = imageUrl;
+  await persist(db);
+  return user;
+}
+
 export async function demoHub(userId: string) {
   await demoReleaseMature(userId);
   const db = await loadDemo();
@@ -517,6 +536,7 @@ export async function demoHub(userId: string) {
 
   return {
     displayName: user?.displayName ?? "Miembro",
+    image: user?.image ?? null,
     referralCode: user?.referralCode ?? "",
     invitedCount,
     points: user?.points ?? 0,

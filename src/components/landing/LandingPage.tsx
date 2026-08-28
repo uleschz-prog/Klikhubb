@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
-import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { PremiumRegisterForm } from "@/components/auth/PremiumRegisterForm";
 import { HeroDemoVideo } from "@/components/landing/HeroDemoVideo";
 import { brand } from "@/config/site";
 
@@ -34,14 +34,7 @@ export function LandingPage() {
       <Navbar transparent />
 
       <main>
-        <section
-          className="relative isolate min-h-[100svh] overflow-hidden"
-          style={{
-            backgroundImage: "url(/videos/qlyk-hero-demo.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "70% center",
-          }}
-        >
+        <section className="relative isolate min-h-[100svh] overflow-hidden bg-klik-black">
           <HeroDemoVideo />
 
           <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 md:justify-center md:pb-24 md:pt-24">
@@ -61,7 +54,9 @@ export function LandingPage() {
             </p>
 
             <div className="hero-rise hero-rise-delay-3 mt-8 max-w-xl">
-              <WaitlistForm />
+              <Suspense fallback={null}>
+                <PremiumRegisterForm variant="hero" />
+              </Suspense>
             </div>
           </div>
         </section>
@@ -106,7 +101,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="lista-espera" className="relative overflow-hidden border-t border-white/5">
+        <section id="registro" className="relative overflow-hidden border-t border-white/5">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,65,0.14),transparent_50%)]" />
           <motion.div
             {...fade}
@@ -116,11 +111,13 @@ export function LandingPage() {
               <span className="text-klik-cyan">Q</span>lyk
             </p>
             <h2 className="mt-6 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-              Pide tu lugar.
+              Tu cuenta gratis.
             </h2>
-            <p className="mt-4 max-w-md text-white/55">Las primeras mil cuentas abren el feed.</p>
-            <div className="mt-10 w-full max-w-2xl">
-              <WaitlistForm variant="giant" />
+            <p className="mt-4 max-w-md text-white/55">Tu perfil, tu feed y tu monedero. Sin lista de espera.</p>
+            <div className="mt-10 w-full">
+              <Suspense fallback={null}>
+                <PremiumRegisterForm variant="section" />
+              </Suspense>
             </div>
           </motion.div>
         </section>

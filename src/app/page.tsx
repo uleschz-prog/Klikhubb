@@ -4,7 +4,16 @@ import { site } from "@/config/site";
 
 export const metadata: Metadata = {
   title: `${site.name} — ${site.slogan}`,
-  description: site.description,
+  description: site.share.description,
+  openGraph: {
+    title: site.share.title,
+    description: site.share.description,
+    url: site.url,
+  },
+  twitter: {
+    title: site.share.title,
+    description: site.share.description,
+  },
 };
 
 export default function HomePage() {

@@ -1,14 +1,19 @@
-import { Logo } from "@/components/brand/Logo";
+import type { Metadata } from "next";
+import { LegalDocument } from "@/components/legal/LegalDocument";
+import { cookiesIntro, cookiesRelated, cookiesSections } from "@/content/legal/cookies-content";
+
+export const metadata: Metadata = {
+  title: "Política de Cookies",
+  description: "Cookies y tecnologías similares utilizadas en Qlyk y cómo gestionarlas.",
+};
 
 export default function CookiesPage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-16 text-white/70">
-      <Logo />
-      <h1 className="mt-8 font-display text-3xl font-extrabold text-white">Cookies</h1>
-      <p className="mt-4 text-sm leading-7">
-        Usamos cookies esenciales de sesión (NextAuth) y métricas agregadas del feed. Puedes rechazar
-        cookies no esenciales desde la configuración de tu navegador.
-      </p>
-    </main>
+    <LegalDocument
+      title="Política de Cookies"
+      intro={cookiesIntro}
+      sections={cookiesSections}
+      related={cookiesRelated}
+    />
   );
 }

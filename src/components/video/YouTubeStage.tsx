@@ -14,8 +14,16 @@ type YouTubeStageProps = {
   onEnded?: () => void;
 };
 
+const QUALITY_PREFS = ["hd1080", "hd720", "large", "medium"] as const;
+
 function command(frame: HTMLIFrameElement | null, func: string, args: unknown[] = []) {
   frame?.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args }), "*");
+}
+
+function boostYouTubeQuality(frame: HTMLIFrameElement | null) {
+  for (const quality of QUALITY_PREFS) {
+    command(frame, "setPlaybackQuality", [quality]);
+  }
 }
 
 export function YouTubeStage({
@@ -44,6 +52,7 @@ export function YouTubeStage({
 
   useEffect(() => {
     command(frame.current, muted ? "mute" : "unMute");
+    if (!muted) boostYouTubeQuality(frame.current);
   }, [muted, url]);
 
   useEffect(() => {
@@ -58,7 +67,11 @@ export function YouTubeStage({
         }
       }
       if (!payload || typeof payload !== "object") return;
-      const data = payload as { event?: string; info?: { currentTime?: number; duration?: number; playerState?: number }; data?: number };
+      const data = payload as {
+        event?: string;
+        info?: { currentTime?: number; duration?: number; playerState?: number };
+        data?: number;
+      };
       if (data.event === "onError" || data.event === "error") {
         setBlocked(true);
         return;
@@ -71,6 +84,7 @@ export function YouTubeStage({
       if (!info) return;
       if (typeof info.currentTime === "number") onTime?.(info.currentTime);
       if (typeof info.duration === "number" && Number.isFinite(info.duration)) onDuration?.(info.duration);
+      if (info.playerState === 1) boostYouTubeQuality(frame.current);
       if (info.playerState === 0) onEnded?.();
     }
     window.addEventListener("message", onMessage);
@@ -98,19 +112,22 @@ export function YouTubeStage({
   }
 
   return (
-    <iframe
-      ref={frame}
-      className={`${className ?? ""} pointer-events-none border-0`}
-      src={embed}
-      title={title}
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerPolicy="strict-origin-when-cross-origin"
-      allowFullScreen
-      onLoad={() => {
-        frame.current?.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1 }), "*");
-        command(frame.current, playing ? "playVideo" : "pauseVideo");
-        command(frame.current, muted ? "mute" : "unMute");
-      }}
-    />
+    <div className={`${className ?? ""} overflow-hidden`}>
+      <iframe
+        ref={frame}
+        className="pointer-events-none absolute left-1/2 top-1/2 min-h-[100dvh] min-w-[177.78dvh] -translate-x-1/2 -translate-y-1/2 border-0"
+        src={embed}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+        onLoad={() => {
+          frame.current?.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1 }), "*");
+          command(frame.current, playing ? "playVideo" : "pauseVideo");
+          command(frame.current, muted ? "mute" : "unMute");
+          boostYouTubeQuality(frame.current);
+        }}
+      />
+    </div>
   );
 }

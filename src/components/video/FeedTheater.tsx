@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
-import { formatCount, formatFeedDate, formatTimecode, initialsFrom } from "@/lib/video/format";
+import { formatCount, formatFeedDate, formatTimecode } from "@/lib/video/format";
+import { UserAvatar } from "@/components/profile/UserAvatar";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
@@ -231,7 +232,18 @@ export function FeedTheater({
   }
 
   function togglePlay() {
+    if (muted) {
+      setMuted(false);
+      setPlaying(true);
+      return;
+    }
     setPlaying((value) => !value);
+  }
+
+  function enableAudio() {
+    setMuted(false);
+    setVolume((value) => (value === 0 ? 0.8 : value));
+    setPlaying(true);
   }
 
   function seekRatio(ratio: number) {
@@ -417,7 +429,11 @@ export function FeedTheater({
           muted={muted}
           playsInline
           preload="auto"
-          onClick={togglePlay}
+          disablePictureInPicture
+          onClick={() => {
+            if (muted) enableAudio();
+            else togglePlay();
+          }}
           onDoubleClick={toggleLike}
           onTimeUpdate={(event) => setCurrent(event.currentTarget.currentTime)}
           onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
@@ -440,9 +456,23 @@ export function FeedTheater({
           type="button"
           className="absolute inset-0 z-[15] cursor-pointer bg-transparent"
           aria-label={playing ? "Pausa" : "Reproducir"}
-          onClick={togglePlay}
+          onClick={() => {
+            if (muted) enableAudio();
+            else togglePlay();
+          }}
           onDoubleClick={toggleLike}
         />
+      ) : null}
+
+      {muted && chrome ? (
+        <button
+          type="button"
+          onClick={enableAudio}
+          className="absolute left-1/2 top-[42%] z-[18] flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/70 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur md:hidden"
+        >
+          <VolumePulseIcon />
+          Toca para audio
+        </button>
       ) : null}
 
       {!hidden ? (
@@ -481,20 +511,22 @@ export function FeedTheater({
             </div>
           </header>
 
-          <aside className="absolute right-4 top-[16%] z-30 flex flex-col items-center gap-4 overflow-visible md:right-8 md:top-[12%]">
-            <NavArrow label="Anterior" disabled={index === 0} onClick={() => go(index - 1)}>
-              <ChevronUp />
-            </NavArrow>
-            <NavArrow label="Siguiente" disabled={index === videos.length - 1} onClick={() => go(index + 1)}>
-              <ChevronDown />
-            </NavArrow>
+          <aside className="absolute right-2 z-30 flex max-h-[calc(100dvh-11rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col items-center gap-2 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] max-md:top-auto md:right-8 md:top-[12%] md:max-h-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden">
+            <div className="hidden md:contents">
+              <NavArrow label="Anterior" disabled={index === 0} onClick={() => go(index - 1)}>
+                <ChevronUp />
+              </NavArrow>
+              <NavArrow label="Siguiente" disabled={index === videos.length - 1} onClick={() => go(index + 1)}>
+                <ChevronDown />
+              </NavArrow>
+            </div>
             <button
               type="button"
               onClick={() => void onFollow()}
               className="relative mt-2 mb-1 overflow-visible"
               aria-label={followed ? "Siguiendo" : "Seguir"}
             >
-              <Avatar name={video.creatorName} size="lg" />
+              <UserAvatar name={video.creatorName} imageUrl={video.creatorImage} size="lg" />
               <span
                 className={`absolute -bottom-1 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold ${
                   followed ? "bg-white text-klik-black" : "bg-klik-green text-klik-black"
@@ -526,14 +558,26 @@ export function FeedTheater({
               <ShareIcon />
             </RailAction>
             <RailAction
+              active={!muted}
+              label={muted ? "Sin audio" : "Audio"}
+              ariaLabel={muted ? "Activar audio" : "Silenciar"}
+              onClick={() => {
+                if (muted) enableAudio();
+                else setMuted(true);
+              }}
+              compact
+            >
+              {muted || volume === 0 ? <RailMuteIcon /> : <RailVolumeIcon />}
+            </RailAction>
+            <RailAction
               active={listening}
               label="Escuchar"
               onClick={() => {
                 setListening((value) => !value);
-                setMuted(false);
-                setPlaying(true);
-                showToast(listening ? "Volviste al video." : "Modo escuchar: el audio sigue, el clip también.");
+                enableAudio();
+                showToast(listening ? "Volviste al video." : "Modo escuchar activo.");
               }}
+              compact
             >
               <HeadphonesIcon />
             </RailAction>
@@ -547,7 +591,7 @@ export function FeedTheater({
             ) : null}
           </aside>
 
-          <div className="absolute bottom-[4.75rem] left-4 z-20 max-w-[min(42rem,calc(100%-7.5rem))] md:bottom-16 md:left-8">
+          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-4.75rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
             <p className="text-sm font-semibold text-white drop-shadow">
               @{video.handle}
               {video.publishedAt ? <span className="font-normal text-white/70"> · {formatFeedDate(video.publishedAt)}</span> : null}
@@ -828,21 +872,12 @@ export function FeedTheater({
       <Link
         href={home === "play" ? "/publish?lane=play" : "/publish"}
         aria-label={home === "play" ? "Subir un clip" : "Publicar y vender"}
-        className="absolute bottom-[4.6rem] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-klik-green text-3xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-8 md:right-8"
+        className="absolute bottom-[calc(4.85rem+env(safe-area-inset-bottom))] right-2 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-8 md:right-8 md:h-14 md:w-14 md:text-3xl"
       >
         +
       </Link>
       {!hidden ? <MobileTabBar /> : null}
     </div>
-  );
-}
-
-function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "lg" }) {
-  const box = size === "lg" ? "h-12 w-12 text-sm" : "h-8 w-8 text-[11px]";
-  return (
-    <span className={`inline-flex ${box} items-center justify-center rounded-full bg-gradient-to-br from-klik-cyan to-klik-green font-bold text-klik-black`}>
-      {initialsFrom(name)}
-    </span>
   );
 }
 
@@ -852,28 +887,32 @@ function RailAction({
   onClick,
   active,
   ariaLabel,
+  compact,
 }: {
   label: string;
   children: React.ReactNode;
   onClick: () => void;
   active?: boolean;
   ariaLabel?: string;
+  compact?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className="flex w-12 flex-col items-center gap-1 overflow-visible"
+      className={`flex flex-col items-center gap-0.5 overflow-visible ${compact ? "w-11 md:w-12" : "w-11 md:w-12"}`}
     >
       <span
-        className={`flex h-12 w-12 items-center justify-center overflow-visible ${
-          active ? "text-[#FE2C55]" : "text-white"
-        }`}
+        className={`flex items-center justify-center overflow-visible ${
+          compact ? "h-10 w-10 md:h-12 md:w-12" : "h-10 w-10 md:h-12 md:w-12"
+        } ${active ? "text-[#FE2C55]" : "text-white"}`}
       >
         {children}
       </span>
-      <span className="text-[11px] font-medium text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.85)]">{label}</span>
+      <span className="max-w-[3.25rem] truncate text-center text-[10px] font-medium leading-tight text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.85)] md:text-[11px]">
+        {label}
+      </span>
     </button>
   );
 }
@@ -1024,6 +1063,29 @@ function PipIcon() {
     <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <rect x="12" y="11" width="7" height="6" rx="1" />
+    </svg>
+  );
+}
+function VolumePulseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8" aria-hidden>
+      <path d="M4 10h4l5-4v12l-5-4H4z" />
+      <path d="M15 9.5a4 4 0 0 1 0 5" />
+      <path d="M17.5 7a7 7 0 0 1 0 10" />
+    </svg>
+  );
+}
+function RailVolumeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-white" aria-hidden>
+      <path d="M4 9h4l5-4v14l-5-4H4zm11 1.5a4 4 0 0 1 0 3" />
+    </svg>
+  );
+}
+function RailMuteIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-8 w-8 fill-none stroke-white" strokeWidth="1.8" aria-hidden>
+      <path d="M4 9h4l5-4v14l-5-4H4zM16 9l5 6M21 9l-5 6" />
     </svg>
   );
 }

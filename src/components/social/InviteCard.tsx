@@ -1,4 +1,8 @@
+import { referralLink } from "@/config/site";
+
 export function InviteCard({ code, invitedCount }: { code: string; invitedCount: number }) {
+  const link = code ? referralLink(code) : "";
+
   return (
     <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Invita, no reclutes</p>
@@ -8,9 +12,12 @@ export function InviteCard({ code, invitedCount }: { code: string; invitedCount:
         reclutar a nadie. Qlyk siempre se queda el 10% de servicio.
       </p>
       {code ? (
-        <p className="mt-5 rounded-2xl border border-klik-cyan/25 bg-klik-cyan/5 px-4 py-3 font-display text-2xl font-extrabold tracking-wide text-klik-cyan">
-          {code}
-        </p>
+        <>
+          <p className="mt-5 rounded-2xl border border-klik-cyan/25 bg-klik-cyan/5 px-4 py-3 font-display text-2xl font-extrabold tracking-wide text-klik-cyan">
+            {code}
+          </p>
+          <p className="mt-3 break-all text-xs text-white/45">{link}</p>
+        </>
       ) : null}
       <p className="mt-3 text-xs text-white/40">
         {invitedCount === 0

@@ -167,12 +167,6 @@ enum RewardType {
   PHYSICAL
 }
 
-enum WaitlistIntent {
-  CREATOR
-  ENTREPRENEUR
-  BOTH
-}
-
 // ---------------------------------------------------------------------------
 // Auth (NextAuth Prisma Adapter) + Users
 // ---------------------------------------------------------------------------
@@ -700,6 +694,18 @@ model Payout {
 }
 
 // ---------------------------------------------------------------------------
+// Platform secrets (Stripe webhook signing secret, etc.)
+// ---------------------------------------------------------------------------
+
+model PlatformSecret {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_secrets")
+}
+
+// ---------------------------------------------------------------------------
 // MLM — unilevel + binario + plan de compensación
 // ---------------------------------------------------------------------------
 
@@ -958,22 +964,4 @@ model UserStats {
   @@index([points(sort: Desc)], map: "user_stats_leaderboard_idx")
   @@index([rankId])
   @@map("user_stats")
-}
-
-// ---------------------------------------------------------------------------
-// Growth — lista de espera del lanzamiento
-// ---------------------------------------------------------------------------
-
-model WaitlistEntry {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  intent       WaitlistIntent @default(BOTH)
-  source       String         @default("landing")
-  referralCode String?
-  locale       String         @default("es")
-  createdAt    DateTime       @default(now())
-
-  @@index([createdAt])
-  @@index([intent])
-  @@map("waitlist_entries")
 }
