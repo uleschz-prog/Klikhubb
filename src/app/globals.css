@@ -16,6 +16,50 @@ body {
   background: #050505;
 }
 
+/* ── PWA instalada: experiencia app nativa premium ── */
+html.pwa-standalone {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html.pwa-standalone,
+html.pwa-standalone body {
+  overscroll-behavior: none;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+html.pwa-standalone body {
+  background: #050505;
+  user-select: none;
+}
+
+html.pwa-standalone input,
+html.pwa-standalone textarea,
+html.pwa-standalone [contenteditable="true"] {
+  user-select: text;
+}
+
+html.pwa-standalone ::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html.pwa-standalone .pwa-native-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+html.pwa-standalone .pwa-native-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+html.pwa-standalone .pwa-install-hint {
+  display: none !important;
+}
+
 .bg-grid {
   background-image:
     linear-gradient(to right, rgb(0 240 255 / 0.045) 1px, transparent 1px),

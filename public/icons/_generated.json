@@ -1,0 +1,96 @@
+{
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "splash": [
+    {
+      "name": "iphone-14-pro-max",
+      "w": 1290,
+      "h": 2796,
+      "path": "/splash/iphone-14-pro-max-1290x2796.png"
+    },
+    {
+      "name": "iphone-14-pro",
+      "w": 1179,
+      "h": 2556,
+      "path": "/splash/iphone-14-pro-1179x2556.png"
+    },
+    {
+      "name": "iphone-13",
+      "w": 1170,
+      "h": 2532,
+      "path": "/splash/iphone-13-1170x2532.png"
+    },
+    {
+      "name": "iphone-12-pro-max",
+      "w": 1284,
+      "h": 2778,
+      "path": "/splash/iphone-12-pro-max-1284x2778.png"
+    },
+    {
+      "name": "iphone-se",
+      "w": 750,
+      "h": 1334,
+      "path": "/splash/iphone-se-750x1334.png"
+    },
+    {
+      "name": "ipad-pro-12",
+      "w": 2048,
+      "h": 2732,
+      "path": "/splash/ipad-pro-12-2048x2732.png"
+    }
+  ]
+}

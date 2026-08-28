@@ -876,7 +876,7 @@ export function FeedTheater({
       >
         +
       </Link>
-      {!hidden ? <MobileTabBar /> : null}
+          {!hidden ? <MobileTabBar /> : null}
     </div>
   );
 }
