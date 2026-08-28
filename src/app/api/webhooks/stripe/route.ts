@@ -6,8 +6,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret || !process.env.STRIPE_SECRET_KEY) {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim().replace(/^["']|["']$/g, "");
+  if (!secret || !process.env.STRIPE_SECRET_KEY?.trim()) {
     return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
   }
 
@@ -21,8 +21,15 @@ export async function POST(request: Request) {
   let event;
   try {
     event = getStripe().webhooks.constructEvent(raw, signature, secret);
-  } catch {
-    return NextResponse.json({ error: "Firma de webhook inválida." }, { status: 400 });
+  } catch (error) {
+    console.error("stripe webhook signature", error);
+    return NextResponse.json(
+      {
+        error: "Firma de webhook inválida.",
+        hint: "Revisa que STRIPE_WEBHOOK_SECRET en Vercel sea el whsec_ de este endpoint (Reveal en Stripe).",
+      },
+      { status: 400 },
+    );
   }
 
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
