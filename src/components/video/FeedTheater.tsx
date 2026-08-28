@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
-import { formatCount, formatFeedDate, formatTimecode, initialsFrom } from "@/lib/video/format";
+import { formatCount, formatFeedDate, formatTimecode } from "@/lib/video/format";
+import { UserAvatar } from "@/components/profile/UserAvatar";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
@@ -494,7 +495,7 @@ export function FeedTheater({
               className="relative mt-2 mb-1 overflow-visible"
               aria-label={followed ? "Siguiendo" : "Seguir"}
             >
-              <Avatar name={video.creatorName} size="lg" />
+              <UserAvatar name={video.creatorName} imageUrl={video.creatorImage} size="lg" />
               <span
                 className={`absolute -bottom-1 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold ${
                   followed ? "bg-white text-klik-black" : "bg-klik-green text-klik-black"
@@ -834,15 +835,6 @@ export function FeedTheater({
       </Link>
       {!hidden ? <MobileTabBar /> : null}
     </div>
-  );
-}
-
-function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "lg" }) {
-  const box = size === "lg" ? "h-12 w-12 text-sm" : "h-8 w-8 text-[11px]";
-  return (
-    <span className={`inline-flex ${box} items-center justify-center rounded-full bg-gradient-to-br from-klik-cyan to-klik-green font-bold text-klik-black`}>
-      {initialsFrom(name)}
-    </span>
   );
 }
 

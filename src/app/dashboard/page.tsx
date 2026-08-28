@@ -2,6 +2,7 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { InviteCard } from "@/components/social/InviteCard";
 import { Leaderboard } from "@/components/gamification/Leaderboard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { ProfileAvatarUpload } from "@/components/profile/ProfileAvatarUpload";
 import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
 import { getDbUserId } from "@/lib/auth/session";
 import { loadHub } from "@/lib/commerce/catalog";
@@ -30,6 +31,10 @@ export default async function DashboardPage() {
           </p>
         </div>
         <LogoutButton />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-5">
+        <ProfileAvatarUpload name={hub?.displayName ?? "Miembro"} imageUrl={hub?.image} />
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">

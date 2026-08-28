@@ -20,6 +20,7 @@ type DemoUser = {
   referralCode: string;
   invitedById: string | null;
   sponsorId?: string | null;
+  image?: string | null;
   roles: string[];
   points: number;
 };
@@ -504,6 +505,15 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
   };
 }
 
+export async function demoUpdateAvatar(userId: string, imageUrl: string | null) {
+  const db = await loadDemo();
+  const user = db.users.find((row) => row.id === userId);
+  if (!user) throw new Error("USER_NOT_FOUND");
+  user.image = imageUrl;
+  await persist(db);
+  return user;
+}
+
 export async function demoHub(userId: string) {
   await demoReleaseMature(userId);
   const db = await loadDemo();
@@ -526,6 +536,7 @@ export async function demoHub(userId: string) {
 
   return {
     displayName: user?.displayName ?? "Miembro",
+    image: user?.image ?? null,
     referralCode: user?.referralCode ?? "",
     invitedCount,
     points: user?.points ?? 0,
