@@ -10,6 +10,15 @@ export function isStripeEnabled() {
   return Boolean(process.env.STRIPE_SECRET_KEY?.trim());
 }
 
+/** test | live según el prefijo de STRIPE_SECRET_KEY (sin exponer la clave). */
+export function getStripeKeyMode(): "test" | "live" | null {
+  const key = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!key) return null;
+  if (key.startsWith("sk_test_")) return "test";
+  if (key.startsWith("sk_live_")) return "live";
+  return null;
+}
+
 /** En Vercel producción no se regala el acceso: hace falta tarjeta. */
 export function isLivePaymentsRequired() {
   return process.env.VERCEL_ENV === "production";

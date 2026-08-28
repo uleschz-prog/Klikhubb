@@ -48,7 +48,12 @@ export async function POST(request: Request) {
       if (!checkout.url) {
         return NextResponse.json({ error: "Stripe no devolvió una URL de pago." }, { status: 502 });
       }
-      return NextResponse.json({ ok: true, url: checkout.url, mode: "stripe" });
+      return NextResponse.json({
+        ok: true,
+        url: checkout.url,
+        mode: "stripe",
+        stripeMode: checkout.livemode ? "live" : "test",
+      });
     } catch (error) {
       console.error(error);
       return NextResponse.json({ error: "No se pudo abrir Stripe Checkout." }, { status: 502 });
