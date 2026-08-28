@@ -21,17 +21,18 @@ export function stripeWebhookUrl() {
 export async function loadStripeWebhookSecrets(): Promise<string[]> {
   const secrets: string[] = [];
   const envSecret = normalizeSecret(process.env.STRIPE_WEBHOOK_SECRET);
-  if (envSecret) secrets.push(envSecret);
 
   try {
     const stored = await prisma.platformSecret.findUnique({
       where: { key: STRIPE_WEBHOOK_SECRET_KEY },
     });
     const dbSecret = normalizeSecret(stored?.value);
-    if (dbSecret && !secrets.includes(dbSecret)) secrets.push(dbSecret);
+    if (dbSecret) secrets.push(dbSecret);
   } catch {
     // Postgres no disponible: solo env.
   }
+
+  if (envSecret && !secrets.includes(envSecret)) secrets.push(envSecret);
 
   return secrets;
 }

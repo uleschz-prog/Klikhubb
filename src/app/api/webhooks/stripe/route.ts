@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { fulfillCheckoutSession } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
+import { prisma } from "@/lib/prisma";
 import {
   loadStripeWebhookSecrets,
+  STRIPE_WEBHOOK_SECRET_KEY,
   syncStripeWebhookEndpoint,
   verifyStripeWebhookEvent,
 } from "@/lib/commerce/stripe-webhook-secret";
@@ -15,15 +17,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
   }
 
-  let secrets = await loadStripeWebhookSecrets();
-  if (secrets.length === 0) {
-    try {
+  try {
+    const stored = await prisma.platformSecret.findUnique({
+      where: { key: STRIPE_WEBHOOK_SECRET_KEY },
+    });
+    if (!stored?.value?.trim()) {
       await syncStripeWebhookEndpoint({ force: true });
-      secrets = await loadStripeWebhookSecrets();
-    } catch (error) {
-      console.error("stripe webhook bootstrap", error);
     }
+  } catch (error) {
+    console.error("stripe webhook pre-sync", error);
   }
+
+  const secrets = await loadStripeWebhookSecrets();
 
   if (secrets.length === 0) {
     return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
