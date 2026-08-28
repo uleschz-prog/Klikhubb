@@ -3,7 +3,7 @@ import { isConnectionError } from "@/lib/demo/store";
 import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
 
 const videoInclude = {
-  creator: { select: { id: true, displayName: true, username: true, name: true } },
+  creator: { select: { id: true, displayName: true, username: true, name: true, image: true } },
   tags: { include: { tag: { select: { slug: true, name: true } } } },
   products: {
     where: { isPrimary: true },
@@ -32,6 +32,7 @@ function toFeedVideo(
     id: row.id,
     creatorId: row.creator.id,
     creatorName: row.creator.displayName ?? row.creator.name ?? "Creador",
+    creatorImage: row.creator.image,
     handle: row.creator.username ?? "klik",
     likedByMe: flags.liked,
     savedByMe: flags.saved,
