@@ -1,13 +1,31 @@
 import { NextResponse } from "next/server";
-import { fulfillCheckoutSession, getStripe } from "@/lib/commerce/stripe";
+import { fulfillCheckoutSession } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
+import {
+  loadStripeWebhookSecrets,
+  syncStripeWebhookEndpoint,
+  verifyStripeWebhookEvent,
+} from "@/lib/commerce/stripe-webhook-secret";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim().replace(/^["']|["']$/g, "");
-  if (!secret || !process.env.STRIPE_SECRET_KEY?.trim()) {
+  if (!process.env.STRIPE_SECRET_KEY?.trim()) {
+    return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
+  }
+
+  let secrets = await loadStripeWebhookSecrets();
+  if (secrets.length === 0) {
+    try {
+      await syncStripeWebhookEndpoint({ force: true });
+      secrets = await loadStripeWebhookSecrets();
+    } catch (error) {
+      console.error("stripe webhook bootstrap", error);
+    }
+  }
+
+  if (secrets.length === 0) {
     return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
   }
 
@@ -16,20 +34,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Falta stripe-signature." }, { status: 400 });
   }
 
-  const raw = await request.text();
+  const raw = Buffer.from(await request.arrayBuffer()).toString("utf8");
 
   let event;
   try {
-    event = getStripe().webhooks.constructEvent(raw, signature, secret);
+    event = verifyStripeWebhookEvent(raw, signature, secrets);
   } catch (error) {
     console.error("stripe webhook signature", error);
-    return NextResponse.json(
-      {
-        error: "Firma de webhook inválida.",
-        hint: "Revisa que STRIPE_WEBHOOK_SECRET en Vercel sea el whsec_ de este endpoint (Reveal en Stripe).",
-      },
-      { status: 400 },
-    );
+    const message = error instanceof Error ? error.message : "Firma de webhook inválida.";
+    return NextResponse.json({ error: "Firma de webhook inválida.", detail: message }, { status: 400 });
   }
 
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {

@@ -694,6 +694,18 @@ model Payout {
 }
 
 // ---------------------------------------------------------------------------
+// Platform secrets (Stripe webhook signing secret, etc.)
+// ---------------------------------------------------------------------------
+
+model PlatformSecret {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("platform_secrets")
+}
+
+// ---------------------------------------------------------------------------
 // MLM — unilevel + binario + plan de compensación
 // ---------------------------------------------------------------------------
 
