@@ -9,18 +9,22 @@ export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
+    const first = parsed.error.issues[0]?.message;
     return NextResponse.json(
-      { error: "Revisa nombre, email y una contraseña de 8+ caracteres." },
+      { error: first ?? "Revisa los datos del registro." },
       { status: 400 },
     );
   }
 
   const payload = {
     email: parsed.data.email,
+    username: parsed.data.username,
     password: parsed.data.password,
     displayName: parsed.data.displayName,
     intent: parsed.data.intent,
     referralCode: parsed.data.referralCode?.trim() || undefined,
+    locale: parsed.data.locale,
+    timezone: parsed.data.timezone,
   };
 
   try {
@@ -47,6 +51,9 @@ function mapRegisterError(error: unknown) {
   const code = error instanceof Error ? error.message : "";
   if (code === "EMAIL_TAKEN") {
     return NextResponse.json({ error: "Ese email ya está registrado." }, { status: 409 });
+  }
+  if (code === "USERNAME_TAKEN") {
+    return NextResponse.json({ error: "Ese usuario ya existe. Prueba otro." }, { status: 409 });
   }
   if (code === "INVALID_REFERRAL") {
     return NextResponse.json({ error: "Ese código de amigo no existe." }, { status: 400 });

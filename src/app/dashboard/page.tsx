@@ -2,6 +2,7 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { InviteCard } from "@/components/social/InviteCard";
 import { Leaderboard } from "@/components/gamification/Leaderboard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { ProfileAvatarUpload } from "@/components/profile/ProfileAvatarUpload";
 import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
 import { getDbUserId } from "@/lib/auth/session";
 import { loadHub } from "@/lib/commerce/catalog";
@@ -32,6 +33,10 @@ export default async function DashboardPage() {
         <LogoutButton />
       </div>
 
+      <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-5">
+        <ProfileAvatarUpload name={hub?.displayName ?? "Miembro"} imageUrl={hub?.image} />
+      </div>
+
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <a href="/wallet" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
           <p className="text-[11px] uppercase tracking-wider text-white/40">Disponible</p>
@@ -57,8 +62,14 @@ export default async function DashboardPage() {
           Monedero
         </a>
         <a
-          href="/publish"
+          href="/studio"
           className="inline-flex min-h-12 items-center rounded-full bg-klik-cyan px-6 text-sm font-bold text-klik-black"
+        >
+          Studio de cursos
+        </a>
+        <a
+          href="/publish"
+          className="inline-flex min-h-12 items-center rounded-full border border-white/15 px-6 text-sm font-bold text-white"
         >
           Publicar video
         </a>

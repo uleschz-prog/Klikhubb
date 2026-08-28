@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/brand/Logo";
+import { PasswordInput } from "@/components/auth/PasswordInput";
 
 export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const params = useSearchParams();
@@ -52,12 +53,12 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
           </label>
           <label className="block text-xs font-semibold uppercase tracking-wider text-white/45">
             Contraseña
-            <input
-              type="password"
+            <PasswordInput
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-2 min-h-12 w-full rounded-full border border-white/10 bg-black px-4 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan"
+              wrapperClassName="mt-2"
+              inputClassName="min-h-12 w-full rounded-full border border-white/10 bg-black px-4 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan"
             />
           </label>
           {error ? <p className="text-sm text-red-400">{error}</p> : null}

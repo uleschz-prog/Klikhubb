@@ -71,6 +71,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.displayName,
+            image: user.image ?? null,
             roles: user.roles,
           };
         }
@@ -78,11 +79,15 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.roles = user.roles ?? [];
         if (user.email) token.email = user.email;
+        if (user.image) token.picture = user.image;
+      }
+      if (trigger === "update" && session && "image" in session) {
+        token.picture = (session as { image?: string | null }).image ?? null;
       }
       return hydrateAuthToken(token);
     },
@@ -90,6 +95,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.roles = (token.roles as string[]) ?? [];
+        session.user.image = (token.picture as string | null | undefined) ?? null;
       }
       return session;
     },

@@ -1,3 +1,4 @@
+import { PLATFORM_ADMIN } from "@/config/platform-admin";
 import { prisma } from "@/lib/prisma";
 import { splitSaleCommissions } from "@/lib/commerce/split";
 import { CommerceError } from "@/lib/commerce/settle-order";
@@ -9,6 +10,7 @@ import {
   demoInviterId,
   demoListEnrollments,
   demoListProducts,
+  demoPlatformUserId,
   isConnectionError,
   loadDemo,
 } from "@/lib/demo/store";
@@ -203,14 +205,27 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
       include: { creator: { select: { displayName: true, username: true } } },
     });
     if (!product) return null;
-    const buyer = await prisma.user.findUnique({
-      where: { id: buyerId },
-      select: { invitedById: true },
-    });
+    const [buyer, platform] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: buyerId },
+        select: { invitedById: true },
+      }),
+      prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: PLATFORM_ADMIN.email },
+            { username: { equals: PLATFORM_ADMIN.username, mode: "insensitive" } },
+            { referralCode: { equals: PLATFORM_ADMIN.referralCode, mode: "insensitive" } },
+          ],
+        },
+        select: { id: true },
+      }),
+    ]);
     const lines = splitSaleCommissions({
       saleAmount: Number(product.price),
       creatorId: product.creatorId,
       inviterId: buyer?.invitedById,
+      platformUserId: platform?.id ?? null,
     });
     return {
       product: {
@@ -234,6 +249,7 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
   if (!product) return null;
   const db = await loadDemo();
   const creator = db.users.find((user) => user.id === product.creatorId);
+  const platformUserId = demoPlatformUserId(db);
   return {
     product: {
       id: product.id,
@@ -249,6 +265,7 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
       saleAmount: product.price,
       creatorId: product.creatorId,
       inviterId: demoInviterId(db, buyerId),
+      platformUserId,
     }),
     mode: "demo" as const,
   };
@@ -262,7 +279,7 @@ export async function loadHub(userId: string) {
       prisma.userStats.findUnique({ where: { userId } }),
       prisma.user.findUnique({
         where: { id: userId },
-        select: { displayName: true, referralCode: true },
+        select: { displayName: true, referralCode: true, image: true },
       }),
       prisma.user.count({ where: { invitedById: userId } }),
       prisma.userStats.findMany({
@@ -283,6 +300,7 @@ export async function loadHub(userId: string) {
 
     return {
       displayName: user?.displayName ?? "Miembro",
+      image: user?.image ?? null,
       referralCode: user?.referralCode ?? "",
       invitedCount,
       points: stats?.points ?? 0,

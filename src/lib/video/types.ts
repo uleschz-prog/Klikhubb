@@ -13,6 +13,7 @@ export type FeedVideo = {
   id: string;
   creatorId: string;
   creatorName: string;
+  creatorImage?: string | null;
   handle: string;
   likedByMe?: boolean;
   savedByMe?: boolean;

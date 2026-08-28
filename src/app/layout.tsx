@@ -24,6 +24,25 @@ export const metadata: Metadata = {
   },
   description: site.description,
   metadataBase: new URL(site.url),
+  applicationName: site.name,
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: site.url,
+    siteName: site.name,
+    title: site.share.title,
+    description: site.share.description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: site.share.title,
+    description: site.share.description,
+    images: ["/twitter-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
