@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { fulfillCheckoutSession } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
-import { prisma } from "@/lib/prisma";
 import {
+  bootstrapStripeWebhookSecrets,
   loadStripeWebhookSecrets,
-  STRIPE_WEBHOOK_SECRET_KEY,
-  syncStripeWebhookEndpoint,
   verifyStripeWebhookEvent,
 } from "@/lib/commerce/stripe-webhook-secret";
 
@@ -17,16 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
   }
 
-  try {
-    const stored = await prisma.platformSecret.findUnique({
-      where: { key: STRIPE_WEBHOOK_SECRET_KEY },
-    });
-    if (!stored?.value?.trim()) {
-      await syncStripeWebhookEndpoint({ force: true });
-    }
-  } catch (error) {
-    console.error("stripe webhook pre-sync", error);
-  }
+  await bootstrapStripeWebhookSecrets();
 
   const secrets = await loadStripeWebhookSecrets();
 
@@ -47,7 +36,15 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("stripe webhook signature", error);
     const message = error instanceof Error ? error.message : "Firma de webhook inválida.";
-    return NextResponse.json({ error: "Firma de webhook inválida.", detail: message }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: "Firma de webhook inválida.",
+        detail: message,
+        hint:
+          "Usa el whsec_ del webhook en Stripe Dashboard (Test). No uses stripe listen hacia producción: firma con otro secreto.",
+      },
+      { status: 400 },
+    );
   }
 
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {

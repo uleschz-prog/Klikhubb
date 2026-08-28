@@ -3,6 +3,16 @@ import { PrismaClient } from "@prisma/client";
 
 const KEY = "stripe_webhook_secret";
 
+function normalizeSecret(value) {
+  return value?.trim().replace(/^["']|["']$/g, "") ?? "";
+}
+
+function parseEnvWebhookSecrets() {
+  const raw = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  if (!raw) return [];
+  return [...new Set(raw.split(",").map(normalizeSecret).filter(Boolean))];
+}
+
 function normalizePublicUrl(url) {
   return url
     .trim()
@@ -36,9 +46,20 @@ async function main() {
   }
 
   const prisma = new PrismaClient();
+  const envSecrets = parseEnvWebhookSecrets();
   const force = process.env.STRIPE_WEBHOOK_SYNC === "force";
 
   try {
+    if (envSecrets.length > 0 && !force) {
+      await prisma.platformSecret.upsert({
+        where: { key: KEY },
+        create: { key: KEY, value: envSecrets[0] },
+        update: { value: envSecrets[0] },
+      });
+      console.log("Stripe webhook secret synced from STRIPE_WEBHOOK_SECRET env.");
+      return;
+    }
+
     if (!force) {
       const stored = await prisma.platformSecret.findUnique({ where: { key: KEY } });
       if (stored?.value?.trim()) {

@@ -18,21 +18,78 @@ export function stripeWebhookUrl() {
   return `${siteUrl()}/api/webhooks/stripe`;
 }
 
+/** Soporta uno o varios whsec_ separados por coma (útil en transición). */
+export function parseEnvWebhookSecrets(): string[] {
+  const raw = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  if (!raw) return [];
+
+  return Array.from(new Set(raw.split(",").map(normalizeSecret).filter(Boolean)));
+}
+
+async function persistWebhookSecretToDb(secret: string) {
+  const normalized = normalizeSecret(secret);
+  if (!normalized) return;
+
+  try {
+    await prisma.platformSecret.upsert({
+      where: { key: STRIPE_WEBHOOK_SECRET_KEY },
+      create: { key: STRIPE_WEBHOOK_SECRET_KEY, value: normalized },
+      update: { value: normalized },
+    });
+  } catch {
+    // Postgres no disponible.
+  }
+}
+
+/** Alinea DB con STRIPE_WEBHOOK_SECRET cuando el usuario lo define en Vercel. */
+export async function bootstrapStripeWebhookSecrets() {
+  const envSecrets = parseEnvWebhookSecrets();
+  if (envSecrets.length > 0) {
+    await persistWebhookSecretToDb(envSecrets[0]);
+    return { source: "env" as const, count: envSecrets.length };
+  }
+
+  try {
+    const stored = await prisma.platformSecret.findUnique({
+      where: { key: STRIPE_WEBHOOK_SECRET_KEY },
+    });
+    if (stored?.value?.trim()) {
+      return { source: "db" as const, count: 1 };
+    }
+  } catch {
+    // Postgres no disponible.
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY?.trim()) {
+    return { source: "none" as const, count: 0 };
+  }
+
+  try {
+    await syncStripeWebhookEndpoint();
+    return { source: "created" as const, count: 1 };
+  } catch (error) {
+    console.error("stripe webhook bootstrap", error);
+    return { source: "none" as const, count: 0 };
+  }
+}
+
 export async function loadStripeWebhookSecrets(): Promise<string[]> {
-  const secrets: string[] = [];
-  const envSecret = normalizeSecret(process.env.STRIPE_WEBHOOK_SECRET);
+  const envSecrets = parseEnvWebhookSecrets();
+  if (envSecrets.length > 0) {
+    await persistWebhookSecretToDb(envSecrets[0]);
+  }
+
+  const secrets: string[] = [...envSecrets];
 
   try {
     const stored = await prisma.platformSecret.findUnique({
       where: { key: STRIPE_WEBHOOK_SECRET_KEY },
     });
     const dbSecret = normalizeSecret(stored?.value);
-    if (dbSecret) secrets.push(dbSecret);
+    if (dbSecret && !secrets.includes(dbSecret)) secrets.push(dbSecret);
   } catch {
     // Postgres no disponible: solo env.
   }
-
-  if (envSecret && !secrets.includes(envSecret)) secrets.push(envSecret);
 
   return secrets;
 }
@@ -56,6 +113,17 @@ export async function syncStripeWebhookEndpoint(options?: { force?: boolean }) {
   const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
   if (!stripeKey) {
     throw new Error("STRIPE_NOT_CONFIGURED");
+  }
+
+  const envSecrets = parseEnvWebhookSecrets();
+  if (envSecrets.length > 0 && !options?.force) {
+    await persistWebhookSecretToDb(envSecrets[0]);
+    return {
+      synced: true,
+      reason: "env_persisted" as const,
+      endpointId: null,
+      url: stripeWebhookUrl(),
+    };
   }
 
   const force = options?.force ?? process.env.STRIPE_WEBHOOK_SYNC === "force";
@@ -87,11 +155,7 @@ export async function syncStripeWebhookEndpoint(options?: { force?: boolean }) {
     throw new Error("STRIPE_WEBHOOK_SECRET_MISSING");
   }
 
-  await prisma.platformSecret.upsert({
-    where: { key: STRIPE_WEBHOOK_SECRET_KEY },
-    create: { key: STRIPE_WEBHOOK_SECRET_KEY, value: created.secret },
-    update: { value: created.secret },
-  });
+  await persistWebhookSecretToDb(created.secret);
 
   return {
     synced: true,
