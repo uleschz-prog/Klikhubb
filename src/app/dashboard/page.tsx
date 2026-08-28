@@ -57,8 +57,14 @@ export default async function DashboardPage() {
           Monedero
         </a>
         <a
-          href="/publish"
+          href="/studio"
           className="inline-flex min-h-12 items-center rounded-full bg-klik-cyan px-6 text-sm font-bold text-klik-black"
+        >
+          Studio de cursos
+        </a>
+        <a
+          href="/publish"
+          className="inline-flex min-h-12 items-center rounded-full border border-white/15 px-6 text-sm font-bold text-white"
         >
           Publicar video
         </a>
