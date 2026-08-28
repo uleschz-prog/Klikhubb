@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { WalletConnectCard } from "@/components/wallet/WalletConnectCard";
 import { WalletPayoutForm } from "@/components/wallet/WalletPayoutForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/commerce/split";
+import { loadConnectStatus } from "@/lib/commerce/stripe-connect";
 import { formatWalletDate, ledgerLabel, loadWalletView } from "@/lib/commerce/wallet";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +32,7 @@ export default async function WalletPage() {
   }
 
   const wallet = await loadWalletView(userId);
+  const connect = await loadConnectStatus(userId);
 
   return (
     <PlatformShell title="Monedero">
@@ -76,10 +79,14 @@ export default async function WalletPage() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <WalletConnectCard />
+
         <WalletPayoutForm
           available={wallet.available}
           minPayout={wallet.minPayout}
           currency={wallet.currency}
+          connectRequired={connect.enabled}
+          connectReady={connect.payoutsEnabled}
         />
 
         <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
