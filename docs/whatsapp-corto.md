@@ -16,7 +16,7 @@ Red social donde publicas, vendes y cobras en el mismo sitio:
 ✅ Monedero integrado
 
 Registro *gratis* y directo 👇
-https://klikhubb.vercel.app
+https://qlyk.vercel.app
 ```
 
 ---
@@ -26,7 +26,7 @@ https://klikhubb.vercel.app
 ```
 *¿Eres creador? Así funciona Qlyk* 🚀
 
-1️⃣ Creas cuenta gratis → https://klikhubb.vercel.app/register
+1️⃣ Creas cuenta gratis → https://qlyk.vercel.app/register
 2️⃣ Subes video con tu oferta (/publish) o armes un curso (/studio)
 3️⃣ Tu gente compra *desde el feed* con Stripe
 4️⃣ Cobras en tu monedero
@@ -41,7 +41,7 @@ Retiro mínimo: *10 USD*.
 *Invita, no reclutes:* ganas 5% cuando alguien que invitaste *compra*, no por registrarse.
 
 Tu link con código:
-https://klikhubb.vercel.app?ref=TUCODIGO
+https://qlyk.vercel.app?ref=TUCODIGO
 
 ¿Dudas? Escríbenos 💬
 ```
@@ -62,7 +62,7 @@ Reparto: 85% creador · 10% plataforma · 5% referido (1 solo nivel).
 *No es MLM.* Sin pago por reclutar.
 
 *Estado:* producto live, Stripe, Course Studio, wallet, legal RGPD.
-*URL:* https://klikhubb.vercel.app
+*URL:* https://qlyk.vercel.app
 
 Buscamos capital para Connect, growth de creadores ancla y escala LATAM/hispano.
 
@@ -79,7 +79,7 @@ Te invito a *Qlyk* 🎬
 Publica video, vende cursos y cobra sin mandar a tu gente a otro link.
 
 Cuenta gratis aquí 👇
-https://klikhubb.vercel.app?ref=TUCODIGO
+https://qlyk.vercel.app?ref=TUCODIGO
 
 Del video al pago. Sin salir del feed.
 ```
@@ -97,7 +97,7 @@ Del video al pago. Sin salir del feed.
 4. Revisa tu monedero en /wallet
 
 Manual completo en el repo: docs/manual-creadores.md
-Plataforma: https://klikhubb.vercel.app
+Plataforma: https://qlyk.vercel.app
 ```
 
 ---

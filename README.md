@@ -19,7 +19,7 @@ npm run db:seed
 npm run dev
 ```
 
-La landing queda en `http://localhost:3000`. `/dashboard` está protegido por middleware.
+La landing queda en `http://localhost:3000`. Producción: **https://qlyk.vercel.app**
 
 ## Modelo de dinero
 

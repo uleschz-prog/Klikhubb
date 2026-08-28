@@ -2,7 +2,7 @@
 
 **Duración sugerida:** 8–12 minutos (+ Q&A)  
 **Formato:** presentación oral; cada bloque = 1 diapositiva o beat  
-**Producción:** https://klikhubb.vercel.app
+**Producción:** https://qlyk.vercel.app
 
 ---
 

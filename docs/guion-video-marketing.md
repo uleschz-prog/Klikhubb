@@ -1,6 +1,6 @@
 # Qlyk — Guion de video para atraer nuevos usuarios
 
-**Objetivo:** generar registros en https://klikhubb.vercel.app  
+**Objetivo:** generar registros en https://qlyk.vercel.app  
 **Formato recomendado:** vertical 9:16 (Reels, TikTok, Shorts)  
 **Duración:** versión corta 45–60 s · versión larga 90–120 s  
 **Tono:** directo, premium, energético — no corporativo aburrido  
@@ -125,7 +125,7 @@ Para videos muteados (80% de scroll):
 0:24  Te quedas 85–90%
 0:30  Curso + Comunidad + Monedero
 0:36  Registro GRATIS
-0:42  klikhubb.vercel.app
+0:42  qlyk.vercel.app
 0:48  Empieza hoy ↓
 ```
 
@@ -154,7 +154,7 @@ Para videos muteados (80% de scroll):
 ✅ Te quedas 85–90% de cada venta
 ✅ Registro GRATIS, sin lista de espera
 
-👉 Empieza aquí: https://klikhubb.vercel.app
+👉 Empieza aquí: https://qlyk.vercel.app
 
 #Qlyk #creadores #emprendedores #contenido #ventasonline #cursoonline #redsocial
 ```

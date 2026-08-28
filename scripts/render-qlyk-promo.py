@@ -256,7 +256,7 @@ def main() -> None:
             "s06-cta.png",
             [
                 ("Registro GRATIS", 78, GREEN, "bold"),
-                ("klikhubb.vercel.app", 52, WHITE, "bold"),
+                ("qlyk.vercel.app", 52, WHITE, "bold"),
             ],
             subtitle="Empieza hoy ↓",
             logo=logo,

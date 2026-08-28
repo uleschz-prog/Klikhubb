@@ -1,7 +1,7 @@
 # Qlyk — Manual para creadores
 
 **Cómo publicar, vender y cobrar en Qlyk**  
-Plataforma: https://klikhubb.vercel.app
+Plataforma: https://qlyk.vercel.app
 
 ---
 
@@ -22,7 +22,7 @@ Qlyk es tu **centro de operaciones** como creador:
 
 ### Paso 1 — Crea tu cuenta (gratis)
 
-1. Entra a **https://klikhubb.vercel.app**
+1. Entra a **https://qlyk.vercel.app**
 2. Completa el formulario:
    - Tu nombre
    - Email
@@ -73,7 +73,7 @@ Cuando alguien compra **tu** producto:
 
 Comparte tu enlace con referido:
 ```
-https://klikhubb.vercel.app?ref=TUCODIGO
+https://qlyk.vercel.app?ref=TUCODIGO
 ```
 
 ---
@@ -190,7 +190,7 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 ### Legal
 - Solo vende lo que es tuyo o tienes derecho a vender.
 - Declara tus ingresos según la ley de tu país.
-- Lee términos: https://klikhubb.vercel.app/legal/terms
+- Lee términos: https://qlyk.vercel.app/legal/terms
 
 ---
 
@@ -219,12 +219,12 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 
 | Recurso | Enlace |
 |---------|--------|
-| Plataforma | https://klikhubb.vercel.app |
-| Registro | https://klikhubb.vercel.app/register |
-| Dashboard | https://klikhubb.vercel.app/dashboard |
-| Studio | https://klikhubb.vercel.app/studio |
-| Términos | https://klikhubb.vercel.app/legal/terms |
-| Privacidad | https://klikhubb.vercel.app/legal/privacy |
+| Plataforma | https://qlyk.vercel.app |
+| Registro | https://qlyk.vercel.app/register |
+| Dashboard | https://qlyk.vercel.app/dashboard |
+| Studio | https://qlyk.vercel.app/studio |
+| Términos | https://qlyk.vercel.app/legal/terms |
+| Privacidad | https://qlyk.vercel.app/legal/privacy |
 
 **Contacto:** qlykadmin@qlyk.app
 
@@ -248,7 +248,7 @@ Solo si quien compra fue referido por otro usuario. Si no hay referidor, tú te 
 No. Un solo nivel de referido por compra. Sin pago por reclutar. Términos públicos.
 
 **¿Puedo usar mi propio dominio?**  
-Roadmap; hoy usas klikhubb.vercel.app (dominio custom en evolución).
+Roadmap; hoy usas qlyk.vercel.app (dominio custom en evolución).
 
 ---
 

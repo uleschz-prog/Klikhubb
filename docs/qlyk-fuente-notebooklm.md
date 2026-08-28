@@ -7,7 +7,7 @@ Este documento describe la plataforma Qlyk de forma completa. Puede usarse como 
 ## 1. Identidad y propósito
 
 **Nombre:** Qlyk  
-**URL de producción:** https://klikhubb.vercel.app  
+**URL de producción:** https://qlyk.vercel.app  
 **Slogan:** El centro donde todo sucede con un solo clic.  
 **Frase principal de marketing:** Del video al pago. Sin salir del feed.
 
@@ -274,7 +274,7 @@ Email, nombre, usuario, contraseña (hash), idioma, zona horaria, intención de 
 
 ### Para redes sociales (WhatsApp, Reels)
 - Hook: «¿Cuántos clics perdiste hoy?»
-- CTA: https://klikhubb.vercel.app
+- CTA: https://qlyk.vercel.app
 - Preview al compartir enlace: imagen Open Graph con marca Qlyk.
 
 ---

@@ -1,3 +1,13 @@
+import {
+  LEGACY_PRODUCTION_URL,
+  PRODUCTION_URL,
+  ensureNextAuthUrl,
+  normalizePublicUrl,
+  resolveSiteUrl,
+} from "./site-url.env.mjs";
+
+export { PRODUCTION_URL, LEGACY_PRODUCTION_URL };
+
 export const brand = {
   name: "Qlyk",
   slogan: "El centro donde todo sucede con un solo clic.",
@@ -8,11 +18,10 @@ export const brand = {
   },
 } as const;
 
+ensureNextAuthUrl();
+
 export function siteUrl() {
-  const explicit = process.env.NEXTAUTH_URL?.trim();
-  if (explicit) return explicit.replace(/\/$/, "");
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  return "http://localhost:3000";
+  return resolveSiteUrl();
 }
 
 export const site = {
@@ -27,3 +36,9 @@ export const site = {
       "Publica, vende y cobra en el mismo feed. Cuenta gratis, registro directo.",
   },
 } as const;
+
+export function referralLink(code: string) {
+  const base = normalizePublicUrl(site.url);
+  const params = new URLSearchParams({ ref: code });
+  return `${base}/register?${params.toString()}`;
+}

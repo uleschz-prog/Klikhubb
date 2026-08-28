@@ -1,9 +1,6 @@
-if (!process.env.NEXTAUTH_URL?.trim()) {
-  delete process.env.NEXTAUTH_URL;
-  if (process.env.VERCEL_URL) {
-    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  }
-}
+import { ensureNextAuthUrl } from "./src/config/site-url.env.mjs";
+
+ensureNextAuthUrl();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
