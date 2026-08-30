@@ -7,9 +7,12 @@ import { fromCents, toCents } from "@/lib/money/cents";
 import type { SettledOrder } from "@/lib/commerce/settle-order";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
 
+import { DEMO_USER_EMAILS } from "@/config/demo-fixtures";
 import { PLATFORM_ADMIN, platformAdminPassword } from "@/config/platform-admin";
 
 export const DEMO_PASSWORD = "KlikHubb2026!";
+
+const DEMO_EMAIL_SET = new Set(DEMO_USER_EMAILS.map((email) => email.toLowerCase()));
 
 type DemoUser = {
   id: string;
@@ -132,6 +135,16 @@ function normalizeDemo(db: DemoDB): DemoDB {
   db.commissions ??= [];
   db.ledger ??= [];
   db.payouts ??= [];
+  db.users = db.users.filter((user) => !DEMO_EMAIL_SET.has(user.email.toLowerCase()));
+  db.products = [];
+  db.enrollments = [];
+  db.orders = [];
+  db.commissions = [];
+  db.ledger = [];
+  db.payouts = [];
+  for (const id of Object.keys(db.wallets)) {
+    if (!db.users.some((user) => user.id === id)) delete db.wallets[id];
+  }
   return db;
 }
 
@@ -192,19 +205,17 @@ async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
   // Todos los demás descienden de Qlykadmin si no tienen invitador.
   for (const user of db.users) {
     if (user.id === adminId) continue;
-    if (user.email === "platform@klikhubb.internal") continue;
     if (!user.invitedById) user.invitedById = adminId!;
   }
   return db;
 }
 
 async function buildSeed(): Promise<DemoDB> {
-  const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
   const adminHash = await bcrypt.hash(platformAdminPassword(), 12);
+  const adminId = "usr_qlykadmin";
   const users: DemoUser[] = [
-    u("usr_platform", "platform@klikhubb.internal", hash, "Qlyk", "platform", "PLATFORM", null, ["ADMIN"], 0),
     u(
-      "usr_qlykadmin",
+      adminId,
       PLATFORM_ADMIN.email,
       adminHash,
       PLATFORM_ADMIN.displayName,
@@ -214,47 +225,12 @@ async function buildSeed(): Promise<DemoDB> {
       ["ADMIN", "CREATOR"],
       0,
     ),
-    u("usr_maya", "maya@klikhubb.dev", hash, "Maya Chen", "mayaclose", "MAYA", "usr_qlykadmin", ["CREATOR", "AFFILIATE"], 18420),
-    u("usr_leo", "leo@klikhubb.dev", hash, "Leo Vargas", "leov", "LEO", "usr_maya", ["AFFILIATE", "STUDENT"], 15110),
-    u("usr_amina", "amina@klikhubb.dev", hash, "Amina Rahim", "amina", "AMINA", "usr_leo", ["AFFILIATE", "STUDENT"], 12990),
-    u("usr_rafa", "rafa@klikhubb.dev", hash, "Rafa Díaz", "rafa", "RAFA", "usr_amina", ["STUDENT"], 200),
   ];
 
   return {
     users,
-    products: [
-      {
-        id: "prod_cierre",
-        slug: "cierre-elite",
-        title: "Academia Cierre Élite",
-        price: 497,
-        currency: "USD",
-        creatorId: "usr_maya",
-        type: "COURSE",
-        status: "ACTIVE",
-      },
-      {
-        id: "prod_inner",
-        slug: "inner-circle",
-        title: "Inner Circle",
-        price: 49,
-        currency: "USD",
-        creatorId: "usr_maya",
-        type: "MEMBERSHIP",
-        status: "ACTIVE",
-      },
-      {
-        id: "prod_binaria",
-        slug: "red-binaria",
-        title: "De view a cliente",
-        price: 197,
-        currency: "USD",
-        creatorId: "usr_maya",
-        type: "COURSE",
-        status: "ACTIVE",
-      },
-    ],
-    wallets: Object.fromEntries(users.map((user) => [user.id, { available: 0, pending: 0, lifetimeEarned: 0 }])),
+    products: [],
+    wallets: { [adminId]: { available: 0, pending: 0, lifetimeEarned: 0 } },
     enrollments: [],
     orders: [],
     commissions: [],
@@ -523,7 +499,6 @@ export async function demoHub(userId: string) {
     (row) => (row.invitedById ?? row.sponsorId) === userId,
   ).length;
   const leaderboard: LeaderboardRow[] = [...db.users]
-    .filter((row) => row.id !== "usr_platform")
     .sort((a, b) => b.points - a.points)
     .slice(0, 5)
     .map((row, index) => ({

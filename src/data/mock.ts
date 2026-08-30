@@ -8,82 +8,10 @@ export type MockProduct = {
   currency: string;
 };
 
-export const mockVideos: FeedVideo[] = [
-  {
-    id: "v1",
-    creatorId: "usr_maya",
-    creatorName: "Maya Chen",
-    handle: "mayaclose",
-    caption: "Empaqué mi curso en 18 segundos. El botón vende. Yo cobro sin salir del feed.",
-    title: "De view a cliente",
-    videoUrl: "/videos/qlyk-hero-demo.mp4",
-    playbackId: null,
-    thumbnailUrl: "/videos/qlyk-hero-demo.jpg",
-    durationMs: 8000,
-    product: { slug: "cierre-elite", title: "Academia Cierre Élite", price: 497, currency: "USD", description: "Cierre en video corto. El CTA vive en el feed.", type: "COURSE" },
-    likes: 18240,
-    comments: 612,
-    shares: 1280,
-    favorites: 4310,
-    publishedAt: "2026-08-08T12:00:00.000Z",
-    tags: ["cierre", "feed", "qlyk"],
-    gradient: "from-emerald-950 via-neutral-950 to-cyan-950",
-    lane: "SHOP",
-  },
-  {
-    id: "v2",
-    creatorId: "usr_leo",
-    creatorName: "Leo Vargas",
-    handle: "leov",
-    caption: "Mi comunidad no es un chat suelto. Quien compra, se queda. Así se siente tener audiencia propia.",
-    title: "Inner Circle",
-    videoUrl: "/videos/leo-inner.mp4",
-    playbackId: null,
-    thumbnailUrl: "/videos/leo-inner.jpg",
-    durationMs: 8000,
-    product: { slug: "inner-circle", title: "Membresía Inner Circle", price: 49, currency: "USD", description: "Membresía de comunidad y wins semanales.", type: "MEMBERSHIP" },
-    likes: 9402,
-    comments: 301,
-    shares: 640,
-    favorites: 2104,
-    publishedAt: "2026-08-12T12:00:00.000Z",
-    tags: ["comunidad", "innercircle", "qlyk"],
-    gradient: "from-cyan-950 via-neutral-950 to-neutral-900",
-    lane: "SHOP",
-  },
-  {
-    id: "v3",
-    creatorId: "usr_amina",
-    creatorName: "Amina Rahim",
-    handle: "amina",
-    caption: "Dejé de pedir likes. Ahora pido un clic. El feed paga a quien crea.",
-    title: "Un clic",
-    videoUrl: "/videos/amina-clic.mp4",
-    playbackId: null,
-    thumbnailUrl: "/videos/amina-clic.jpg",
-    durationMs: 8000,
-    product: null,
-    likes: 22119,
-    comments: 880,
-    shares: 1902,
-    favorites: 6700,
-    publishedAt: "2026-08-18T12:00:00.000Z",
-    tags: ["unclic", "crear", "qlyk"],
-    gradient: "from-neutral-900 via-emerald-950 to-black",
-    lane: "PLAY",
-  },
-];
+/** Fallback vacío: la plataforma ya no muestra contenido ficticio. */
+export const mockVideos: FeedVideo[] = [];
 
-export const mockLeaderboard = [
-  { rank: 1, name: "Maya Chen", handle: "mayaclose", points: 18420, earnings: 12840 },
-  { rank: 2, name: "Leo Vargas", handle: "leov", points: 15110, earnings: 9102 },
-  { rank: 3, name: "Amina Rahim", handle: "amina", points: 12990, earnings: 7740 },
-  { rank: 4, name: "Rafa Díaz", handle: "rafa", points: 9800, earnings: 4300 },
-  { rank: 5, name: "Sofi K.", handle: "sofik", points: 8640, earnings: 3910 },
-];
+export const mockLeaderboard: { rank: number; name: string; handle: string; points: number; earnings: number }[] =
+  [];
 
-export const mockCourses = [
-  { slug: "cierre-elite", title: "Academia Cierre Élite", price: 497, students: 1280 },
-  { slug: "inner-circle", title: "Inner Circle", price: 49, students: 4200 },
-  { slug: "red-binaria", title: "De view a cliente", price: 197, students: 860 },
-];
+export const mockCourses: { slug: string; title: string; price: number; students: number }[] = [];
