@@ -1,10 +1,11 @@
 import type { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { PLATFORM_ADMIN } from "@/config/platform-admin";
+import { PLATFORM_ADMIN, platformAdminPassword } from "@/config/platform-admin";
 import { prisma as defaultPrisma } from "@/lib/prisma";
 
 export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
-  const hashedPassword = await bcrypt.hash(PLATFORM_ADMIN.password, 12);
+  const password = platformAdminPassword();
+  const hashedPassword = password ? await bcrypt.hash(password, 12) : null;
   const existing =
     (await db.user.findUnique({ where: { email: PLATFORM_ADMIN.email } })) ??
     (await db.user.findFirst({
@@ -27,7 +28,7 @@ export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
         username: PLATFORM_ADMIN.username,
         displayName: PLATFORM_ADMIN.displayName,
         name: PLATFORM_ADMIN.displayName,
-        hashedPassword,
+        ...(hashedPassword && process.env.PLATFORM_ADMIN_PASSWORD?.trim() ? { hashedPassword } : {}),
         status: "ACTIVE",
         referralCode: codeTaken ? existing.referralCode : PLATFORM_ADMIN.referralCode,
       },
@@ -55,6 +56,10 @@ export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
 
     await attachOrphansToAdmin(db, existing.id);
     return db.user.findUniqueOrThrow({ where: { id: existing.id } });
+  }
+
+  if (!hashedPassword) {
+    throw new Error("PLATFORM_ADMIN_PASSWORD is required to create the admin user.");
   }
 
   const created = await db.user.create({

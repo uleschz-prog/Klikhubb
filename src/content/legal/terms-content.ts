@@ -1,4 +1,4 @@
-import { legalMeta } from "@/config/legal";
+import { legalIdentityParagraphs, legalMeta } from "@/config/legal";
 import type { LegalSection } from "@/config/legal";
 
 export const termsIntro = `Estos Términos de Uso ("Términos") regulan el acceso y uso de la plataforma ${legalMeta.brand} ("${legalMeta.brand}", "la Plataforma", "nosotros" o "el Operador"), accesible en ${legalMeta.siteUrl}. Al crear una cuenta, marcar la casilla de aceptación o usar la Plataforma, confirmas que has leído, comprendido y aceptado estos Términos en su totalidad. Si no estás de acuerdo, no debes registrarte ni utilizar el servicio.`;
@@ -9,13 +9,7 @@ export const termsSections: LegalSection[] = [
     title: "Identificación del operador",
     blocks: [
       {
-        paragraphs: [
-          `Titular del servicio: ${legalMeta.legalEntity}.`,
-          `Denominación comercial: ${legalMeta.operatorName}.`,
-          `NIF/CIF: ${legalMeta.taxId}.`,
-          `Domicilio: ${legalMeta.address}.`,
-          `Contacto: ${legalMeta.contactEmail}.`,
-        ],
+        paragraphs: legalIdentityParagraphs(),
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { legalMeta } from "@/config/legal";
+import { legalMeta, legalPrivacyParagraphs } from "@/config/legal";
 import type { LegalSection } from "@/config/legal";
 
 export const privacyIntro = `Esta Política de Privacidad explica qué datos personales recogemos en ${legalMeta.brand}, para qué los usamos, con quién los compartimos, durante cuánto tiempo y qué derechos puedes ejercer. Se aplica a visitantes, Usuarios registrados, Creadores y compradores. Al usar la Plataforma aceptas este tratamiento conforme a lo aquí descrito y a la normativa aplicable, incluido el Reglamento (UE) 2016/679 ("RGPD") cuando corresponda.`;
@@ -9,14 +9,7 @@ export const privacySections: LegalSection[] = [
     title: "Responsable del tratamiento",
     blocks: [
       {
-        paragraphs: [
-          `Responsable: ${legalMeta.legalEntity}.`,
-          `NIF/CIF: ${legalMeta.taxId}.`,
-          `Domicilio: ${legalMeta.address}.`,
-          `Correo de privacidad: ${legalMeta.privacyEmail}.`,
-          `Correo general: ${legalMeta.contactEmail}.`,
-          "No hemos designado Delegado de Protección de Datos (DPD) obligatorio. Para cualquier cuestión de privacidad utiliza el correo indicado.",
-        ],
+        paragraphs: legalPrivacyParagraphs(),
       },
     ],
   },

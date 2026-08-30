@@ -7,7 +7,7 @@ import { fromCents, toCents } from "@/lib/money/cents";
 import type { SettledOrder } from "@/lib/commerce/settle-order";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
 
-import { PLATFORM_ADMIN } from "@/config/platform-admin";
+import { PLATFORM_ADMIN, platformAdminPassword } from "@/config/platform-admin";
 
 export const DEMO_PASSWORD = "KlikHubb2026!";
 
@@ -156,7 +156,7 @@ function pushLedger(
 }
 
 async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
-  const adminHash = await bcrypt.hash(PLATFORM_ADMIN.password, 12);
+  const adminHash = await bcrypt.hash(platformAdminPassword(), 12);
   const existing = db.users.find(
     (user) =>
       user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase() ||
@@ -200,7 +200,7 @@ async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
 
 async function buildSeed(): Promise<DemoDB> {
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
-  const adminHash = await bcrypt.hash(PLATFORM_ADMIN.password, 12);
+  const adminHash = await bcrypt.hash(platformAdminPassword(), 12);
   const users: DemoUser[] = [
     u("usr_platform", "platform@klikhubb.internal", hash, "Qlyk", "platform", "PLATFORM", null, ["ADMIN"], 0),
     u(

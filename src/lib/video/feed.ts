@@ -120,10 +120,32 @@ export async function listPublishedVideos(
   }
 }
 
-export async function listSavedVideos(limit = 40, viewerId: string): Promise<FeedVideo[]> {
+export async function getPublishedVideo(id: string, viewerId?: string): Promise<FeedVideo | null> {
+  try {
+    const row = await prisma.video.findFirst({
+      where: { id, status: "PUBLISHED" },
+      include: videoInclude,
+    });
+    if (!row) return null;
+    const [flagged] = await withViewerFlags([row], viewerId);
+    return flagged ?? null;
+  } catch (error) {
+    if (!isConnectionError(error)) throw error;
+    return null;
+  }
+}
+
+export async function listSavedVideos(
+  limit = 40,
+  viewerId: string,
+  lane?: "PLAY" | "SHOP",
+): Promise<FeedVideo[]> {
   try {
     const saves = await prisma.videoSave.findMany({
-      where: { userId: viewerId, video: { status: "PUBLISHED" } },
+      where: {
+        userId: viewerId,
+        video: { status: "PUBLISHED", ...(lane ? { lane } : {}) },
+      },
       orderBy: { createdAt: "desc" },
       take: limit,
       select: { videoId: true },

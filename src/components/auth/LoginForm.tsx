@@ -87,11 +87,6 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
             Crear cuenta
           </a>
         </p>
-        <p className="mt-4 rounded-2xl border border-white/5 bg-black/40 p-3 text-[11px] leading-5 text-white/40">
-          Demo comprador: rafa@klikhubb.dev · KlikHubb2026!
-          <br />
-          Creadora: maya@klikhubb.dev · mismo password. Código de invitación: QLYKADMIN
-        </p>
       </div>
     </main>
   );

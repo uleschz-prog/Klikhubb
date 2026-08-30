@@ -108,6 +108,9 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
 
   try {
     if (catalog === "demo") {
+      if (isLivePaymentsRequired()) {
+        throw new Error("STRIPE_DEMO_SETTLE_FORBIDDEN");
+      }
       const settled = await demoSettleOrder({ buyerId, slug });
       return { unpaid: false, alreadyOwned: false, settled };
     }
@@ -136,7 +139,7 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
           : null,
       };
     }
-    if (catalog !== "demo" && isConnectionError(error)) {
+    if (catalog !== "demo" && isConnectionError(error) && !isLivePaymentsRequired()) {
       const settled = await demoSettleOrder({ buyerId, slug });
       return { unpaid: false, alreadyOwned: false, settled };
     }

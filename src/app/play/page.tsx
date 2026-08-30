@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listPublishedVideos, listSavedVideos } from "@/lib/video/feed";
+import { listPublishedVideos, listSavedVideos, getPublishedVideo } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { isStripeEnabled } from "@/lib/commerce/stripe";
 import { FeedTheater } from "@/components/video/FeedTheater";
@@ -22,10 +22,16 @@ export default async function PlayPage({
   const tab = playTab(searchParams.tab);
   const videos =
     tab === "saved" && viewerId
-      ? await listSavedVideos(40, viewerId)
-      : await listPublishedVideos(40, viewerId ?? undefined);
-  const theaterVideos =
-    tab === "following" ? videos.filter((video) => video.followedByMe) : videos;
+      ? await listSavedVideos(40, viewerId, "PLAY")
+      : await listPublishedVideos(40, viewerId ?? undefined, "PLAY");
+  const focused =
+    searchParams.v && !videos.some((item) => item.id === searchParams.v)
+      ? await getPublishedVideo(searchParams.v, viewerId ?? undefined)
+      : null;
+  const theaterVideos = [
+    ...(focused ? [focused] : []),
+    ...(tab === "following" ? videos.filter((video) => video.followedByMe) : videos),
+  ];
 
   if (tab === "saved" && !viewerId) {
     return (
@@ -45,7 +51,7 @@ export default async function PlayPage({
     );
   }
 
-  if (videos.length === 0 && tab !== "saved") {
+  if (theaterVideos.length === 0 && tab === "foryou") {
     return (
       <PlatformShell title="Play" flush>
         <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
