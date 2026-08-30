@@ -40,7 +40,10 @@ export default async function DashboardPage() {
             {hub?.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
           </p>
           {isAdmin ? (
-            <p className="mt-3">
+            <p className="mt-3 flex flex-wrap gap-4">
+              <Link href="/admin/setup" className="text-sm font-semibold text-klik-cyan hover:underline">
+                Admin · Configuración
+              </Link>
               <Link href="/admin/payouts" className="text-sm font-semibold text-klik-cyan hover:underline">
                 Admin · Retiros manuales
               </Link>

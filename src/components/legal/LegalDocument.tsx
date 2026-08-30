@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { legalMeta, type LegalSection } from "@/config/legal";
+import { legalIdentityComplete, legalMeta, type LegalSection } from "@/config/legal";
 
 type LegalDocumentProps = {
   title: string;
@@ -60,11 +60,19 @@ export function LegalDocument({ title, intro, sections, related }: LegalDocument
 
       <aside className="mt-14 rounded-2xl border border-white/10 bg-black/40 p-5 text-sm leading-7">
         <p className="font-semibold text-white">Contacto legal</p>
-        <p className="mt-2">
-          Responsable: {legalMeta.legalEntity}
-          {legalMeta.taxId !== "[NIF/CIF — completar]" ? ` · ${legalMeta.taxId}` : null}
-        </p>
-        <p>Domicilio: {legalMeta.address}</p>
+        {legalIdentityComplete() ? (
+          <>
+            <p className="mt-2">
+              Responsable: {legalMeta.legalEntity} · {legalMeta.taxId}
+            </p>
+            <p>Domicilio: {legalMeta.address}</p>
+          </>
+        ) : (
+          <p className="mt-2">
+            Denominación comercial: {legalMeta.operatorName}. Los datos identificativos completos del titular se
+            facilitan a petición en {legalMeta.contactEmail}.
+          </p>
+        )}
         <p>
           Email general:{" "}
           <a href={`mailto:${legalMeta.contactEmail}`} className="text-klik-cyan hover:text-white">

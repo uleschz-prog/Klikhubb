@@ -6,7 +6,8 @@ export type ConnectStatus = {
   connected: boolean;
   payoutsEnabled: boolean;
   accountId: string | null;
-  dashboardUrl: string | null;
+  requirementsDue: string[];
+  disabledReason: string | null;
 };
 
 /** Activa retiros automáticos vía Stripe Connect (Express). */
@@ -16,6 +17,18 @@ export function isConnectPayoutsEnabled() {
 
 function connectCountry() {
   return process.env.STRIPE_CONNECT_COUNTRY?.trim().toUpperCase() || "MX";
+}
+
+function readAccountRequirements(account: {
+  requirements?: { currently_due?: string[] | null; disabled_reason?: string | null } | null;
+  payouts_enabled?: boolean | null;
+  details_submitted?: boolean | null;
+}) {
+  return {
+    requirementsDue: account.requirements?.currently_due ?? [],
+    disabledReason: account.requirements?.disabled_reason ?? null,
+    payoutsEnabled: Boolean(account.payouts_enabled && account.details_submitted),
+  };
 }
 
 export async function loadConnectStatus(userId: string): Promise<ConnectStatus> {
@@ -30,27 +43,22 @@ export async function loadConnectStatus(userId: string): Promise<ConnectStatus> 
       connected: false,
       payoutsEnabled: false,
       accountId: null,
-      dashboardUrl: null,
+      requirementsDue: [],
+      disabledReason: null,
     };
   }
 
   let payoutsEnabled = user.stripePayoutsEnabled;
   let accountId = user.stripeAccountId;
+  let requirementsDue: string[] = [];
+  let disabledReason: string | null = null;
 
   if (accountId && isConnectPayoutsEnabled()) {
     const synced = await syncConnectAccount(userId, accountId);
     payoutsEnabled = synced.payoutsEnabled;
     accountId = synced.accountId;
-  }
-
-  let dashboardUrl: string | null = null;
-  if (accountId && isConnectPayoutsEnabled()) {
-    try {
-      const link = await getStripe().accounts.createLoginLink(accountId);
-      dashboardUrl = link.url;
-    } catch {
-      dashboardUrl = null;
-    }
+    requirementsDue = synced.requirementsDue;
+    disabledReason = synced.disabledReason;
   }
 
   return {
@@ -58,8 +66,26 @@ export async function loadConnectStatus(userId: string): Promise<ConnectStatus> 
     connected: Boolean(accountId),
     payoutsEnabled,
     accountId,
-    dashboardUrl,
+    requirementsDue,
+    disabledReason,
   };
+}
+
+export async function createConnectDashboardLink(userId: string) {
+  if (!isConnectPayoutsEnabled()) {
+    throw new Error("CONNECT_NOT_ENABLED");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { stripeAccountId: true },
+  });
+  if (!user?.stripeAccountId) {
+    throw new Error("CONNECT_NOT_CONNECTED");
+  }
+
+  const link = await getStripe().accounts.createLoginLink(user.stripeAccountId);
+  return link.url;
 }
 
 export async function createConnectOnboardingLink(userId: string) {
@@ -113,11 +139,16 @@ export async function syncConnectAccount(userId: string, accountId?: string | nu
   });
   const id = accountId ?? user?.stripeAccountId;
   if (!id || !isConnectPayoutsEnabled()) {
-    return { accountId: id ?? null, payoutsEnabled: false };
+    return {
+      accountId: id ?? null,
+      payoutsEnabled: false,
+      requirementsDue: [] as string[],
+      disabledReason: null as string | null,
+    };
   }
 
   const account = await getStripe().accounts.retrieve(id);
-  const payoutsEnabled = Boolean(account.payouts_enabled && account.details_submitted);
+  const { payoutsEnabled, requirementsDue, disabledReason } = readAccountRequirements(account);
 
   await prisma.user.update({
     where: { id: userId },
@@ -127,7 +158,7 @@ export async function syncConnectAccount(userId: string, accountId?: string | nu
     },
   });
 
-  return { accountId: id, payoutsEnabled };
+  return { accountId: id, payoutsEnabled, requirementsDue, disabledReason };
 }
 
 export async function executeConnectTransfer(input: {
@@ -149,15 +180,18 @@ export async function executeConnectTransfer(input: {
     throw new Error("CONNECT_NOT_READY");
   }
 
-  const transfer = await getStripe().transfers.create({
-    amount: input.amountCents,
-    currency: input.currency.trim().toLowerCase() || "usd",
-    destination: user.stripeAccountId,
-    metadata: {
-      payoutId: input.payoutId,
-      userId: input.userId,
+  const transfer = await getStripe().transfers.create(
+    {
+      amount: input.amountCents,
+      currency: input.currency.trim().toLowerCase() || "usd",
+      destination: user.stripeAccountId,
+      metadata: {
+        payoutId: input.payoutId,
+        userId: input.userId,
+      },
     },
-  });
+    { idempotencyKey: `payout_${input.payoutId}` },
+  );
 
   return transfer;
 }

@@ -21,9 +21,12 @@ export default async function AdminPayoutsPage() {
         (SPEI, PayPal, etc.). Marca cada retiro como pagado cuando lo hayas enviado.
       </p>
 
-      <div className="mt-4">
-        <Link href="/dashboard" className="text-sm font-semibold text-klik-cyan hover:underline">
-          Volver al dashboard
+      <div className="mt-4 flex flex-wrap gap-4 text-sm">
+        <Link href="/dashboard" className="font-semibold text-klik-cyan hover:underline">
+          Dashboard
+        </Link>
+        <Link href="/admin/setup" className="font-semibold text-klik-cyan hover:underline">
+          Configuración
         </Link>
       </div>
 
