@@ -1,6 +1,6 @@
 import { CommunityRole, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { isConnectionError } from "@/lib/demo/store";
+import { shouldUseDemoFallback } from "@/lib/demo/store";
 
 const POST_POINTS = 5;
 
@@ -211,7 +211,7 @@ export async function listMyCommunities(userId: string): Promise<CommunityListIt
       };
     });
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return [];
   }
 }
@@ -320,7 +320,7 @@ export async function loadCommunity(
       posts: posts.map((post) => toPublicPost(post, likedIds.has(post.id))),
     };
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return "not_found";
   }
 }

@@ -4,7 +4,7 @@ import { ensureCreatorAccount } from "@/lib/video/publish";
 import { slugifyName } from "@/lib/video/naming";
 import { isAllowedVideoUrl, normalizeVideoUrl } from "@/lib/video/source";
 import { posterFromVideoUrl } from "@/lib/video/types";
-import { isConnectionError } from "@/lib/demo/store";
+import { shouldUseDemoFallback } from "@/lib/demo/store";
 
 export type StudioLesson = {
   id: string;
@@ -97,7 +97,7 @@ export async function listStudioCourses(creatorId: string): Promise<StudioCourse
       updatedAt: row.updatedAt.toISOString(),
     }));
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return [];
   }
 }

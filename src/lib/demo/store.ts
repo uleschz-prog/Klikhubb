@@ -106,6 +106,15 @@ export function isConnectionError(error: unknown): boolean {
   );
 }
 
+/** En Vercel producción no usamos el store demo in-memory como fallback. */
+export function isDemoFallbackAllowed() {
+  return process.env.VERCEL_ENV !== "production";
+}
+
+export function shouldUseDemoFallback(error: unknown) {
+  return isDemoFallbackAllowed() && isConnectionError(error);
+}
+
 export async function loadDemo(): Promise<DemoDB> {
   if (cache) return cache;
   if (seedPromise) return seedPromise;

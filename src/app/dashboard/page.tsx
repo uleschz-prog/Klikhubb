@@ -3,16 +3,26 @@ import { InviteCard } from "@/components/social/InviteCard";
 import { Leaderboard } from "@/components/gamification/Leaderboard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ProfileAvatarUpload } from "@/components/profile/ProfileAvatarUpload";
+import {
+  buildCreatorLaunchChecklist,
+  CreatorLaunchChecklist,
+  loadCreatorLaunchProgress,
+} from "@/components/dashboard/CreatorLaunchChecklist";
 import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
-import { getDbUserId } from "@/lib/auth/session";
+import { getDbUserId, getSession } from "@/lib/auth/session";
 import { loadHub } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/split";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const userId = await getDbUserId();
+  const session = await getSession();
+  const isAdmin = session?.user?.roles?.includes("ADMIN") ?? false;
   const hub = userId ? await loadHub(userId) : null;
+  const launchProgress = userId ? await loadCreatorLaunchProgress(userId) : null;
+  const launchItems = launchProgress ? buildCreatorLaunchChecklist(launchProgress) : [];
 
   const wallet = hub?.wallet ?? { available: 0, pending: 0, lifetimeEarned: 0 };
   const holdDays = COMPENSATION_PLAN_V1.holdDays;
@@ -29,9 +39,18 @@ export default async function DashboardPage() {
             Ganancias, puntos y las voces que suenan. Aquí se ve lo que creas y lo que cobras.
             {hub?.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
           </p>
+          {isAdmin ? (
+            <p className="mt-3">
+              <Link href="/admin/payouts" className="text-sm font-semibold text-klik-cyan hover:underline">
+                Admin · Retiros manuales
+              </Link>
+            </p>
+          ) : null}
         </div>
         <LogoutButton />
       </div>
+
+      {launchItems.length ? <CreatorLaunchChecklist items={launchItems} /> : null}
 
       <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-5">
         <ProfileAvatarUpload name={hub?.displayName ?? "Miembro"} imageUrl={hub?.image} />

@@ -4,7 +4,7 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { PublishVideoForm } from "@/components/video/PublishVideoForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { isConnectionError } from "@/lib/demo/store";
+import { shouldUseDemoFallback } from "@/lib/demo/store";
 import { isBlobConfigured } from "@/lib/video/types";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export default async function PublishPage({
       orderBy: { title: "asc" },
     });
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
   }
 
   return (

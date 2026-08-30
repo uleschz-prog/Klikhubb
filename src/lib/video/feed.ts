@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { isConnectionError } from "@/lib/demo/store";
+import { shouldUseDemoFallback } from "@/lib/demo/store";
 import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
 
 const videoInclude = {
@@ -115,7 +115,7 @@ export async function listPublishedVideos(
     });
     return withViewerFlags(rows, viewerId);
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return [];
   }
 }
@@ -130,7 +130,7 @@ export async function getPublishedVideo(id: string, viewerId?: string): Promise<
     const [flagged] = await withViewerFlags([row], viewerId);
     return flagged ?? null;
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return null;
   }
 }
@@ -163,7 +163,7 @@ export async function listSavedVideos(
       .filter((row): row is FeedRow => Boolean(row));
     return withViewerFlags(ordered, viewerId);
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return [];
   }
 }

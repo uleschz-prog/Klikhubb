@@ -3,7 +3,7 @@ import { siteUrl } from "@/config/site";
 import { toCents } from "@/lib/money/cents";
 import { resolveLiveUserId } from "@/lib/auth/resolve-user";
 import { CommerceError, settlePaidOrder, type SettledOrder } from "@/lib/commerce/settle-order";
-import { demoEnrollmentOrderId, demoSettleOrder, isConnectionError } from "@/lib/demo/store";
+import { demoEnrollmentOrderId, demoSettleOrder, shouldUseDemoFallback } from "@/lib/demo/store";
 import type { ResolvedProduct } from "@/lib/commerce/catalog";
 
 export function isStripeEnabled() {
@@ -139,7 +139,7 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
           : null,
       };
     }
-    if (catalog !== "demo" && isConnectionError(error) && !isLivePaymentsRequired()) {
+    if (catalog !== "demo" && shouldUseDemoFallback(error)) {
       const settled = await demoSettleOrder({ buyerId, slug });
       return { unpaid: false, alreadyOwned: false, settled };
     }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { registerUser } from "@/lib/auth/register-user";
-import { demoRegister, isConnectionError } from "@/lib/demo/store";
+import { demoRegister, shouldUseDemoFallback } from "@/lib/demo/store";
 import { registerSchema } from "@/lib/validations/auth";
 
 export const runtime = "nodejs";
@@ -33,9 +33,12 @@ export async function POST(request: Request) {
   } catch (error) {
     const mapped = mapRegisterError(error);
     if (mapped) return mapped;
-    if (!isConnectionError(error)) {
+    if (!shouldUseDemoFallback(error)) {
       console.error(error);
-      return NextResponse.json({ error: "No pudimos crear la cuenta." }, { status: 500 });
+      return NextResponse.json(
+        { error: "El servicio no está disponible. Intenta de nuevo en unos minutos." },
+        { status: 503 },
+      );
     }
   }
 

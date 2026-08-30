@@ -11,7 +11,7 @@ import {
   demoLoadWalletView,
   demoReleaseMature,
   demoRequestPayout,
-  isConnectionError,
+  shouldUseDemoFallback,
 } from "@/lib/demo/store";
 
 export const MIN_PAYOUT_CENTS = 1_000;
@@ -110,7 +110,7 @@ export async function releaseMatureCommissions(userId?: string): Promise<Release
   try {
     return await releaseInDb(userId);
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return demoReleaseMature(userId);
   }
 }
@@ -120,7 +120,7 @@ export async function loadWalletView(userId: string): Promise<WalletView> {
     await releaseInDb(userId);
     return await readWalletView(userId);
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return demoLoadWalletView(userId);
   }
 }
@@ -130,7 +130,7 @@ export async function requestPayout(userId: string, amount?: number) {
     return await payoutInDb(userId, amount);
   } catch (error) {
     if (error instanceof WalletError) throw error;
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
   }
 
   try {

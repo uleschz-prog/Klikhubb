@@ -61,8 +61,8 @@ export const authOptions: NextAuthOptions = {
             roles: user.roles.map((role) => role.role),
           };
         } catch (error) {
-          const { demoFindUserByLogin, isConnectionError } = await import("@/lib/demo/store");
-          if (!isConnectionError(error)) return null;
+          const { demoFindUserByLogin, shouldUseDemoFallback } = await import("@/lib/demo/store");
+          if (!shouldUseDemoFallback(error)) return null;
           const user = await demoFindUserByLogin(identifier);
           if (!user) return null;
           const valid = await bcrypt.compare(credentials.password, user.hashedPassword);

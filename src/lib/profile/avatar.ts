@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { demoUpdateAvatar, isConnectionError } from "@/lib/demo/store";
+import { demoUpdateAvatar, shouldUseDemoFallback } from "@/lib/demo/store";
 
 export async function updateUserAvatar(userId: string, imageUrl: string | null) {
   try {
@@ -10,7 +10,7 @@ export async function updateUserAvatar(userId: string, imageUrl: string | null) 
     });
     return { image: user.image, mode: "postgres" as const };
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
   }
 
   const user = await demoUpdateAvatar(userId, imageUrl);

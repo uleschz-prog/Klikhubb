@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { isConnectionError } from "@/lib/demo/store";
+import { shouldUseDemoFallback } from "@/lib/demo/store";
 
 export type AcademyLesson = {
   id: string;
@@ -122,7 +122,7 @@ export async function loadAcademyCourse(
       lessons,
     };
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return "not_found";
   }
 }

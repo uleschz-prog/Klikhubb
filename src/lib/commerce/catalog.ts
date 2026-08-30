@@ -11,7 +11,8 @@ import {
   demoListEnrollments,
   demoListProducts,
   demoPlatformUserId,
-  isConnectionError,
+  isDemoFallbackAllowed,
+  shouldUseDemoFallback,
   loadDemo,
 } from "@/lib/demo/store";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
@@ -46,8 +47,10 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
       };
     }
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
   }
+
+  if (!isDemoFallbackAllowed()) return null;
 
   const demo = await demoFindProductBySlug(slug);
   if (!demo) return null;
@@ -85,7 +88,7 @@ export async function assertCanPurchase(buyerId: string, product: ResolvedProduc
     }
   } catch (error) {
     if (error instanceof CommerceError) throw error;
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     if (await demoHasEnrollment(buyerId, product.id)) {
       throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
     }
@@ -109,7 +112,7 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       type: row.type,
     }));
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     const demo = await demoListProducts();
     return demo.map((row) => ({
       id: row.id,
@@ -193,7 +196,7 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
 
     return enrolled;
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return demoListEnrollments(userId);
   }
 }
@@ -242,8 +245,10 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
       mode: "postgres" as const,
     };
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
   }
+
+  if (!isDemoFallbackAllowed()) return null;
 
   const product = await demoFindProductBySlug(slug);
   if (!product) return null;
@@ -313,7 +318,7 @@ export async function loadHub(userId: string) {
       demo: false as const,
     };
   } catch (error) {
-    if (!isConnectionError(error)) throw error;
+    if (!shouldUseDemoFallback(error)) throw error;
     return demoHub(userId);
   }
 }
