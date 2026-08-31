@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { formatMoney } from "@/lib/commerce/split";
+import { billingLabel, formatProductPrice, isMonthlyBilling } from "@/lib/commerce/billing";
 import { CheckoutForm } from "@/components/commerce/CheckoutForm";
 
 export type BuyItem = {
@@ -12,6 +12,7 @@ export type BuyItem = {
   currency: string;
   description?: string | null;
   type?: string | null;
+  billing?: "ONE_TIME" | "MONTHLY" | null;
   creatorName?: string;
   handle?: string;
   thumbnailUrl?: string | null;
@@ -69,6 +70,7 @@ export function BuyDrawer({
   if (!open || !item) return null;
 
   const kind = item.type ? TYPE_LABEL[item.type] ?? item.type : "Producto";
+  const monthly = isMonthlyBilling(item.billing);
 
   return (
     <>
@@ -107,7 +109,10 @@ export function BuyDrawer({
             )}
           </div>
 
-          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-klik-cyan">{kind}</p>
+          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-klik-cyan">
+            {kind}
+            {monthly ? " · Suscripción mensual" : ""}
+          </p>
           <h2 id="buy-drawer-title" className="mt-1 font-display text-2xl font-extrabold text-white">
             {item.title}
           </h2>
@@ -118,14 +123,14 @@ export function BuyDrawer({
             </p>
           ) : null}
           <p className="mt-4 font-display text-3xl font-extrabold text-klik-pastel">
-            {formatMoney(item.price, item.currency)}
+            {formatProductPrice(item.price, item.currency, item.billing)}
           </p>
           {item.description ? <p className="mt-3 text-sm leading-6 text-white/65">{item.description}</p> : null}
 
           <ul className="mt-5 space-y-2.5 text-sm text-white/70">
             <li className="flex gap-2">
               <span className="text-klik-pastel">✓</span>
-              Entras a la academia en el mismo instante
+              {monthly ? "Acceso mientras mantengas la suscripción activa" : "Entras a la academia en el mismo instante"}
             </li>
             <li className="flex gap-2">
               <span className="text-klik-pastel">✓</span>
@@ -133,7 +138,7 @@ export function BuyDrawer({
             </li>
             <li className="flex gap-2">
               <span className="text-klik-pastel">✓</span>
-              El creador cobra sin pedirte nada por fuera
+              {monthly ? billingLabel(item.billing) : "El creador cobra sin pedirte nada por fuera"}
             </li>
           </ul>
 
@@ -172,6 +177,7 @@ export function BuyDrawer({
                 title={item.title}
                 price={item.price}
                 currency={item.currency}
+                billing={item.billing}
                 stripeEnabled={stripeEnabled}
                 compact
                 cancelPath={cancelPath}

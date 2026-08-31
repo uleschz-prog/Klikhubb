@@ -24,6 +24,7 @@ export function MarketplaceShop({
         currency: selected.currency,
         description: selected.description,
         type: selected.type,
+        billing: selected.billing,
       }
     : null;
 
@@ -32,13 +33,17 @@ export function MarketplaceShop({
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
           <article key={product.slug} className="rounded-2xl border border-klik-line bg-klik-card p-5">
-            <p className="text-[11px] uppercase tracking-wider text-white/40">{product.type}</p>
+            <p className="text-[11px] uppercase tracking-wider text-white/40">
+              {product.type}
+              {product.billing === "MONTHLY" ? " · Suscripción mensual" : ""}
+            </p>
             <h2 className="mt-2 font-display text-xl font-bold">{product.title}</h2>
             {product.description ? <p className="mt-2 text-sm text-white/50">{product.description}</p> : null}
             <div className="mt-6">
               <BuyButton
                 price={product.price}
                 currency={product.currency}
+                billing={product.billing}
                 onClick={() => setSlug(product.slug)}
               />
             </div>

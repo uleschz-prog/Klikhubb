@@ -1,4 +1,4 @@
-import type { ProductStatus, ProductType } from "@prisma/client";
+import type { ProductBilling, ProductStatus, ProductType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ensureCreatorAccount } from "@/lib/video/publish";
 import { slugifyName } from "@/lib/video/naming";
@@ -35,6 +35,7 @@ export type StudioCourse = {
   price: number;
   currency: string;
   status: ProductStatus;
+  billing: ProductBilling;
   type: ProductType;
   level: string | null;
   lessonCount: number;
@@ -48,6 +49,7 @@ export type StudioCourseSummary = {
   price: number;
   currency: string;
   status: ProductStatus;
+  billing: ProductBilling;
   type: ProductType;
   lessonCount: number;
   moduleCount: number;
@@ -91,6 +93,7 @@ export async function listStudioCourses(creatorId: string): Promise<StudioCourse
       price: Number(row.price),
       currency: row.currency.trim(),
       status: row.status,
+      billing: row.billing,
       type: row.type,
       lessonCount: row.course?.lessonCount ?? 0,
       moduleCount: row.course?._count.modules ?? 0,
@@ -158,6 +161,7 @@ export async function loadStudioCourse(creatorId: string, slug: string): Promise
     price: Number(product.price),
     currency: product.currency.trim(),
     status: product.status,
+    billing: product.billing,
     type: product.type,
     level: course.level,
     lessonCount: course.lessonCount,
@@ -183,10 +187,18 @@ export async function loadStudioCourse(creatorId: string, slug: string): Promise
 
 export async function createStudioCourse(
   creatorId: string,
-  input: { title: string; description?: string; price: number; level?: string; slug?: string },
+  input: {
+    title: string;
+    description?: string;
+    price: number;
+    level?: string;
+    slug?: string;
+    billing?: ProductBilling;
+  },
 ) {
   await ensureCreatorAccount(creatorId);
   const slug = input.slug?.trim() || slugifyName(input.title);
+  const billing = input.billing ?? "ONE_TIME";
 
   const product = await prisma.product.create({
     data: {
@@ -198,6 +210,7 @@ export async function createStudioCourse(
       price: input.price,
       currency: "USD",
       status: "DRAFT",
+      billing,
       course: {
         create: {
           level: input.level?.trim() || null,
@@ -221,9 +234,18 @@ export async function updateStudioCourse(
     price?: number;
     level?: string | null;
     status?: ProductStatus;
+    billing?: ProductBilling;
   },
 ) {
   const product = await requireOwnedProduct(creatorId, slug);
+  if (input.billing !== undefined && input.billing !== product.billing && product.status !== "DRAFT") {
+    throw new StudioError(
+      "Solo puedes cambiar el modelo de cobro mientras el curso está en borrador.",
+      "BILLING_LOCKED",
+      400,
+    );
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.product.update({
       where: { id: product.id },
@@ -232,6 +254,7 @@ export async function updateStudioCourse(
         ...(input.description !== undefined ? { description: input.description } : {}),
         ...(input.price !== undefined ? { price: input.price } : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.billing !== undefined ? { billing: input.billing } : {}),
       },
     });
     if (input.level !== undefined) {
@@ -461,7 +484,7 @@ export async function moveStudioLesson(
 async function requireOwnedProduct(creatorId: string, slug: string) {
   const product = await prisma.product.findFirst({
     where: { slug, creatorId },
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, status: true, billing: true },
   });
   if (!product) throw new StudioError("Curso no encontrado.", "NOT_FOUND", 404);
   return product;

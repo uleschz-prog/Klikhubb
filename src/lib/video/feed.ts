@@ -10,7 +10,7 @@ const videoInclude = {
     take: 1,
     include: {
       product: {
-        select: { slug: true, title: true, description: true, type: true, price: true, currency: true, status: true },
+        select: { slug: true, title: true, description: true, type: true, price: true, currency: true, status: true, billing: true },
       },
     },
   },
@@ -60,6 +60,7 @@ function toFeedVideo(
             currency: productRow.currency.trim(),
             description: productRow.description,
             type: productRow.type,
+            billing: productRow.billing,
           }
         : null,
   };

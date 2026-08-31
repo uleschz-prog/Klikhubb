@@ -7,6 +7,7 @@ export type FeedProduct = {
   currency: string;
   description: string | null;
   type: string | null;
+  billing: "ONE_TIME" | "MONTHLY";
 };
 
 export type FeedVideo = {

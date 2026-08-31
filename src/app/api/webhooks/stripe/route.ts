@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { fulfillCheckoutSession } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
+import {
+  handleSubscriptionDeleted,
+  handleSubscriptionInvoicePaid,
+  handleSubscriptionUpdated,
+} from "@/lib/commerce/subscriptions";
 import { prisma } from "@/lib/prisma";
 import {
   loadStripeWebhookSecrets,
@@ -51,7 +56,11 @@ export async function POST(request: Request) {
   }
 
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
-    const sessionId = event.data.object.id;
+    const session = event.data.object;
+    if (session.mode === "subscription") {
+      return NextResponse.json({ received: true, ignored: "subscription_via_invoice" });
+    }
+    const sessionId = session.id;
     try {
       const result = await fulfillCheckoutSession(sessionId);
       if (result.unpaid) {
@@ -60,6 +69,31 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error(error);
       return NextResponse.json({ error: "No se pudo asentar la venta." }, { status: 500 });
+    }
+  }
+
+  if (event.type === "invoice.paid") {
+    try {
+      await handleSubscriptionInvoicePaid(event.data.object);
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo asentar la suscripción." }, { status: 500 });
+    }
+  }
+
+  if (event.type === "customer.subscription.updated") {
+    try {
+      await handleSubscriptionUpdated(event.data.object);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    try {
+      await handleSubscriptionDeleted(event.data.object);
+    } catch (error) {
+      console.error(error);
     }
   }
 

@@ -76,16 +76,20 @@ export async function settlePaidOrder(input: {
   productId: string;
   provider: string;
   providerRef: string;
+  /** Renovación de suscripción: no bloquea por enrollment existente ni duplica acceso. */
+  renewal?: boolean;
 }): Promise<SettledOrder> {
   return prisma.$transaction(async (tx) => {
     const replayed = await settledFromProviderRef(tx, input.provider, input.providerRef);
     if (replayed) return replayed;
 
-    const owned = await tx.enrollment.findUnique({
-      where: { userId_productId: { userId: input.buyerId, productId: input.productId } },
-    });
-    if (owned) {
-      throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+    if (!input.renewal) {
+      const owned = await tx.enrollment.findUnique({
+        where: { userId_productId: { userId: input.buyerId, productId: input.productId } },
+      });
+      if (owned?.status === "ACTIVE") {
+        throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+      }
     }
 
     const product = await tx.product.findUnique({ where: { id: input.productId } });
@@ -174,14 +178,35 @@ export async function settlePaidOrder(input: {
       },
     });
 
-    await tx.enrollment.create({
-      data: {
-        userId: input.buyerId,
-        productId: product.id,
-        orderId: order.id,
-        status: "ACTIVE",
-      },
-    });
+    if (!input.renewal) {
+      await tx.enrollment.create({
+        data: {
+          userId: input.buyerId,
+          productId: product.id,
+          orderId: order.id,
+          status: "ACTIVE",
+        },
+      });
+    } else {
+      const existingEnrollment = await tx.enrollment.findUnique({
+        where: { userId_productId: { userId: input.buyerId, productId: product.id } },
+      });
+      if (existingEnrollment) {
+        await tx.enrollment.update({
+          where: { id: existingEnrollment.id },
+          data: { status: "ACTIVE", orderId: order.id },
+        });
+      } else {
+        await tx.enrollment.create({
+          data: {
+            userId: input.buyerId,
+            productId: product.id,
+            orderId: order.id,
+            status: "ACTIVE",
+          },
+        });
+      }
+    }
 
     if (product.type === "MEMBERSHIP") {
       await joinMembershipCommunity(

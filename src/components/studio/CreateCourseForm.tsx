@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import type { ProductBilling } from "@prisma/client";
 
 export function CreateCourseForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("49");
+  const [billing, setBilling] = useState<ProductBilling>("ONE_TIME");
   const [level, setLevel] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -31,6 +33,7 @@ export function CreateCourseForm() {
         description: description.trim() || undefined,
         price: amount,
         level: level.trim() || undefined,
+        billing,
       }),
     });
     const payload = (await response.json()) as { error?: string; slug?: string };
@@ -81,18 +84,33 @@ export function CreateCourseForm() {
             onChange={(event) => setPrice(event.target.value)}
             className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
           />
+          <p className="mt-1 text-xs text-white/40">
+            {billing === "MONTHLY" ? "Se cobra cada mes mientras la suscripción esté activa." : "Pago único de por vida."}
+          </p>
         </label>
         <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Nivel (opcional)</span>
-          <input
-            value={level}
-            onChange={(event) => setLevel(event.target.value)}
-            maxLength={40}
-            placeholder="Principiante"
-            className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan placeholder:text-white/35 focus:ring-2"
-          />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Modelo de cobro</span>
+          <select
+            value={billing}
+            onChange={(event) => setBilling(event.target.value as ProductBilling)}
+            className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
+          >
+            <option value="ONE_TIME">Pago único</option>
+            <option value="MONTHLY">Suscripción mensual</option>
+          </select>
         </label>
       </div>
+
+      <label className="block">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Nivel (opcional)</span>
+        <input
+          value={level}
+          onChange={(event) => setLevel(event.target.value)}
+          maxLength={40}
+          placeholder="Principiante"
+          className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan placeholder:text-white/35 focus:ring-2"
+        />
+      </label>
 
       <button
         type="submit"

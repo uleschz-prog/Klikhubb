@@ -1,4 +1,6 @@
 import { PLATFORM_ADMIN } from "@/config/platform-admin";
+import { isMonthlyBilling } from "@/lib/commerce/billing";
+import { hasActiveProductSubscription } from "@/lib/commerce/subscriptions";
 import { prisma } from "@/lib/prisma";
 import { splitSaleCommissions } from "@/lib/commerce/split";
 import { CommerceError } from "@/lib/commerce/settle-order";
@@ -26,6 +28,7 @@ export type CatalogProduct = {
   currency: string;
   creatorId: string;
   type: string;
+  billing: "ONE_TIME" | "MONTHLY";
 };
 
 export type ResolvedProduct = CatalogProduct & { source: "postgres" | "demo" };
@@ -43,6 +46,7 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
         currency: row.currency.trim(),
         creatorId: row.creatorId,
         type: row.type,
+        billing: row.billing,
         source: "postgres",
       };
     }
@@ -63,6 +67,7 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
     currency: demo.currency,
     creatorId: demo.creatorId,
     type: demo.type,
+    billing: "ONE_TIME" as const,
     source: "demo",
   };
 }
@@ -83,8 +88,14 @@ export async function assertCanPurchase(buyerId: string, product: ResolvedProduc
     const owned = await prisma.enrollment.findUnique({
       where: { userId_productId: { userId: buyerId, productId: product.id } },
     });
-    if (owned) {
-      throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+    if (owned?.status === "ACTIVE") {
+      if (isMonthlyBilling(product.billing)) {
+        if (await hasActiveProductSubscription(buyerId, product.id)) {
+          throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+        }
+      } else {
+        throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+      }
     }
   } catch (error) {
     if (error instanceof CommerceError) throw error;
@@ -110,6 +121,7 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       currency: row.currency.trim(),
       creatorId: row.creatorId,
       type: row.type,
+      billing: row.billing,
     }));
   } catch (error) {
     if (!shouldUseDemoFallback(error)) throw error;
@@ -123,6 +135,7 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       currency: row.currency,
       creatorId: row.creatorId,
       type: row.type,
+      billing: "ONE_TIME" as const,
     }));
   }
 }
@@ -240,6 +253,7 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
         creatorName: product.creator.displayName ?? product.creator.username ?? "Creador",
         description: product.description,
         type: product.type,
+        billing: product.billing,
       },
       lines,
       mode: "postgres" as const,
@@ -265,6 +279,7 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
       creatorName: creator?.displayName ?? "Creador",
       description: null,
       type: product.type,
+      billing: "ONE_TIME" as const,
     },
     lines: splitSaleCommissions({
       saleAmount: product.price,

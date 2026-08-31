@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 import { getDbUserId } from "@/lib/auth/session";
+import { formatProductPrice } from "@/lib/commerce/billing";
 import { listStudioCourses } from "@/lib/commerce/studio";
-import { formatMoney } from "@/lib/commerce/split";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +61,7 @@ export default async function StudioPage() {
             >
               <div>
                 <p className="font-display text-xs text-klik-green">
-                  {STATUS_LABEL[course.status] ?? course.status} · {formatMoney(course.price)}
+                  {STATUS_LABEL[course.status] ?? course.status} · {formatProductPrice(course.price, course.currency, course.billing)}
                 </p>
                 <h2 className="mt-1 font-display text-lg font-bold">{course.title}</h2>
                 <p className="mt-1 text-xs text-white/40">

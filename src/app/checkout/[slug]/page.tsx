@@ -35,6 +35,7 @@ export default async function CheckoutPage({
         currency: preview.product.currency,
         description: preview.product.description,
         type: preview.product.type,
+        billing: preview.product.billing,
         creatorName: preview.product.creatorName,
       }}
       signedIn

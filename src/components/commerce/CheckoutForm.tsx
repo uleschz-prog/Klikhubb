@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatMoney } from "@/lib/commerce/split";
+import { checkoutButtonLabel, formatProductPrice, isMonthlyBilling } from "@/lib/commerce/billing";
 
 export function CheckoutForm({
   slug,
   title,
   price,
   currency,
+  billing = "ONE_TIME",
   stripeEnabled,
   compact = false,
   cancelPath,
@@ -18,6 +19,7 @@ export function CheckoutForm({
   title: string;
   price: number;
   currency: string;
+  billing?: "ONE_TIME" | "MONTHLY" | null;
   stripeEnabled: boolean;
   compact?: boolean;
   cancelPath?: string;
@@ -66,7 +68,11 @@ export function CheckoutForm({
         <div className="rounded-2xl border border-klik-line bg-klik-card p-5">
           <p className="text-[11px] uppercase tracking-wider text-white/40">Lo que te llevas</p>
           <ul className="mt-4 space-y-2 text-sm text-white/70">
-            <li>Entras a la academia en el mismo instante</li>
+            <li>
+              {isMonthlyBilling(billing)
+                ? "Acceso mensual mientras la suscripción esté activa"
+                : "Entras a la academia en el mismo instante"}
+            </li>
             <li>Te quedas en la comunidad del creador</li>
             <li>El creador cobra sin pedirte nada por fuera</li>
           </ul>
@@ -78,12 +84,14 @@ export function CheckoutForm({
         disabled={loading}
         className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
       >
-        <span>{loading ? "Procesando…" : stripeEnabled ? "Pagar con tarjeta" : `Pagar ${title}`}</span>
-        <span>{formatMoney(price, currency)}</span>
+        <span>{loading ? "Procesando…" : checkoutButtonLabel(billing, stripeEnabled, title)}</span>
+        <span>{formatProductPrice(price, currency, billing)}</span>
       </button>
       <p className="text-center text-[11px] text-white/35">
         {stripeEnabled
-          ? "Stripe cobra la tarjeta. El acceso llega cuando el pago queda listo."
+          ? isMonthlyBilling(billing)
+            ? "Stripe cobra la suscripción mensual. Puedes cancelarla desde el portal de Stripe."
+            : "Stripe cobra la tarjeta. El acceso llega cuando el pago queda listo."
           : "Este entorno aún no tiene Stripe. El acceso se abre sin tarjeta, solo para pruebas."}
       </p>
     </form>

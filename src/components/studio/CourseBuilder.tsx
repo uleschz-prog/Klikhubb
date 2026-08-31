@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import type { StudioCourse, StudioLesson, StudioModule } from "@/lib/commerce/studio";
+import type { ProductBilling } from "@prisma/client";
 
 type Props = {
   initial: StudioCourse;
@@ -22,6 +23,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
     price: String(initial.price),
     level: initial.level ?? "",
     status: initial.status,
+    billing: initial.billing,
   });
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [openLessonForm, setOpenLessonForm] = useState<string | null>(
@@ -48,6 +50,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
         price: String(payload.course.price),
         level: payload.course.level ?? "",
         status: payload.course.status,
+        billing: payload.course.billing,
       });
     }
     router.refresh();
@@ -72,6 +75,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
         price,
         level: meta.level.trim() || null,
         status: meta.status,
+        billing: meta.billing,
       }),
     });
     const payload = (await response.json()) as { error?: string; course?: StudioCourse };
@@ -218,7 +222,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
             className="mt-2 w-full rounded-2xl border border-white/10 bg-black/50 px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan"
           />
         </label>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Precio USD</span>
             <input
@@ -229,6 +233,20 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
               onChange={(event) => setMeta((prev) => ({ ...prev, price: event.target.value }))}
               className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan"
             />
+          </label>
+          <label className="block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Modelo de cobro</span>
+            <select
+              value={meta.billing}
+              disabled={meta.status !== "DRAFT"}
+              onChange={(event) =>
+                setMeta((prev) => ({ ...prev, billing: event.target.value as ProductBilling }))
+              }
+              className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan disabled:opacity-50"
+            >
+              <option value="ONE_TIME">Pago único</option>
+              <option value="MONTHLY">Suscripción mensual</option>
+            </select>
           </label>
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Nivel</span>
@@ -254,6 +272,11 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
             </select>
           </label>
         </div>
+        {meta.billing === "MONTHLY" ? (
+          <p className="text-xs text-white/45">
+            Suscripción mensual: el alumno paga cada mes mientras mantenga la suscripción activa en Stripe.
+          </p>
+        ) : null}
         <button
           type="submit"
           disabled={busy}

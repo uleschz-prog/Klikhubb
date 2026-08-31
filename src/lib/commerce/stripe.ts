@@ -1,8 +1,10 @@
 import Stripe from "stripe";
 import { siteUrl } from "@/config/site";
+import { isMonthlyBilling } from "@/lib/commerce/billing";
 import { toCents } from "@/lib/money/cents";
 import { resolveLiveUserId } from "@/lib/auth/resolve-user";
 import { CommerceError, settlePaidOrder, type SettledOrder } from "@/lib/commerce/settle-order";
+import { handleSubscriptionInvoicePaid } from "@/lib/commerce/subscriptions";
 import { demoEnrollmentOrderId, demoSettleOrder, shouldUseDemoFallback } from "@/lib/demo/store";
 import type { ResolvedProduct } from "@/lib/commerce/catalog";
 
@@ -46,9 +48,10 @@ export async function createStripeCheckoutSession(input: {
   const origin = appBaseUrl();
   const currency = input.product.currency.trim().toLowerCase() || "usd";
   const cancelPath = input.cancelPath?.startsWith("/") ? input.cancelPath : `/feed`;
+  const subscription = isMonthlyBilling(input.product.billing);
 
   return stripe.checkout.sessions.create({
-    mode: "payment",
+    mode: subscription ? "subscription" : "payment",
     locale: "es",
     customer_email: input.buyerEmail ?? undefined,
     client_reference_id: input.buyerId,
@@ -60,6 +63,7 @@ export async function createStripeCheckoutSession(input: {
         price_data: {
           currency,
           unit_amount: toCents(input.product.price),
+          ...(subscription ? { recurring: { interval: "month" } } : {}),
           product_data: {
             name: input.product.title,
             metadata: { slug: input.product.slug },
@@ -67,20 +71,36 @@ export async function createStripeCheckoutSession(input: {
         },
       },
     ],
-    payment_intent_data: {
-      description: `Qlyk · ${input.product.title}`,
-      metadata: {
-        buyerId: input.buyerId,
-        productId: input.product.id,
-        slug: input.product.slug,
-      },
-    },
+    ...(subscription
+      ? {
+          subscription_data: {
+            metadata: {
+              buyerId: input.buyerId,
+              buyerEmail: input.buyerEmail ?? "",
+              productId: input.product.id,
+              slug: input.product.slug,
+              catalog: input.product.source,
+              billing: "monthly",
+            },
+          },
+        }
+      : {
+          payment_intent_data: {
+            description: `Qlyk · ${input.product.title}`,
+            metadata: {
+              buyerId: input.buyerId,
+              productId: input.product.id,
+              slug: input.product.slug,
+            },
+          },
+        }),
     metadata: {
       buyerId: input.buyerId,
       buyerEmail: input.buyerEmail ?? "",
       productId: input.product.id,
       slug: input.product.slug,
       catalog: input.product.source,
+      billing: subscription ? "monthly" : "one_time",
     },
   });
 }
@@ -100,6 +120,44 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
   const session = await stripe.checkout.sessions.retrieve(sessionId);
 
   if (session.payment_status !== "paid") {
+    return { unpaid: true, alreadyOwned: false, settled: null };
+  }
+
+  if (session.mode === "subscription") {
+    const subscriptionRef = session.subscription;
+    const subscriptionId =
+      typeof subscriptionRef === "string" ? subscriptionRef : subscriptionRef?.id ?? null;
+
+    if (subscriptionId) {
+      const stripe = getStripe();
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ["latest_invoice", "items.data"],
+      });
+      const latestInvoice =
+        subscription.latest_invoice &&
+        typeof subscription.latest_invoice !== "string"
+          ? subscription.latest_invoice
+          : null;
+
+      if (latestInvoice?.status === "paid") {
+        try {
+          const result = await handleSubscriptionInvoicePaid(latestInvoice);
+          if ("ignored" in result) {
+            return { unpaid: true, alreadyOwned: false, settled: null };
+          }
+          if (result.alreadyOwned) {
+            return { unpaid: false, alreadyOwned: true, settled: result.settled };
+          }
+          return { unpaid: false, alreadyOwned: false, settled: result.settled };
+        } catch (error) {
+          if (error instanceof CommerceError && error.code === "ALREADY_OWNED") {
+            return { unpaid: false, alreadyOwned: true, settled: null };
+          }
+          throw error;
+        }
+      }
+    }
+
     return { unpaid: true, alreadyOwned: false, settled: null };
   }
 

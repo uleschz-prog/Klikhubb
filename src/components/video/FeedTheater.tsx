@@ -9,7 +9,7 @@ import { UserAvatar } from "@/components/profile/UserAvatar";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
-import { formatMoney } from "@/lib/commerce/split";
+import { formatProductPrice } from "@/lib/commerce/billing";
 import { BuyDrawer, type BuyItem } from "@/components/commerce/BuyDrawer";
 import {
   apiAddComment,
@@ -111,6 +111,7 @@ export function FeedTheater({
       currency: source.product.currency,
       description: source.product.description,
       type: source.product.type,
+      billing: source.product.billing,
       creatorName: source.creatorName,
       handle: source.handle,
       thumbnailUrl: source.thumbnailUrl,
@@ -624,7 +625,7 @@ export function FeedTheater({
               >
                 <span>Llevar {video.product.title}</span>
                 <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
-                  {formatMoney(video.product.price, video.product.currency)}
+                  {formatProductPrice(video.product.price, video.product.currency, video.product.billing)}
                 </span>
               </button>
             ) : null}
