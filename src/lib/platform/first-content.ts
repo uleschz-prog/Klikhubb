@@ -159,6 +159,7 @@ export async function bootstrapFirstContent(): Promise<BootstrapFirstContentResu
       price: FIRST_CONTENT.coursePrice,
       level: FIRST_CONTENT.courseLevel,
       slug: FIRST_CONTENT.courseSlug,
+      billing: "ONE_TIME",
     });
     course = await loadStudioCourse(creatorId, slug);
     created.course = true;
