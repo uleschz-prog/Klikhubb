@@ -183,10 +183,10 @@ export async function loadStudioCourse(creatorId: string, slug: string): Promise
 
 export async function createStudioCourse(
   creatorId: string,
-  input: { title: string; description?: string; price: number; level?: string },
+  input: { title: string; description?: string; price: number; level?: string; slug?: string },
 ) {
   await ensureCreatorAccount(creatorId);
-  const slug = slugifyName(input.title);
+  const slug = input.slug?.trim() || slugifyName(input.title);
 
   const product = await prisma.product.create({
     data: {

@@ -14,6 +14,7 @@
     "db:seed": "prisma db seed",
     "db:admin": "tsx scripts/ensure-admin.ts",
     "db:purge-demo": "tsx scripts/purge-demo-data.ts",
+    "db:bootstrap-content": "tsx scripts/bootstrap-first-content.ts",
     "db:studio": "prisma studio",
     "pwa:assets": "python3 scripts/generate-pwa-assets.py"
   },

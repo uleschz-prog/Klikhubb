@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { BootstrapContentPanel } from "@/components/admin/BootstrapContentPanel";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 import { requireAdminPage } from "@/lib/auth/require-admin";
+import { getFirstContentStatus } from "@/lib/platform/first-content";
 import { getPlatformReadiness } from "@/lib/platform/readiness";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSetupPage() {
   await requireAdminPage();
-  const readiness = getPlatformReadiness();
+  const [readiness, firstContent] = await Promise.all([Promise.resolve(getPlatformReadiness()), getFirstContentStatus()]);
 
   return (
     <PlatformShell title="Admin">
@@ -82,6 +84,8 @@ export default async function AdminSetupPage() {
           </li>
         ))}
       </ul>
+
+      <BootstrapContentPanel initial={firstContent} />
 
       <section className="mt-10 rounded-2xl border border-klik-line bg-klik-card p-5">
         <h2 className="font-display text-lg font-bold">Guías</h2>
