@@ -7,6 +7,11 @@ export const STRIPE_WEBHOOK_SECRET_KEY = "stripe_webhook_secret";
 const WEBHOOK_EVENTS = [
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",
+  "invoice.paid",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+  "charge.refunded",
+  "charge.dispute.created",
   "account.updated",
 ] as const;
 

@@ -179,14 +179,28 @@ export async function settlePaidOrder(input: {
     });
 
     if (!input.renewal) {
-      await tx.enrollment.create({
-        data: {
-          userId: input.buyerId,
-          productId: product.id,
-          orderId: order.id,
-          status: "ACTIVE",
-        },
+      const existingEnrollment = await tx.enrollment.findUnique({
+        where: { userId_productId: { userId: input.buyerId, productId: product.id } },
       });
+      if (existingEnrollment) {
+        await tx.enrollment.update({
+          where: { id: existingEnrollment.id },
+          data: {
+            status: "ACTIVE",
+            orderId: order.id,
+            ...(existingEnrollment.status !== "ACTIVE" ? { progressPct: 0 } : {}),
+          },
+        });
+      } else {
+        await tx.enrollment.create({
+          data: {
+            userId: input.buyerId,
+            productId: product.id,
+            orderId: order.id,
+            status: "ACTIVE",
+          },
+        });
+      }
     } else {
       const existingEnrollment = await tx.enrollment.findUnique({
         where: { userId_productId: { userId: input.buyerId, productId: product.id } },

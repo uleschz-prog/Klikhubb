@@ -6,6 +6,10 @@ import {
   handleSubscriptionInvoicePaid,
   handleSubscriptionUpdated,
 } from "@/lib/commerce/subscriptions";
+import {
+  handleStripeChargeDisputeCreated,
+  handleStripeChargeRefunded,
+} from "@/lib/commerce/refunds";
 import { prisma } from "@/lib/prisma";
 import {
   loadStripeWebhookSecrets,
@@ -92,6 +96,23 @@ export async function POST(request: Request) {
   if (event.type === "customer.subscription.deleted") {
     try {
       await handleSubscriptionDeleted(event.data.object);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (event.type === "charge.refunded") {
+    try {
+      await handleStripeChargeRefunded(event.data.object);
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo revocar acceso tras reembolso." }, { status: 500 });
+    }
+  }
+
+  if (event.type === "charge.dispute.created") {
+    try {
+      await handleStripeChargeDisputeCreated(event.data.object);
     } catch (error) {
       console.error(error);
     }
