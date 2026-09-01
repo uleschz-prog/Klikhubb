@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ProductBilling } from "@prisma/client";
 
 export function CreateCourseForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("49");
-  const [billing, setBilling] = useState<ProductBilling>("ONE_TIME");
   const [level, setLevel] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -33,7 +31,7 @@ export function CreateCourseForm() {
         description: description.trim() || undefined,
         price: amount,
         level: level.trim() || undefined,
-        billing,
+        billing: "ONE_TIME",
       }),
     });
     const payload = (await response.json()) as { error?: string; slug?: string };
@@ -72,34 +70,19 @@ export function CreateCourseForm() {
         />
       </label>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Precio USD</span>
-          <input
-            required
-            type="number"
-            min={1}
-            step="0.01"
-            value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
-          />
-          <p className="mt-1 text-xs text-white/40">
-            {billing === "MONTHLY" ? "Se cobra cada mes mientras la suscripción esté activa." : "Pago único de por vida."}
-          </p>
-        </label>
-        <label className="block">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Modelo de cobro</span>
-          <select
-            value={billing}
-            onChange={(event) => setBilling(event.target.value as ProductBilling)}
-            className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
-          >
-            <option value="ONE_TIME">Pago único</option>
-            <option value="MONTHLY">Suscripción mensual</option>
-          </select>
-        </label>
-      </div>
+      <label className="block">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Precio USD</span>
+        <input
+          required
+          type="number"
+          min={1}
+          step="0.01"
+          value={price}
+          onChange={(event) => setPrice(event.target.value)}
+          className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
+        />
+        <p className="mt-1 text-xs text-white/40">Pago único. El alumno transfiere y sube comprobante.</p>
+      </label>
 
       <label className="block">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Nivel (opcional)</span>
@@ -108,18 +91,19 @@ export function CreateCourseForm() {
           onChange={(event) => setLevel(event.target.value)}
           maxLength={40}
           placeholder="Principiante"
-          className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan placeholder:text-white/35 focus:ring-2"
+          className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
         />
       </label>
+
+      {message ? <p className="text-sm text-red-400">{message}</p> : null}
 
       <button
         type="submit"
         disabled={status === "saving"}
-        className="min-h-12 rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+        className="inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
       >
-        {status === "saving" ? "Creando…" : "Crear y armar lecciones"}
+        {status === "saving" ? "Creando…" : "Crear curso"}
       </button>
-      {message ? <p className="text-sm text-red-400">{message}</p> : null}
     </form>
   );
 }

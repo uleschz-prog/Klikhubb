@@ -34,7 +34,7 @@ export default async function CommunityPage() {
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
           <h2 className="font-display text-2xl font-extrabold">Todavía no tienes comunidades</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            Publica una membresía o, en el feed, toca Llevar. Cuando Stripe confirma el pago, entras aquí.
+            Publica una membresía o, en el feed, toca Llevar. Cuando confirmemos tu pago, entras aquí.
           </p>
           <Link
             href="/feed"

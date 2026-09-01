@@ -1,23 +1,20 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { loadConnectStatus } from "@/lib/commerce/stripe-connect";
 
 export type CreatorLaunchProgress = {
   hasAvatar: boolean;
   hasCourse: boolean;
   hasShopVideo: boolean;
   hasPlayVideo: boolean;
-  connectLinked: boolean;
 };
 
 export async function loadCreatorLaunchProgress(userId: string): Promise<CreatorLaunchProgress> {
-  const [courseCount, shopVideos, playVideos, connect, user] = await Promise.all([
+  const [courseCount, shopVideos, playVideos, user] = await Promise.all([
     prisma.product.count({
       where: { creatorId: userId, status: "ACTIVE", type: { in: ["COURSE", "MEMBERSHIP", "DIGITAL"] } },
     }),
     prisma.video.count({ where: { creatorId: userId, status: "PUBLISHED", lane: "SHOP" } }),
     prisma.video.count({ where: { creatorId: userId, status: "PUBLISHED", lane: "PLAY" } }),
-    loadConnectStatus(userId),
     prisma.user.findUnique({ where: { id: userId }, select: { image: true } }),
   ]);
 
@@ -26,7 +23,6 @@ export async function loadCreatorLaunchProgress(userId: string): Promise<Creator
     hasCourse: courseCount > 0,
     hasShopVideo: shopVideos > 0,
     hasPlayVideo: playVideos > 0,
-    connectLinked: connect.payoutsEnabled,
   };
 }
 
@@ -69,11 +65,11 @@ export function buildCreatorLaunchChecklist(progress: CreatorLaunchProgress): Ch
       hint: "Contenido sin venta para atraer audiencia.",
     },
     {
-      id: "connect",
-      label: "Cuenta bancaria conectada",
-      done: progress.connectLinked,
+      id: "wallet",
+      label: "Datos para retiros",
+      done: progress.hasCourse,
       href: "/wallet",
-      hint: "Conecta Stripe para retiros automáticos.",
+      hint: "Cuando vendas, pide retiro desde tu monedero.",
     },
   ];
 }

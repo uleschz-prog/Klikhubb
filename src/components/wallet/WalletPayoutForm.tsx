@@ -8,20 +8,16 @@ export function WalletPayoutForm({
   available,
   minPayout,
   currency,
-  connectRequired = false,
-  connectReady = true,
 }: {
   available: number;
   minPayout: number;
   currency: string;
-  connectRequired?: boolean;
-  connectReady?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
-  const canWithdraw = available >= minPayout && (!connectRequired || connectReady);
+  const canWithdraw = available >= minPayout;
 
   async function submit() {
     if (busy || !canWithdraw) return;
@@ -47,11 +43,7 @@ export function WalletPayoutForm({
         payload && typeof payload === "object" && "amount" in payload
           ? Number(payload.amount)
           : available;
-      setDone(
-        payload && typeof payload === "object" && "mode" in payload && payload.mode === "stripe_connect"
-          ? `Listo. Enviamos ${formatMoney(amount, currency)} a tu cuenta Stripe Connect.`
-          : `Listo. Pedimos ${formatMoney(amount, currency)}. Te avisamos cuando salga.`,
-      );
+      setDone(`Listo. Pedimos ${formatMoney(amount, currency)}. Te avisamos cuando salga.`);
       router.refresh();
     } catch {
       setError("No se pudo solicitar el retiro.");
@@ -65,12 +57,7 @@ export function WalletPayoutForm({
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Retiro</p>
       <h2 className="mt-1 font-display text-xl font-bold">Saca lo disponible</h2>
       <p className="mt-3 text-sm leading-6 text-white/60">
-        El mínimo es {formatMoney(minPayout, currency)}.
-        {connectRequired
-          ? connectReady
-            ? " Al retirar, el dinero se transfiere a tu cuenta Stripe Connect."
-            : " Primero conecta tu cuenta bancaria abajo."
-          : " Por ahora el depósito lo hacemos a mano hasta activar Stripe Connect."}
+        El mínimo es {formatMoney(minPayout, currency)}. El equipo deposita manualmente a tu cuenta bancaria.
       </p>
       <button
         type="button"

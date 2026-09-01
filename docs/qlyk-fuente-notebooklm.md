@@ -77,13 +77,13 @@ Los creadores suelen estar fragmentados entre redes sociales (alcance), platafor
 - Saldo disponible y pendiente.
 - Historial de movimientos (ledger).
 - Comisiones en retención (hold).
-- Solicitud de retiro (mínimo 10 USD; procesamiento manual hoy; Stripe Connect planificado).
+- Solicitud de retiro (mínimo 10 USD; procesamiento manual por Qlykadmin en `/admin/payouts`).
 
 ### 2.11 Checkout y pagos
 - Checkout por producto (`/checkout/[slug]`).
-- Pagos procesados con Stripe Checkout en producción.
-- Página de éxito post-compra.
-- Webhook Stripe para confirmar pagos y acreditar comisiones.
+- Pagos por transferencia SPEI: datos bancarios, referencia `QLYK-XXXXXX`, subida de comprobante.
+- Confirmación manual por Qlykadmin en `/admin/payments` → acredita comisiones al monedero.
+- Página de éxito post-compra (cuando el pago está aprobado).
 
 ---
 
@@ -137,8 +137,7 @@ Cada venta completada se reparte al 100%:
 
 ### 4.3 Retiros
 - Saldo mínimo para retiro: 10 USD.
-- Hoy: solicitud manual desde el monedero.
-- Roadmap: Stripe Connect para retiros automáticos.
+- Hoy: solicitud desde el monedero; Qlykadmin transfiere y marca pagado en `/admin/payouts`.
 
 ### 4.4 Tipos de producto vendibles
 - COURSE: curso con módulos y lecciones.
@@ -161,7 +160,7 @@ Cada venta completada se reparte al 100%:
 2. Crea un producto en Studio o al publicar un video.
 3. Sube un clip en `/publish` (lane SHOP) vinculado al producto.
 4. El video aparece en el Feed con CTA de compra.
-5. Un miembro compra vía Stripe Checkout.
+5. Un miembro transfiere por SPEI y sube comprobante; Qlykadmin aprueba en `/admin/payments`.
 6. El comprador accede al curso/comunidad en Academy.
 7. El creador ve la comisión en su monedero (pendiente 14 días, luego disponible).
 8. Solicita retiro cuando supera el mínimo.
@@ -197,7 +196,7 @@ Cada venta completada se reparte al 100%:
 - **Backend:** API Routes de Next.js, Prisma ORM.
 - **Base de datos:** PostgreSQL.
 - **Autenticación:** NextAuth (email/contraseña + Google OAuth opcional).
-- **Pagos:** Stripe Checkout y webhooks.
+- **Pagos:** transferencia SPEI manual + confirmación admin en `/admin/payments`.
 - **Almacenamiento de video:** Vercel Blob.
 - **Email transaccional:** Resend (opcional).
 - **Despliegue:** Vercel (con cron para liberación de monedero).
@@ -269,7 +268,7 @@ Email, nombre, usuario, contraseña (hash), idioma, zona horaria, intención de 
 ### Para inversionistas
 - Take rate claro del 10% sobre GMV.
 - No es MLM; modelo legalmente defendible.
-- Producto live con Stripe, studio, wallet y legal RGPD.
+- Producto live con pagos SPEI manual, studio, wallet y legal RGPD.
 - Mercado: creator economy hispano/latino.
 
 ### Para redes sociales (WhatsApp, Reels)
@@ -286,12 +285,12 @@ Email, nombre, usuario, contraseña (hash), idioma, zona horaria, intención de 
 - Registro directo ampliado.
 - Feed, Play, Marketplace, Academy, Community.
 - Course Studio y publicación de video.
-- Stripe checkout, monedero, hold 14 días.
+- Checkout SPEI, confirmación admin (`/admin/payments`), monedero, hold 14 días.
 - Términos, privacidad, cookies completos.
 - Preview Open Graph para WhatsApp.
 
 **En evolución / planificado:**
-- Stripe Connect (retiros automáticos).
+- Retiros manuales consolidados (`/admin/payouts`).
 - KYC para retiros.
 - Dominio propio de producción.
 - Datos legales corporativos completos (razón social, NIF, domicilio).

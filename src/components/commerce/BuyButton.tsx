@@ -6,7 +6,6 @@ import { formatProductPrice } from "@/lib/commerce/billing";
 type BuyButtonProps = {
   price: number;
   currency?: string;
-  billing?: "ONE_TIME" | "MONTHLY" | null;
   label?: string;
   href?: string;
   onClick?: () => void;
@@ -16,7 +15,6 @@ type BuyButtonProps = {
 export function BuyButton({
   price,
   currency = "USD",
-  billing = "ONE_TIME",
   label = "Comprar ahora",
   href = "/marketplace",
   onClick,
@@ -27,7 +25,7 @@ export function BuyButton({
     <>
       <span>{label}</span>
       <span className="rounded-full bg-black/15 px-3 py-1 font-display text-xs tracking-wide">
-        {formatProductPrice(price, currency, billing)}
+        {formatProductPrice(price, currency)}
       </span>
     </>
   );

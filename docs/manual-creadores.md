@@ -129,7 +129,7 @@ https://qlyk.vercel.app?ref=TUCODIGO
 |--------|-------------|
 | **Pendiente** | Venta reciente; en periodo de retención |
 | **Disponible** | Listo para solicitar retiro |
-| **Retirado** | Ya procesado (manual hoy; automático con Stripe Connect) |
+| **Retirado** | Ya procesado por el equipo (retiro manual en `/admin/payouts`) |
 
 ### Retención de 14 días
 
@@ -144,8 +144,7 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 ### Retirar dinero
 
 - **Mínimo:** 10 USD
-- **Hoy:** solicitud manual desde `/wallet` (el equipo procesa el depósito)
-- **Próximamente:** Stripe Connect para retiros automáticos a tu cuenta
+- **Hoy:** solicitas retiro desde `/wallet` → el equipo transfiere (SPEI u otro) y marca pagado en `/admin/payouts`
 
 ---
 
@@ -209,7 +208,7 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 - [ ] Primer producto creado (Studio o desde Publish)
 - [ ] Primer video SHOP publicado en Feed
 - [ ] Enlace con `?ref=TUCODIGO` en redes sociales
-- [ ] Precio probado con checkout de prueba
+- [ ] Compra de prueba con transferencia SPEI y comprobante
 - [ ] Revisado monedero y entendido el hold de 14 días
 - [ ] Términos y privacidad leídos
 

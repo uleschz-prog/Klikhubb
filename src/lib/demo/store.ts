@@ -678,7 +678,7 @@ export async function demoRequestPayout(userId: string, requestedAmount?: number
     userId,
     -amount,
     "PAYOUT",
-    "Retiro solicitado. Lo depositamos a mano mientras Stripe Connect entra.",
+    "Retiro solicitado. El equipo lo deposita manualmente.",
   );
   await persist(db);
   return {

@@ -20,7 +20,7 @@ export const FIRST_CONTENT = {
     {
       title: "Bienvenida a Qlyk",
       content:
-        "Conoce la experiencia Play y Shop: publica clips verticales, enlaza productos y recibe pagos con Stripe.",
+        "Conoce la experiencia Play y Shop: publica clips verticales, enlaza productos y recibe pagos por transferencia.",
       isFreePreview: true,
       useHeroVideo: true,
     },
@@ -34,7 +34,7 @@ export const FIRST_CONTENT = {
     {
       title: "Cobra con la red Qlyk",
       content:
-        "Cada venta reparte 85% creador, 10% plataforma y 5% invitación. Configura Stripe Connect o retiros manuales desde tu monedero.",
+        "Cada venta reparte 85% creador, 10% plataforma y 5% invitación. Los retiros se procesan manualmente desde tu monedero.",
       isFreePreview: false,
       useHeroVideo: false,
     },

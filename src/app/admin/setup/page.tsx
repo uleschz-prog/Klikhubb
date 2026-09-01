@@ -18,29 +18,18 @@ export default async function AdminSetupPage() {
       <p className="mt-2 max-w-2xl text-sm text-white/55">
         Checklist de lo que debe estar listo en Vercel antes de abrir Qlyk al público. Entorno detectado:{" "}
         <span className="font-semibold text-white">{readiness.environment}</span>
-        {readiness.stripe.mode ? (
-          <>
-            {" "}
-            · Stripe <span className="font-semibold text-klik-cyan">{readiness.stripe.mode}</span>
-          </>
-        ) : null}
       </p>
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
         <Link href="/dashboard" className="font-semibold text-klik-cyan hover:underline">
           Dashboard
         </Link>
+        <Link href="/admin/payments" className="font-semibold text-klik-cyan hover:underline">
+          Pagos por transferencia
+        </Link>
         <Link href="/admin/payouts" className="font-semibold text-klik-cyan hover:underline">
           Retiros manuales
         </Link>
-        <a
-          href="/api/stripe/mode"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-klik-cyan hover:underline"
-        >
-          Diagnóstico Stripe
-        </a>
       </div>
 
       <div
@@ -55,7 +44,7 @@ export default async function AdminSetupPage() {
         </p>
         <p className="mt-1 text-sm text-white/55">
           {readiness.readyForBeta
-            ? "Stripe y datos legales configurados. Connect es opcional (retiros manuales funcionan sin él)."
+            ? "Transferencias SPEI, comprobantes y datos legales configurados."
             : "Completa los ítems en rojo en Vercel y redeploy."}
         </p>
       </div>
@@ -90,9 +79,6 @@ export default async function AdminSetupPage() {
       <section className="mt-10 rounded-2xl border border-klik-line bg-klik-card p-5">
         <h2 className="font-display text-lg font-bold">Guías</h2>
         <ul className="mt-3 space-y-2 text-sm text-white/60">
-          <li>
-            Stripe Live: <code className="text-klik-cyan">docs/stripe-live-vercel.md</code>
-          </li>
           <li>
             Identidad legal: <code className="text-klik-cyan">docs/legal-setup-vercel.md</code>
           </li>

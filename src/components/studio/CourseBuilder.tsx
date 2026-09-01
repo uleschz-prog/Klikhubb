@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import type { StudioCourse, StudioLesson, StudioModule } from "@/lib/commerce/studio";
-import type { ProductBilling } from "@prisma/client";
 
 type Props = {
   initial: StudioCourse;
@@ -235,20 +234,6 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
             />
           </label>
           <label className="block">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Modelo de cobro</span>
-            <select
-              value={meta.billing}
-              disabled={meta.status !== "DRAFT"}
-              onChange={(event) =>
-                setMeta((prev) => ({ ...prev, billing: event.target.value as ProductBilling }))
-              }
-              className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan disabled:opacity-50"
-            >
-              <option value="ONE_TIME">Pago único</option>
-              <option value="MONTHLY">Suscripción mensual</option>
-            </select>
-          </label>
-          <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Nivel</span>
             <input
               value={meta.level}
@@ -272,11 +257,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
             </select>
           </label>
         </div>
-        {meta.billing === "MONTHLY" ? (
-          <p className="text-xs text-white/45">
-            Suscripción mensual: el alumno paga cada mes mientras mantenga la suscripción activa en Stripe.
-          </p>
-        ) : null}
+        <p className="text-xs text-white/45">Pago único por transferencia SPEI con confirmación manual.</p>
         <button
           type="submit"
           disabled={busy}

@@ -1,6 +1,5 @@
 import { legalIdentityComplete, legalMeta } from "@/config/legal";
-import { getStripeKeyMode, isStripeEnabled } from "@/lib/commerce/stripe";
-import { isConnectPayoutsEnabled } from "@/lib/commerce/stripe-connect";
+import { getPaymentInstructions, isManualPaymentsConfigured } from "@/config/payment-instructions";
 
 export type SetupCheck = {
   id: string;
@@ -29,12 +28,10 @@ export function getLegalSetupStatus() {
 }
 
 export function getPlatformReadiness() {
-  const stripeEnabled = isStripeEnabled();
-  const stripeMode = getStripeKeyMode();
-  const webhookSecret = Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim());
-  const connectEnabled = isConnectPayoutsEnabled();
-  const connectCountry = process.env.STRIPE_CONNECT_COUNTRY?.trim().toUpperCase() || "MX";
+  const manualPayments = isManualPaymentsConfigured();
+  const paymentInstructions = getPaymentInstructions();
   const adminPassword = Boolean(process.env.PLATFORM_ADMIN_PASSWORD?.trim());
+  const blob = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
   const legal = getLegalSetupStatus();
   const isProduction = process.env.VERCEL_ENV === "production";
 
@@ -48,29 +45,20 @@ export function getPlatformReadiness() {
         : "Opcional en local (hay fallback de desarrollo)",
     },
     {
-      id: "stripe_key",
-      label: "STRIPE_SECRET_KEY",
-      ok: stripeEnabled && stripeMode !== null,
-      hint:
-        stripeMode === "live"
-          ? "Modo Live — tarjetas reales"
-          : stripeMode === "test"
-            ? "Modo Test — puedes usar 4242…"
-            : "Define sk_test_ o sk_live_ en Vercel",
+      id: "payment_bank",
+      label: "Datos bancarios SPEI",
+      ok: manualPayments,
+      hint: manualPayments
+        ? `${paymentInstructions?.bankName} · CLABE configurada`
+        : "Define PAYMENT_BANK_NAME, PAYMENT_BENEFICIARY y PAYMENT_CLABE en Vercel",
     },
     {
-      id: "stripe_webhook",
-      label: "STRIPE_WEBHOOK_SECRET",
-      ok: webhookSecret,
-      hint: "whsec_ del webhook activo en Stripe Dashboard (mismo modo que la clave)",
-    },
-    {
-      id: "stripe_connect",
-      label: "Stripe Connect activo",
-      ok: connectEnabled,
-      hint: connectEnabled
-        ? `Connect ON · país ${connectCountry}`
-        : "STRIPE_CONNECT_ENABLED=true en Vercel + Connect activado en Stripe Dashboard",
+      id: "blob",
+      label: "BLOB_READ_WRITE_TOKEN",
+      ok: blob,
+      hint: blob
+        ? "Subida de comprobantes activa"
+        : "Necesario para que los compradores adjunten comprobantes",
     },
     {
       id: "legal_entity",
@@ -83,20 +71,16 @@ export function getPlatformReadiness() {
   ];
 
   const blockers = checks.filter((check) => !check.ok);
-  const readyForBeta = blockers.filter((check) => check.id !== "stripe_connect").length === 0;
 
   return {
     checks,
     legal,
-    stripe: {
-      enabled: stripeEnabled,
-      mode: stripeMode,
-      webhookSecret,
-      connectEnabled,
-      connectCountry,
+    payments: {
+      manualEnabled: manualPayments,
+      instructions: paymentInstructions,
     },
     environment: process.env.VERCEL_ENV ?? "development",
-    readyForBeta,
+    readyForBeta: blockers.length === 0,
     allChecksPass: blockers.length === 0,
   };
 }

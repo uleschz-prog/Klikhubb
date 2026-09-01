@@ -3,7 +3,7 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { MarketplaceShop } from "@/components/commerce/MarketplaceShop";
 import { listCatalogProducts } from "@/lib/commerce/catalog";
 import { getSession } from "@/lib/auth/session";
-import { isStripeEnabled } from "@/lib/commerce/stripe";
+import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default async function MarketplacePage() {
       <p className="mt-2 max-w-xl text-sm text-white/55">
         Cursos, digitales, membresías y físicos. Cada producto puede vivir dentro de un video.
       </p>
-      <MarketplaceShop products={products} signedIn={Boolean(session?.user)} stripeEnabled={isStripeEnabled()} />
+      <MarketplaceShop products={products} signedIn={Boolean(session?.user)} manualPaymentsEnabled={isLivePaymentsRequired() && isManualPaymentsConfigured()} />
       <Link href="/feed" className="mt-8 inline-block text-sm text-klik-cyan">
         Ver productos dentro del feed →
       </Link>

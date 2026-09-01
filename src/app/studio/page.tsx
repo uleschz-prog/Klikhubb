@@ -61,7 +61,7 @@ export default async function StudioPage() {
             >
               <div>
                 <p className="font-display text-xs text-klik-green">
-                  {STATUS_LABEL[course.status] ?? course.status} · {formatProductPrice(course.price, course.currency, course.billing)}
+                  {STATUS_LABEL[course.status] ?? course.status} · {formatProductPrice(course.price, course.currency)}
                 </p>
                 <h2 className="mt-1 font-display text-lg font-bold">{course.title}</h2>
                 <p className="mt-1 text-xs text-white/40">

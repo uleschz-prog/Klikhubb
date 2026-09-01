@@ -32,7 +32,7 @@ export const cookiesSections: LegalSection[] = [
         paragraphs: ["Cookies concretas habituales en la Plataforma:"],
         list: [
           "Cookies de sesión NextAuth — mantener tu inicio de sesión — duración: sesión / según configuración — esenciales.",
-          "Cookies de proveedor de pago (Stripe) — prevención de fraude en checkout — pueden activarse al pagar — esenciales para la transacción.",
+          "Cookies de sesión de checkout — mantener tu solicitud de pago mientras subes comprobante — esenciales para la transacción.",
         ],
       },
     ],

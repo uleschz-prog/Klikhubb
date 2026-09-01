@@ -17,8 +17,7 @@ export default async function AdminPayoutsPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Operaciones</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Retiros manuales</h1>
       <p className="mt-2 max-w-2xl text-sm text-white/55">
-        Cuando Stripe Connect no está activo, los creadores piden retiro y tú transfieres el dinero por fuera
-        (SPEI, PayPal, etc.). Marca cada retiro como pagado cuando lo hayas enviado.
+        Los creadores piden retiro y tú transfieres el dinero por fuera (SPEI, PayPal, etc.). Marca cada retiro como pagado cuando lo hayas enviado.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">

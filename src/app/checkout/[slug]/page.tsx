@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { CheckoutStage } from "@/components/commerce/CheckoutStage";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutPreview } from "@/lib/commerce/catalog";
-import { isStripeEnabled } from "@/lib/commerce/stripe";
+import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,8 @@ export default async function CheckoutPage({
   const preview = await getCheckoutPreview(params.slug, buyerId);
   if (!preview) notFound();
 
+  const manualPaymentsEnabled = isLivePaymentsRequired() && isManualPaymentsConfigured();
+
   return (
     <CheckoutStage
       item={{
@@ -35,11 +37,10 @@ export default async function CheckoutPage({
         currency: preview.product.currency,
         description: preview.product.description,
         type: preview.product.type,
-        billing: preview.product.billing,
         creatorName: preview.product.creatorName,
       }}
       signedIn
-      stripeEnabled={isStripeEnabled()}
+      manualPaymentsEnabled={manualPaymentsEnabled}
       canceled={searchParams.canceled === "1"}
     />
   );

@@ -33,7 +33,7 @@ export function FeedTheater({
   videos,
   initialId,
   signedIn = false,
-  stripeEnabled = false,
+  manualPaymentsEnabled = false,
   buySlug,
   canceled = false,
   home = "shop",
@@ -42,7 +42,7 @@ export function FeedTheater({
   videos: FeedVideo[];
   initialId?: string;
   signedIn?: boolean;
-  stripeEnabled?: boolean;
+  manualPaymentsEnabled?: boolean;
   buySlug?: string;
   canceled?: boolean;
   home?: "play" | "shop";
@@ -111,7 +111,6 @@ export function FeedTheater({
       currency: source.product.currency,
       description: source.product.description,
       type: source.product.type,
-      billing: source.product.billing,
       creatorName: source.creatorName,
       handle: source.handle,
       thumbnailUrl: source.thumbnailUrl,
@@ -625,7 +624,7 @@ export function FeedTheater({
               >
                 <span>Llevar {video.product.title}</span>
                 <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
-                  {formatProductPrice(video.product.price, video.product.currency, video.product.billing)}
+                  {formatProductPrice(video.product.price, video.product.currency)}
                 </span>
               </button>
             ) : null}
@@ -858,7 +857,7 @@ export function FeedTheater({
         onClose={closeShop}
         item={shopItem}
         signedIn={signedIn}
-        stripeEnabled={stripeEnabled}
+        manualPaymentsEnabled={manualPaymentsEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent(clipHref(video.id, video.product ? { buy: video.product.slug } : {}))}`}
         cancelPath={clipHref(video.id, video.product ? { buy: video.product.slug } : {})}
         canceled={canceled}

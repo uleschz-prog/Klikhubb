@@ -5,7 +5,7 @@ export const createCourseSchema = z.object({
   description: z.string().trim().max(4000).optional(),
   price: z.coerce.number().positive().max(100_000),
   level: z.string().trim().max(40).optional(),
-  billing: z.enum(["ONE_TIME", "MONTHLY"]).optional(),
+  billing: z.literal("ONE_TIME").optional(),
 });
 
 export const updateCourseSchema = z.object({
@@ -14,7 +14,7 @@ export const updateCourseSchema = z.object({
   price: z.coerce.number().positive().max(100_000).optional(),
   level: z.string().trim().max(40).nullable().optional(),
   status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "ARCHIVED"]).optional(),
-  billing: z.enum(["ONE_TIME", "MONTHLY"]).optional(),
+  billing: z.literal("ONE_TIME").optional(),
 });
 
 export const createModuleSchema = z.object({

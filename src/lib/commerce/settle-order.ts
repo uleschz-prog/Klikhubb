@@ -67,7 +67,7 @@ async function settledFromProviderRef(
 
 /**
  * Marca una venta como pagada y escribe el 85/10/5 + wallet + enrollment
- * en la misma transacción. Stripe (o el provider demo) solo llama esto
+ * en la misma transacción. El checkout manual (o demo local) llama esto
  * después de confirmar el cargo.
  * El 10% de plataforma se acredita a Qlykadmin.
  */

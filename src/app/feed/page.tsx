@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listPublishedVideos, listSavedVideos } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
-import { isStripeEnabled } from "@/lib/commerce/stripe";
+import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
 import { FeedEntry } from "@/components/explore/FeedEntry";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
@@ -45,7 +45,7 @@ export default async function FeedPage({
       clipId={searchParams.v}
       tab={tab}
       signedIn={Boolean(session?.user)}
-      stripeEnabled={isStripeEnabled()}
+      manualPaymentsEnabled={isLivePaymentsRequired() && isManualPaymentsConfigured()}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
     />

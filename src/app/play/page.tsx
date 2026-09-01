@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listPublishedVideos, listSavedVideos, getPublishedVideo } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
-import { isStripeEnabled } from "@/lib/commerce/stripe";
+import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
 import { FeedTheater } from "@/components/video/FeedTheater";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
@@ -108,7 +108,7 @@ export default async function PlayPage({
       videos={theaterVideos}
       initialId={searchParams.v}
       signedIn={Boolean(session?.user)}
-      stripeEnabled={isStripeEnabled()}
+      manualPaymentsEnabled={isLivePaymentsRequired() && isManualPaymentsConfigured()}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
     />

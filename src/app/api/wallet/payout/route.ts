@@ -23,8 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     if (error instanceof WalletError) {
-      const status =
-        error.code === "USER_NOT_FOUND" ? 404 : error.code === "CONNECT_REQUIRED" ? 409 : 400;
+      const status = error.code === "USER_NOT_FOUND" ? 404 : 400;
       return NextResponse.json({ error: error.message, code: error.code }, { status });
     }
     console.error(error);

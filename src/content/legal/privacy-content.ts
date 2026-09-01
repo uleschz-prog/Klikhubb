@@ -63,7 +63,7 @@ export const privacySections: LegalSection[] = [
           "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato (art. 6.1.b RGPD).",
           "Operar el feed, comunidad, academia, checkout y monedero — ejecución del contrato.",
           "Calcular y abonar comisiones 85/10/5, aplicar retenciones de 14 días y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
-          "Procesar pagos mediante Stripe y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
+          "Procesar pagos por transferencia bancaria y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
           "Enviar comunicaciones operativas (confirmaciones, seguridad, cambios legales) — ejecución del contrato e interés legítimo.",
           "Enviar comunicaciones comerciales propias — consentimiento o interés legítimo conforme a la LSSI, con opción de baja en todo momento.",
           "Moderar contenido, investigar abusos y proteger la Plataforma — interés legítimo en seguridad.",
@@ -97,7 +97,7 @@ export const privacySections: LegalSection[] = [
         list: [
           "Proveedores de infraestructura y hosting (p. ej. Vercel) — alojamiento de la aplicación.",
           "Base de datos PostgreSQL gestionada por el proveedor configurado en el despliegue.",
-          "Stripe — procesamiento de pagos y prevención de fraude en transacciones.",
+          "Almacenamiento de comprobantes de pago (Vercel Blob) — conservación de evidencia de transferencias.",
           "Resend u otros proveedores de email transaccional — envío de notificaciones operativas.",
           "Vercel Blob u otros almacenes de archivos — alojamiento de videos e imágenes subidas.",
           "Google — únicamente si activas el inicio de sesión OAuth con tu consentimiento.",

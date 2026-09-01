@@ -5,7 +5,6 @@ import { WalletConnectCard } from "@/components/wallet/WalletConnectCard";
 import { WalletPayoutForm } from "@/components/wallet/WalletPayoutForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/commerce/split";
-import { loadConnectStatus, syncConnectAccount } from "@/lib/commerce/stripe-connect";
 import { formatWalletDate, ledgerLabel, loadWalletView } from "@/lib/commerce/wallet";
 
 export const dynamic = "force-dynamic";
@@ -25,25 +24,13 @@ function payoutStatus(status: string) {
   }
 }
 
-export default async function WalletPage({
-  searchParams,
-}: {
-  searchParams: { connect?: string };
-}) {
+export default async function WalletPage() {
   const userId = await getDbUserId();
   if (!userId) {
     redirect("/login?callbackUrl=/wallet");
   }
 
-  if (searchParams.connect === "return" || searchParams.connect === "refresh") {
-    await syncConnectAccount(userId);
-  }
-
-  const connectNotice =
-    searchParams.connect === "return" ? ("return" as const) : searchParams.connect === "refresh" ? ("refresh" as const) : null;
-
   const wallet = await loadWalletView(userId);
-  const connect = await loadConnectStatus(userId);
 
   return (
     <PlatformShell title="Monedero">
@@ -90,14 +77,12 @@ export default async function WalletPage({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <WalletConnectCard connectNotice={connectNotice} />
+        <WalletConnectCard />
 
         <WalletPayoutForm
           available={wallet.available}
           minPayout={wallet.minPayout}
           currency={wallet.currency}
-          connectRequired={connect.enabled}
-          connectReady={connect.payoutsEnabled}
         />
 
         <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
