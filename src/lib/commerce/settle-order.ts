@@ -136,37 +136,21 @@ export async function settlePaidOrder(input: {
         where: { email: "platform@klikhubb.internal" },
       }));
 
-    // Si el comprador no tiene invitación, cuelga de Qlykadmin (usuario raíz).
-    if (!buyer.invitedById) {
-      if (platform && platform.id !== input.buyerId) {
-        await tx.user.update({
-          where: { id: input.buyerId },
-          data: { invitedById: platform.id },
-        });
-        buyer.invitedById = platform.id;
-      }
-    }
-
-    // El 5% es para un amigo real. Si el invitador es Qlykadmin, split lo
-    // ignora y el creador absorbe ese tramo + la tarifa de plataforma.
     const lines = splitSaleCommissions({
       saleAmount,
       creatorId: product.creatorId,
-      inviterId: buyer.invitedById,
-      platformUserId: platform?.id ?? null,
       plan: sellerPlan,
     });
 
     const now = new Date();
     const availableAt = new Date(now.getTime() + COMPENSATION_PLAN_V1.holdDays * 86_400_000);
     const platformFeeCents = lines.find((line) => line.type === "PLATFORM_FEE")?.amountCents ?? 0;
-    const affiliateId = lines.find((line) => line.type === "INVITE")?.beneficiaryId ?? null;
 
     const order = await tx.order.create({
       data: {
         buyerId: input.buyerId,
         sellerId: product.creatorId,
-        affiliateId,
+        affiliateId: null,
         status: "PAID",
         subtotal: money(saleCents),
         fees: money(platformFeeCents),
@@ -273,7 +257,7 @@ export async function settlePaidOrder(input: {
           orderId: order.id,
           beneficiaryId: line.beneficiaryId,
           sourceUserId: line.sourceUserId,
-          type: line.type === "CREATOR_SALE" ? CommissionType.CREATOR_SALE : CommissionType.DIRECT,
+          type: CommissionType.CREATOR_SALE,
           level: line.level,
           rate: new Prisma.Decimal(line.rate.toFixed(6)),
           amount: money(line.amountCents),
@@ -286,11 +270,11 @@ export async function settlePaidOrder(input: {
       await creditWallet(tx, {
         userId: line.beneficiaryId,
         cents: line.amountCents,
-        type: line.type === "CREATOR_SALE" ? LedgerType.SALE : LedgerType.COMMISSION,
+        type: LedgerType.SALE,
         destination: "pending",
         orderId: order.id,
         commissionId: commission.id,
-        note: line.type === "CREATOR_SALE" ? "Venta de tu producto" : "Invitación",
+        note: "Venta de tu producto",
       });
     }
 

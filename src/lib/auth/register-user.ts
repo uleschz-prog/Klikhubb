@@ -2,7 +2,6 @@ import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import type { RoleCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { findDefaultInviterId } from "@/lib/auth/ensure-admin";
 
 const INTENT_ROLES: Record<"CREATOR" | "ENTREPRENEUR" | "BOTH", RoleCode[]> = {
   CREATOR: ["CREATOR", "STUDENT"],
@@ -16,7 +15,6 @@ export async function registerUser(input: {
   password: string;
   displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
-  referralCode?: string;
   locale?: string;
   timezone?: string;
 }) {
@@ -36,20 +34,6 @@ export async function registerUser(input: {
     throw new Error("USERNAME_TAKEN");
   }
 
-  let invitedById: string | undefined;
-  const code = input.referralCode?.trim().toUpperCase();
-  if (code) {
-    const inviter = await prisma.user.findFirst({
-      where: { referralCode: { equals: code, mode: "insensitive" } },
-    });
-    if (!inviter) {
-      throw new Error("INVALID_REFERRAL");
-    }
-    invitedById = inviter.id;
-  } else {
-    invitedById = await findDefaultInviterId();
-  }
-
   const hashedPassword = await bcrypt.hash(input.password, 12);
   const roles = INTENT_ROLES[input.intent];
   const locale = input.locale?.trim().slice(0, 10) || "es";
@@ -65,13 +49,14 @@ export async function registerUser(input: {
       locale,
       timezone,
       status: "ACTIVE",
+      // Columna legacy única; ya no se usa como referido.
       referralCode: randomBytes(4).toString("hex").toUpperCase(),
-      invitedById,
+      invitedById: null,
       roles: { create: roles.map((role) => ({ role })) },
       wallet: { create: {} },
       stats: { create: {} },
     },
   });
 
-  return { id: user.id, email: user.email, username: user.username, referralCode: user.referralCode };
+  return { id: user.id, email: user.email, username: user.username };
 }

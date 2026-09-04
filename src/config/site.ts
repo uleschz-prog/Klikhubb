@@ -2,7 +2,6 @@ import {
   LEGACY_PRODUCTION_URL,
   PRODUCTION_URL,
   ensureNextAuthUrl,
-  normalizePublicUrl,
   resolveSiteUrl,
 } from "./site-url.env.mjs";
 
@@ -36,9 +35,3 @@ export const site = {
       "Publica, vende y cobra en el mismo feed. Cuenta gratis, registro directo.",
   },
 } as const;
-
-export function referralLink(code: string) {
-  const base = normalizePublicUrl(site.url);
-  const params = new URLSearchParams({ ref: code });
-  return `${base}/register?${params.toString()}`;
-}

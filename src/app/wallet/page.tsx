@@ -100,7 +100,7 @@ export default async function WalletPage() {
                   <div>
                     <p className="text-sm font-semibold text-white">{hold.productTitle}</p>
                     <p className="text-xs text-white/40">
-                      {hold.kind === "sale" ? "Tu venta" : "Invitación"} · {formatWalletDate(hold.availableAt)}
+                      {hold.kind === "sale" ? "Tu venta" : "Pendiente"} · {formatWalletDate(hold.availableAt)}
                     </p>
                   </div>
                   <p className="font-display text-sm font-bold text-klik-cyan">

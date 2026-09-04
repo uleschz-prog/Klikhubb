@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/auth/PasswordInput";
@@ -34,13 +34,11 @@ function detectTimezone() {
 
 export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant }) {
   const router = useRouter();
-  const params = useSearchParams();
   const termsId = useId();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [referralCode, setReferralCode] = useState("");
   const [intent, setIntent] = useState<(typeof intents)[number]["value"]>("BOTH");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [locale, setLocale] = useState("es");
@@ -52,9 +50,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
   useEffect(() => {
     setLocale(detectLocale());
     setTimezone(detectTimezone());
-    const ref = params.get("ref") ?? params.get("code");
-    if (ref) setReferralCode(ref.toUpperCase());
-  }, [params]);
+  }, []);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -75,7 +71,6 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
         username: username.toLowerCase(),
         password,
         intent,
-        referralCode: referralCode.trim() || undefined,
         locale,
         timezone,
         acceptTerms: true,
@@ -202,19 +197,6 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
           })}
         </div>
       </fieldset>
-
-      <label className="block">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
-          Código de amigo <span className="normal-case tracking-normal text-white/30">(opcional)</span>
-        </span>
-        <input
-          type="text"
-          value={referralCode}
-          onChange={(event) => setReferralCode(event.target.value.toUpperCase())}
-          placeholder="QLYKADMIN"
-          className={`${inputClass} mt-2 uppercase tracking-wide`}
-        />
-      </label>
 
       <label htmlFor={termsId} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
         <input

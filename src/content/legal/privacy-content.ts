@@ -22,11 +22,10 @@ export const privacySections: LegalSection[] = [
         list: [
           "Datos identificativos: nombre visible (displayName), nombre de usuario (@username), email, imagen de perfil (si la subes o vinculas con Google).",
           "Datos de acceso: contraseña almacenada de forma cifrada (hash), tokens de sesión, fecha de último acceso.",
-          "Datos de registro: idioma (locale), zona horaria, intención declarada (Creador/Miembro/Ambos), código de amigo usado, aceptación de términos (marca temporal lógica).",
+          "Datos de registro: idioma (locale), zona horaria, intención declarada (Creador/Miembro/Ambos), aceptación de términos (marca temporal lógica).",
           "Datos de perfil y actividad social: biografía, publicaciones, comentarios, likes, seguidores, membresías de comunidad.",
           "Contenido multimedia: videos, miniaturas, materiales de cursos y archivos subidos a la Plataforma.",
-          "Datos comerciales: historial de pedidos, productos adquiridos o vendidos, importes, moneda, estado de pago, comisiones, movimientos de monedero, solicitudes de retiro.",
-          "Datos de referidos: relación de invitación (invitedById), código de referido propio, comisiones generadas por compras referidas.",
+          "Datos comerciales: historial de pedidos, productos adquiridos o vendidos, importes, moneda, estado de pago, movimientos de monedero, solicitudes de retiro.",
           "Datos técnicos: dirección IP, identificadores de dispositivo/navegador, logs de servidor, cookies esenciales (ver Política de Cookies).",
           "Datos de verificación: información KYC o bancaria si solicitas retiros o superas umbrales de riesgo (cuando se active).",
           "Comunicaciones: mensajes que nos envíes a soporte o por email.",
@@ -62,7 +61,7 @@ export const privacySections: LegalSection[] = [
         list: [
           "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato (art. 6.1.b RGPD).",
           "Operar el feed, comunidad, academia, checkout y monedero — ejecución del contrato.",
-          "Calcular y abonar comisiones 85/10/5, aplicar retenciones de 14 días y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
+          "Calcular y abonar importes de ventas (93/7 o plan mensual), aplicar retenciones de 14 días y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
           "Procesar pagos por transferencia bancaria y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
           "Enviar comunicaciones operativas (confirmaciones, seguridad, cambios legales) — ejecución del contrato e interés legítimo.",
           "Enviar comunicaciones comerciales propias — consentimiento o interés legítimo conforme a la LSSI, con opción de baja en todo momento.",

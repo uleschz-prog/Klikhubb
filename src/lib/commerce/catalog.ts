@@ -1,4 +1,3 @@
-import { PLATFORM_ADMIN } from "@/config/platform-admin";
 import { prisma } from "@/lib/prisma";
 import { splitSaleCommissions } from "@/lib/commerce/split";
 import { CommerceError } from "@/lib/commerce/settle-order";
@@ -7,10 +6,8 @@ import {
   demoFindProductBySlug,
   demoHasEnrollment,
   demoHub,
-  demoInviterId,
   demoListEnrollments,
   demoListProducts,
-  demoPlatformUserId,
   isDemoFallbackAllowed,
   shouldUseDemoFallback,
   loadDemo,
@@ -207,33 +204,16 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
 }
 
 export async function getCheckoutPreview(slug: string, buyerId: string) {
+  void buyerId;
   try {
     const product = await prisma.product.findUnique({
       where: { slug },
       include: { creator: { select: { displayName: true, username: true } } },
     });
     if (!product) return null;
-    const [buyer, platform] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: buyerId },
-        select: { invitedById: true },
-      }),
-      prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: PLATFORM_ADMIN.email },
-            { username: { equals: PLATFORM_ADMIN.username, mode: "insensitive" } },
-            { referralCode: { equals: PLATFORM_ADMIN.referralCode, mode: "insensitive" } },
-          ],
-        },
-        select: { id: true },
-      }),
-    ]);
     const lines = splitSaleCommissions({
       saleAmount: Number(product.price),
       creatorId: product.creatorId,
-      inviterId: buyer?.invitedById,
-      platformUserId: platform?.id ?? null,
     });
     return {
       product: {
@@ -260,7 +240,6 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
   if (!product) return null;
   const db = await loadDemo();
   const creator = db.users.find((user) => user.id === product.creatorId);
-  const platformUserId = demoPlatformUserId(db);
   return {
     product: {
       id: product.id,
@@ -276,8 +255,6 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
     lines: splitSaleCommissions({
       saleAmount: product.price,
       creatorId: product.creatorId,
-      inviterId: demoInviterId(db, buyerId),
-      platformUserId,
     }),
     mode: "demo" as const,
   };
@@ -286,14 +263,13 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
 export async function loadHub(userId: string) {
   try {
     await releaseMatureCommissions(userId);
-    const [wallet, stats, user, invitedCount, top] = await Promise.all([
+    const [wallet, stats, user, top] = await Promise.all([
       prisma.wallet.findUnique({ where: { userId } }),
       prisma.userStats.findUnique({ where: { userId } }),
       prisma.user.findUnique({
         where: { id: userId },
-        select: { displayName: true, referralCode: true, image: true, username: true },
+        select: { displayName: true, image: true, username: true },
       }),
-      prisma.user.count({ where: { invitedById: userId } }),
       prisma.userStats.findMany({
         where: { user: { email: { not: "platform@klikhubb.internal" } } },
         orderBy: { points: "desc" },
@@ -313,9 +289,7 @@ export async function loadHub(userId: string) {
     return {
       displayName: user?.displayName ?? "Miembro",
       image: user?.image ?? null,
-      referralCode: user?.referralCode ?? "",
       username: user?.username ?? null,
-      invitedCount,
       points: stats?.points ?? 0,
       wallet: {
         available: Number(wallet?.available ?? 0),

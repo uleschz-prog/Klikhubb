@@ -25,8 +25,7 @@ export const termsSections: LegalSection[] = [
           '«Miembro» o «Estudiante»: Usuario que consume contenido, participa en comunidades o realiza compras.',
           '«Producto»: bien o servicio digital (curso, membresía, contenido descargable u otro activo digital) ofrecido por un Creador.',
           '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (transferencia bancaria con confirmación manual).',
-          '«Monedero»: saldo interno que refleja importes pendientes o disponibles derivados de ventas, comisiones o ajustes, sujeto a retenciones y verificaciones.',
-          '«Código de amigo» o «Referido»: código personal que vincula a un nuevo Usuario con quien lo invitó, sin crear niveles adicionales de red.',
+          '«Monedero»: saldo interno que refleja importes pendientes o disponibles derivados de ventas o ajustes, sujeto a retenciones y verificaciones.',
           '«Hold» o «retención»: periodo de 14 días naturales durante el cual ciertos importes permanecen bloqueados antes de poder retirarse, para gestionar devoluciones, contracargos o incidencias.',
         ],
       },
@@ -61,14 +60,12 @@ export const termsSections: LegalSection[] = [
   },
   {
     id: "cuentas-roles",
-    title: "Cuentas, roles e invitaciones",
+    title: "Cuentas y roles",
     blocks: [
       {
         paragraphs: [
           "Durante el registro puedes indicar si entras como Creador, Miembro o ambos. Esa elección determina los roles iniciales asignados a tu Cuenta (p. ej. CREATOR, STUDENT).",
-          "El sistema de invitación es de un solo nivel: si te registras con el código de amigo de otro Usuario, esa persona podrá recibir una comisión sobre tus compras futuras según el modelo descrito en la sección de compensación. No existen niveles encadenados, matrices binarias ni comisiones por reclutamiento de terceros.",
-          "Si no introduces código de invitación, la Plataforma puede asignarte un referente por defecto definido internamente. Eso no implica relación comercial, laboral ni de agencia con dicho referente.",
-          "Cada Usuario dispone de un código de referido personal para compartir libremente. Está prohibido suplantar identidades, usar códigos engañosos o captar usuarios mediante prácticas fraudulentas.",
+          "No existe sistema de referidos ni comisión por invitación. El registro es individual y no genera recompensas por reclutar a otras personas.",
         ],
       },
     ],
@@ -84,7 +81,7 @@ export const termsSections: LegalSection[] = [
         ],
         list: [
           "Está prohibido publicar contenido ilegal, difamatorio, odio, acoso, pornografía no consentida, explotación de menores, malware o estafas.",
-          "Está prohibido manipular métricas, crear cuentas falsas, realizar autopagos fraudulentos o abusar del sistema de referidos.",
+          "Está prohibido manipular métricas, crear cuentas falsas o realizar autopagos fraudulentos.",
           "Está prohibido el spam, la suplantación y cualquier conducta que perjudique a otros Usuarios o a la infraestructura.",
         ],
       },
@@ -104,14 +101,14 @@ export const termsSections: LegalSection[] = [
           "Los precios de los Productos los fija cada Creador. El importe final puede incluir impuestos según la legislación aplicable y la configuración del checkout.",
           "Al realizar una Compra, celebras un contrato directo con el Creador vendedor. La Plataforma facilita el pago, el acceso digital y el reparto económico descrito en estos Términos.",
           "Los Productos digitales, salvo error técnico imputable al Operador o disposición legal imperativa, pueden no ser reembolsables una vez entregado el acceso. Las solicitudes de devolución se gestionarán conforme a la normativa de consumo aplicable y a la política del Creador, sin perjuicio de los derechos legales irrenunciables del comprador.",
-          "Los contracargos, devoluciones o impagos pueden generar ajustes negativos en el Monedero del Creador, del referente o del Operador, incluida la recuperación de importes ya acreditados.",
+          "Los contracargos, devoluciones o impagos pueden generar ajustes negativos en el Monedero del Creador o del Operador, incluida la recuperación de importes ya acreditados.",
         ],
       },
     ],
   },
   {
     id: "compensacion",
-    title: "Modelo de compensación (85 / 10 / 5)",
+    title: "Modelo de compensación (93 / 7 o plan mensual)",
     blocks: [
       {
         paragraphs: [
@@ -119,18 +116,16 @@ export const termsSections: LegalSection[] = [
           "Por cada Compra completada con éxito, el importe neto de la venta se distribuye así:",
         ],
         list: [
-          "Plan «pago cuando vendo»: 88% para el Creador, 7% de tarifa de plataforma (Qlykadmin) y 5% de invitación.",
-          "Plan mensual ($25 USD / 30 días): 0% de tarifa de plataforma mientras el periodo esté activo; se mantiene el 5% de invitación y el resto para el Creador.",
+          "Plan «pago cuando vendo»: 93% para el Creador y 7% de tarifa de plataforma (Qlykadmin).",
+          "Plan mensual ($25 USD / 30 días): 100% para el Creador mientras el periodo esté activo (0% de tarifa de plataforma).",
           "El Creador puede cambiar de modalidad en cualquier momento desde su dashboard. Cada venta usa el plan efectivo en el momento del pago.",
         ],
       },
       {
         paragraphs: [
-          "Si el comprador no fue referido por ningún Usuario (o no existe referente válido), el 5% de invitación no se paga a terceros: ese tramo se suma al Creador.",
-          "No existe compensación multinivel: solo puede aplicarse una comisión de invitación por compra, vinculada al referente directo del comprador. No hay bonos por niveles, matching, binario ni estructuras piramidales.",
-          "Las comisiones se calculan sobre la venta concreta, no sobre el mero registro de nuevos Usuarios. Invitar personas no genera por sí solo derecho económico alguno.",
+          "No existe sistema de referidos ni comisión por invitación. No hay compensación multinivel, matching, binario ni estructuras piramidales.",
           "Los importes derivados de ventas pueden quedar en estado pendiente durante un hold de 14 días naturales antes de pasar a saldo disponible para retiro. Este plazo permite gestionar devoluciones, disputas de pago y revisiones antifraude.",
-          "El Operador puede retener, anular o ajustar comisiones en casos de fraude, contracargo, incumplimiento grave, error manifesto o requerimiento legal.",
+          "El Operador puede retener, anular o ajustar importes en casos de fraude, contracargo, incumplimiento grave, error manifiesto o requerimiento legal.",
           "Mostrar ejemplos, simulaciones o testimonios no constituye promesa de rentabilidad. Cada Usuario es responsable de sus obligaciones fiscales y de declarar los ingresos obtenidos conforme a la ley de su país.",
         ],
       },

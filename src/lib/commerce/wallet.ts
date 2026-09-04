@@ -33,7 +33,7 @@ export type WalletHold = {
   id: string;
   amount: number;
   availableAt: string;
-  kind: "sale" | "invite";
+  kind: "sale" | "hold";
   productTitle: string;
 };
 
@@ -85,7 +85,7 @@ export function ledgerLabel(type: string): string {
     case "SALE":
       return "Venta";
     case "COMMISSION":
-      return "Invitación";
+      return "Ajuste";
     case "FEE":
       return "Plataforma";
     case "PAYOUT":
@@ -296,7 +296,7 @@ async function readWalletView(userId: string): Promise<WalletView> {
     id: row.id,
     amount: Number(row.amount),
     availableAt: (row.availableAt ?? row.createdAt).toISOString(),
-    kind: row.type === "CREATOR_SALE" ? "sale" : "invite",
+    kind: row.type === "CREATOR_SALE" ? "sale" : "hold",
     productTitle: row.order.items[0]?.product.title ?? "Venta",
   }));
 

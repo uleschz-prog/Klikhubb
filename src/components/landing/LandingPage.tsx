@@ -20,7 +20,7 @@ const beats = [
   },
   {
     title: "Cobras",
-    line: "88% para ti con el plan por venta (7% plataforma + 5% invitación). O $25/mes sin comisión por venta.",
+    line: "93% para ti con el plan por venta (7% de plataforma). O $25/mes y te quedas el 100%.",
   },
 ];
 

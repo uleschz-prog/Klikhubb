@@ -54,7 +54,6 @@ export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
       create: { userId: existing.id },
     });
 
-    await attachOrphansToAdmin(db, existing.id);
     return db.user.findUniqueOrThrow({ where: { id: existing.id } });
   }
 
@@ -77,31 +76,5 @@ export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
     },
   });
 
-  await attachOrphansToAdmin(db, created.id);
   return created;
-}
-
-async function attachOrphansToAdmin(db: PrismaClient, adminId: string) {
-  await db.user.updateMany({
-    where: {
-      invitedById: null,
-      id: { not: adminId },
-      email: { not: "platform@klikhubb.internal" },
-    },
-    data: { invitedById: adminId },
-  });
-}
-
-export async function findDefaultInviterId(db: PrismaClient = defaultPrisma) {
-  const admin = await db.user.findFirst({
-    where: {
-      OR: [
-        { username: { equals: PLATFORM_ADMIN.username, mode: "insensitive" } },
-        { referralCode: { equals: PLATFORM_ADMIN.referralCode, mode: "insensitive" } },
-        { email: PLATFORM_ADMIN.email },
-      ],
-    },
-    select: { id: true },
-  });
-  return admin?.id;
 }

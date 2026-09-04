@@ -22,14 +22,13 @@ export async function POST(request: Request) {
     password: parsed.data.password,
     displayName: parsed.data.displayName,
     intent: parsed.data.intent,
-    referralCode: parsed.data.referralCode?.trim() || undefined,
     locale: parsed.data.locale,
     timezone: parsed.data.timezone,
   };
 
   try {
     const user = await registerUser(payload);
-    return NextResponse.json({ ok: true, referralCode: user.referralCode, mode: "postgres" });
+    return NextResponse.json({ ok: true, id: user.id, mode: "postgres" });
   } catch (error) {
     const mapped = mapRegisterError(error);
     if (mapped) return mapped;
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
 
   try {
     const user = await demoRegister(payload);
-    return NextResponse.json({ ok: true, referralCode: user.referralCode, mode: "demo" });
+    return NextResponse.json({ ok: true, id: user.id, mode: "demo" });
   } catch (error) {
     return mapRegisterError(error) ?? NextResponse.json({ error: "No pudimos crear la cuenta." }, { status: 500 });
   }
@@ -57,9 +56,6 @@ function mapRegisterError(error: unknown) {
   }
   if (code === "USERNAME_TAKEN") {
     return NextResponse.json({ error: "Ese usuario ya existe. Prueba otro." }, { status: 409 });
-  }
-  if (code === "INVALID_REFERRAL") {
-    return NextResponse.json({ error: "Ese código de amigo no existe." }, { status: 400 });
   }
   return null;
 }

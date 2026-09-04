@@ -1,5 +1,4 @@
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { InviteCard } from "@/components/social/InviteCard";
 import { Leaderboard } from "@/components/gamification/Leaderboard";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ProfileAvatarUpload } from "@/components/profile/ProfileAvatarUpload";
@@ -129,7 +128,6 @@ export default async function DashboardPage() {
         </a>
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <InviteCard code={hub?.referralCode ?? ""} invitedCount={hub?.invitedCount ?? 0} />
         <Leaderboard rows={hub?.leaderboard ?? []} />
       </div>
     </PlatformShell>

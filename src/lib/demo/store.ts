@@ -48,7 +48,7 @@ type DemoCommission = {
   beneficiaryId: string;
   orderId: string;
   amount: number;
-  type: "CREATOR_SALE" | "INVITE" | "PLATFORM_FEE";
+  type: "CREATOR_SALE" | "PLATFORM_FEE";
   status: "LOCKED" | "APPROVED";
   availableAt: string;
   productTitle: string;
@@ -211,11 +211,7 @@ async function ensureDemoAdmin(db: DemoDB): Promise<DemoDB> {
     db.wallets[adminId] = { available: 0, pending: 0, lifetimeEarned: 0 };
   }
 
-  // Todos los demás descienden de Qlykadmin si no tienen invitador.
-  for (const user of db.users) {
-    if (user.id === adminId) continue;
-    if (!user.invitedById) user.invitedById = adminId!;
-  }
+  // Sin árbol de referidos: no se fuerza invitador por defecto.
   return db;
 }
 
@@ -272,19 +268,13 @@ function u(
   };
 }
 
-export function demoInviterId(db: DemoDB, userId: string) {
-  const user = db.users.find((row) => row.id === userId);
-  return user?.invitedById ?? user?.sponsorId ?? null;
-}
-
-/** Qlykadmin (raíz). Recibe el 10% de plataforma; no el 5% de invitación. */
 export function demoPlatformUserId(db: DemoDB) {
   return (
     db.users.find(
       (user) =>
         user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase() ||
         user.email.toLowerCase() === PLATFORM_ADMIN.email,
-    )?.id ?? "usr_qlykadmin"
+    )?.id ?? db.users[0]?.id ?? "usr_qlykadmin"
   );
 }
 
@@ -352,7 +342,6 @@ export async function demoRegister(input: {
   password: string;
   displayName: string;
   intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
-  referralCode?: string;
   locale?: string;
   timezone?: string;
 }) {
@@ -365,11 +354,6 @@ export async function demoRegister(input: {
   if (db.users.some((user) => user.username.toLowerCase() === username)) {
     throw new Error("USERNAME_TAKEN");
   }
-  const code = input.referralCode?.trim().toUpperCase();
-  const inviter = code
-    ? db.users.find((user) => user.referralCode === code)
-    : db.users.find((user) => user.username.toLowerCase() === PLATFORM_ADMIN.username.toLowerCase());
-  if (code && !inviter) throw new Error("INVALID_REFERRAL");
 
   const id = `usr_${Math.random().toString(36).slice(2, 10)}`;
   const roles =
@@ -388,7 +372,7 @@ export async function demoRegister(input: {
     displayName,
     username,
     referralCode: id.slice(-8).toUpperCase(),
-    invitedById: inviter?.id ?? null,
+    invitedById: null,
     roles,
     points: 0,
   };
@@ -413,16 +397,10 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
 
   const platformUserId = demoPlatformUserId(db);
   const buyer = db.users.find((row) => row.id === input.buyerId);
-  // Huérfanos cuelgan de Qlykadmin (usuario raíz).
-  if (buyer && !buyer.invitedById && buyer.id !== platformUserId) {
-    buyer.invitedById = platformUserId;
-  }
 
   const lines = splitSaleCommissions({
     saleAmount: product.price,
     creatorId: product.creatorId,
-    inviterId: demoInviterId(db, input.buyerId),
-    platformUserId,
   });
 
   const orderId = `ord_${Math.random().toString(36).slice(2, 10)}`;
@@ -464,8 +442,8 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
         db,
         beneficiaryId,
         amount,
-        line.type === "CREATOR_SALE" ? "SALE" : "COMMISSION",
-        line.type === "CREATOR_SALE" ? "Venta de tu producto" : "Invitación",
+        "SALE",
+        "Venta de tu producto",
       );
     }
     db.wallets[beneficiaryId] = wallet;
@@ -504,9 +482,6 @@ export async function demoHub(userId: string) {
   const db = await loadDemo();
   const user = db.users.find((row) => row.id === userId);
   const wallet = db.wallets[userId] ?? { available: 0, pending: 0, lifetimeEarned: 0 };
-  const invitedCount = db.users.filter(
-    (row) => (row.invitedById ?? row.sponsorId) === userId,
-  ).length;
   const leaderboard: LeaderboardRow[] = [...db.users]
     .sort((a, b) => b.points - a.points)
     .slice(0, 5)
@@ -521,9 +496,7 @@ export async function demoHub(userId: string) {
   return {
     displayName: user?.displayName ?? "Miembro",
     image: user?.image ?? null,
-    referralCode: user?.referralCode ?? "",
     username: user?.username ?? null,
-    invitedCount,
     points: user?.points ?? 0,
     wallet,
     leaderboard,
@@ -593,7 +566,7 @@ export async function demoLoadWalletView(userId: string) {
       id: row.id,
       amount: row.amount,
       availableAt: row.availableAt,
-      kind: (row.type === "CREATOR_SALE" ? "sale" : "invite") as "sale" | "invite",
+      kind: (row.type === "CREATOR_SALE" ? "sale" : "hold") as "sale" | "hold",
       productTitle: row.productTitle,
     }));
 

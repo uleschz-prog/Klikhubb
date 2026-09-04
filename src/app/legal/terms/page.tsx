@@ -4,7 +4,7 @@ import { termsIntro, termsRelated, termsSections } from "@/content/legal/terms-c
 
 export const metadata: Metadata = {
   title: "Términos de Uso",
-  description: "Condiciones de uso de Qlyk: registro, contenido, compras, compensación 85/10/5 y responsabilidades.",
+  description: "Condiciones de uso de Qlyk: registro, contenido, compras, compensación 93/7 o plan mensual y responsabilidades.",
 };
 
 export default function TermsPage() {

@@ -1,56 +1,41 @@
-/**
- * Verificación rápida de tasas PAYG / FLAT.
- * Uso: npx tsx scripts/verify-creator-plans.ts
- */
-import { splitSaleCommissions } from "../src/lib/commerce/split";
+import assert from "node:assert/strict";
 import { ratesForCreatorPlan, resolveEffectiveCreatorPlan } from "../src/lib/commerce/creator-plans";
+import { splitSaleCommissions } from "../src/lib/commerce/split";
 
-function assert(cond: boolean, msg: string) {
-  if (!cond) throw new Error(msg);
-}
-
-const sale = 100;
-const creatorId = "creator";
-const inviterId = "friend";
-const platformId = "admin";
+const saleAmount = 100;
 
 {
   const plan = ratesForCreatorPlan("payg");
-  const withInvite = splitSaleCommissions({
-    saleAmount: sale,
-    creatorId,
-    inviterId,
-    platformUserId: platformId,
+  const lines = splitSaleCommissions({
+    saleAmount,
+    creatorId: "creator",
     plan,
   });
-  const fee = withInvite.find((l) => l.type === "PLATFORM_FEE")!;
-  const creator = withInvite.find((l) => l.type === "CREATOR_SALE")!;
-  const invite = withInvite.find((l) => l.type === "INVITE")!;
+  const fee = lines.find((l) => l.type === "PLATFORM_FEE")!;
+  const creator = lines.find((l) => l.type === "CREATOR_SALE")!;
+  assert(!lines.some((l) => (l as { type: string }).type === "INVITE"), "no INVITE line");
   assert(fee.amountCents === 700, `PAYG fee expected 700 got ${fee.amountCents}`);
-  assert(creator.amountCents === 8800, `PAYG creator expected 8800 got ${creator.amountCents}`);
-  assert(invite.amountCents === 500, `PAYG invite expected 500 got ${invite.amountCents}`);
-  console.log("PAYG + invite OK", { fee: fee.amountCents, creator: creator.amountCents, invite: invite.amountCents });
+  assert(creator.amountCents === 9300, `PAYG creator expected 9300 got ${creator.amountCents}`);
+  console.log("PAYG OK", { fee: fee.amountCents, creator: creator.amountCents });
 }
 
 {
   const plan = ratesForCreatorPlan("flat");
-  const withInvite = splitSaleCommissions({
-    saleAmount: sale,
-    creatorId,
-    inviterId,
-    platformUserId: platformId,
+  const lines = splitSaleCommissions({
+    saleAmount,
+    creatorId: "creator",
     plan,
   });
-  const fee = withInvite.find((l) => l.type === "PLATFORM_FEE")!;
-  const creator = withInvite.find((l) => l.type === "CREATOR_SALE")!;
+  const fee = lines.find((l) => l.type === "PLATFORM_FEE")!;
+  const creator = lines.find((l) => l.type === "CREATOR_SALE")!;
   assert(fee.amountCents === 0, `FLAT fee expected 0 got ${fee.amountCents}`);
-  assert(creator.amountCents === 9500, `FLAT creator expected 9500 got ${creator.amountCents}`);
-  console.log("FLAT + invite OK", { fee: fee.amountCents, creator: creator.amountCents });
+  assert(creator.amountCents === 10000, `FLAT creator expected 10000 got ${creator.amountCents}`);
+  console.log("FLAT OK", { fee: fee.amountCents, creator: creator.amountCents });
 }
 
 {
-  const future = new Date(Date.now() + 86400000);
-  const past = new Date(Date.now() - 86400000);
+  const future = new Date(Date.now() + 86_400_000);
+  const past = new Date(Date.now() - 86_400_000);
   assert(resolveEffectiveCreatorPlan({ preferredPlan: "FLAT", planUntil: future }) === "flat", "active flat");
   assert(resolveEffectiveCreatorPlan({ preferredPlan: "FLAT", planUntil: past }) === "payg", "expired flat");
   assert(resolveEffectiveCreatorPlan({ preferredPlan: "PAYG", planUntil: future }) === "payg", "prefer payg");
