@@ -295,14 +295,17 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
 
   const shellClass = isSection
     ? "mx-auto w-full max-w-lg rounded-[1.75rem] border border-white/10 bg-black/40 p-6 shadow-[0_0_60px_rgba(0,255,65,0.08)] backdrop-blur-xl"
-    : "w-full max-w-lg rounded-[1.75rem] border border-white/10 bg-black/45 p-5 shadow-[0_0_50px_rgba(0,240,255,0.1)] backdrop-blur-xl";
+    : "w-full max-w-md rounded-[1.75rem] border border-white/10 bg-black/55 p-5 shadow-[0_0_50px_rgba(0,240,255,0.12)] backdrop-blur-xl sm:p-6";
 
   return (
     <div className={shellClass}>
       {!isSection ? (
-        <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
-          Registro gratis
-        </p>
+        <div className="mb-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
+            Crear cuenta
+          </p>
+          <p className="mt-1 text-sm text-white/55">Gratis · sin lista de espera</p>
+        </div>
       ) : null}
       {form}
     </div>

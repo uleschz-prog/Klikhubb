@@ -51,35 +51,41 @@ export function LandingPage() {
       <Navbar transparent />
 
       <main>
-        <section className="relative isolate min-h-[100svh] overflow-hidden bg-klik-black">
+        <section
+          id="registro"
+          className="relative isolate min-h-[100svh] overflow-hidden bg-klik-black"
+        >
           <HeroDemoVideo />
 
-          <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 md:justify-center md:pb-24 md:pt-24">
-            <p className="hero-rise font-display text-[clamp(3.4rem,12vw,7.5rem)] font-extrabold leading-[0.9] tracking-tight">
-              <span className="text-klik-cyan">Q</span>lyk
-            </p>
+          <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-6xl items-center gap-10 px-4 pb-16 pt-28 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-12 md:pb-24 md:pt-24">
+            <div className="flex flex-col justify-center">
+              <p className="hero-rise font-display text-[clamp(3.4rem,11vw,7rem)] font-extrabold leading-[0.9] tracking-tight">
+                <span className="text-klik-cyan">Q</span>lyk
+              </p>
 
-            <h1 className="hero-rise hero-rise-delay-1 mt-5 max-w-xl font-display text-[1.85rem] font-extrabold leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl">
-              Del video al pago.
-              <span className="block bg-gradient-to-r from-klik-cyan to-klik-green bg-clip-text text-transparent">
-                Sin salir del feed.
-              </span>
-            </h1>
+              <h1 className="hero-rise hero-rise-delay-1 mt-5 max-w-xl font-display text-[1.85rem] font-extrabold leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl">
+                Del video al pago.
+                <span className="block bg-gradient-to-r from-klik-cyan to-klik-green bg-clip-text text-transparent">
+                  Sin salir del feed.
+                </span>
+              </h1>
 
-            <p className="hero-rise hero-rise-delay-2 mt-4 max-w-md text-base leading-7 text-white/65 sm:text-lg">
-              Publicas. Tu audiencia se queda. Cobras en el mismo clic.
-            </p>
+              <p className="hero-rise hero-rise-delay-2 mt-4 max-w-md text-base leading-7 text-white/70 sm:text-lg">
+                Tu cuenta gratis. Publicas, tu audiencia se queda y cobras en el mismo clic.
+              </p>
 
-            <div className="hero-rise hero-rise-delay-3 mt-8 max-w-xl">
-              <Suspense fallback={null}>
-                <PremiumRegisterForm variant="hero" />
-              </Suspense>
-              <p className="mt-4 text-center text-sm text-white/45 md:text-left">
+              <p className="hero-rise hero-rise-delay-3 mt-6 text-sm text-white/45">
                 ¿Solo quieres comprar?{" "}
                 <Link href="/feed" className="font-semibold text-klik-cyan hover:underline">
                   Entra al feed Tienda
                 </Link>
               </p>
+            </div>
+
+            <div className="hero-rise hero-rise-delay-3 w-full md:justify-self-end md:max-w-md">
+              <Suspense fallback={null}>
+                <PremiumRegisterForm variant="hero" />
+              </Suspense>
             </div>
           </div>
         </section>
@@ -183,26 +189,24 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="registro" className="relative overflow-hidden border-t border-white/5">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,65,0.14),transparent_50%)]" />
+        <section className="relative overflow-hidden border-t border-white/5">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,65,0.12),transparent_50%)]" />
           <motion.div
             {...fade}
-            className="relative mx-auto flex max-w-3xl flex-col items-center px-4 py-24 text-center md:py-32"
+            className="relative mx-auto flex max-w-3xl flex-col items-center px-4 py-20 text-center md:py-28"
           >
-            <p className="font-display text-[clamp(2.5rem,8vw,4.5rem)] font-extrabold leading-none tracking-tight">
-              <span className="text-klik-cyan">Q</span>lyk
-            </p>
-            <h2 className="mt-6 font-display text-3xl font-extrabold tracking-tight md:text-4xl">
+            <h2 className="font-display text-3xl font-extrabold tracking-tight md:text-4xl">
               Empieza gratis hoy.
             </h2>
             <p className="mt-4 max-w-md text-white/55">
               Crea tu perfil, publica un clip con oferta y comparte tu link. Sin lista de espera.
             </p>
-            <div className="mt-10 w-full">
-              <Suspense fallback={null}>
-                <PremiumRegisterForm variant="section" />
-              </Suspense>
-            </div>
+            <Link
+              href="#registro"
+              className="mt-8 inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black"
+            >
+              Crear cuenta
+            </Link>
           </motion.div>
         </section>
       </main>
