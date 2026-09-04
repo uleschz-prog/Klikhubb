@@ -118,8 +118,12 @@ export function CreatorPlanCard({ initial }: { initial?: CreatorPlanSnapshot | n
           </p>
           <p className="mt-1 font-display text-lg font-bold text-white">{snapshot.payg.label}</p>
           <p className="mt-2 text-xs leading-5 text-white/55">{snapshot.payg.description}</p>
-          {paygActive ? (
-            <p className="mt-3 text-xs font-semibold text-klik-cyan">Activo ahora</p>
+          {snapshot.preferredPlan === "payg" ? (
+            <p className="mt-3 text-xs font-semibold text-klik-cyan">Elegido · activo</p>
+          ) : paygActive ? (
+            <p className="mt-3 text-xs font-semibold text-klik-cyan">
+              Fee actual 7% · toca para volver
+            </p>
           ) : null}
         </button>
 
@@ -147,6 +151,19 @@ export function CreatorPlanCard({ initial }: { initial?: CreatorPlanSnapshot | n
           ) : null}
         </button>
       </div>
+
+      {snapshot.preferredPlan === "flat" && !flatActive ? (
+        <div className="mt-4">
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => switchPlan("payg")}
+            className="text-sm font-semibold text-klik-cyan underline-offset-2 hover:underline disabled:opacity-60"
+          >
+            {busy === "payg" ? "Cambiando…" : "Volver a pago cuando vendo (7%)"}
+          </button>
+        </div>
+      ) : null}
 
       {snapshot.preferredPlan === "flat" && !flatActive && snapshot.pendingInvoice ? (
         <div className="mt-5 rounded-2xl border border-klik-green/30 bg-black/30 p-4">
