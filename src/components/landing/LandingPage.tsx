@@ -20,13 +20,13 @@ const beats = [
   },
   {
     title: "Cobras",
-    line: "85% para ti, 10% plataforma, 5% a quien te invitó. Retiros a tu banco.",
+    line: "88% para ti con el plan por venta (7% plataforma + 5% invitación). O $25/mes sin comisión por venta.",
   },
 ];
 
 const proofs = [
   { label: "Del video al curso", value: "1 clic" },
-  { label: "Para el creador", value: "85%" },
+  { label: "Por venta (o $25/mes)", value: "7%" },
   { label: "Hold anti-fraude", value: "14 días" },
   { label: "Registro", value: "Gratis" },
 ];
@@ -164,7 +164,7 @@ export function LandingPage() {
               {[
                 "Transferencia SPEI con referencia QLYK",
                 "Confirmación y acceso a la academia",
-                "85 / 10 / 5 en monedero · retiro manual",
+                "7% por venta o $25/mes · retiro manual",
               ].map((step, index) => (
                 <li key={step} className="border-l border-klik-cyan/40 pl-5">
                   <p className="font-display text-sm font-bold text-klik-cyan">0{index + 1}</p>

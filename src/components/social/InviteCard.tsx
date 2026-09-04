@@ -9,7 +9,7 @@ export function InviteCard({ code, invitedCount }: { code: string; invitedCount:
       <h3 className="mt-1 font-display text-xl font-bold text-white">Trae a tu gente</h3>
       <p className="mt-3 text-sm leading-6 text-white/60">
         Si un amigo entra con tu código y compra, ganas el 5% de esa venta. Un solo gracias. Sin
-        reclutar a nadie. Qlyk siempre se queda el 10% de servicio.
+        reclutar a nadie. En el plan por venta Qlyk se queda el 7%; con el plan mensual de $25, 0%.
       </p>
       {code ? (
         <>

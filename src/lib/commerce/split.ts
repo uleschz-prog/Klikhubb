@@ -1,4 +1,4 @@
-import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { COMPENSATION_PLAN_V1, type CreatorPlanRates } from "@/config/compensation-plan";
 import { allocateByRates, fromCents, toCents } from "@/lib/money/cents";
 
 export type CommissionLine = {
@@ -18,19 +18,19 @@ function isRealInviter(
   if (!inviterId) return false;
   if (inviterId === creatorId) return false;
   if (inviterId === "platform" || inviterId === "usr_platform") return false;
-  // Qlykadmin es raíz y ya cobra el 10% de plataforma; no recibe el 5% de invitación.
+  // Qlykadmin es raíz y ya cobra la tarifa de plataforma; no recibe el 5% de invitación.
   if (platformUserId && inviterId === platformUserId) return false;
   return true;
 }
 
-/** 85% creador · 10% plataforma · 5% a quien invitó (o al creador si nadie lo hizo). */
+/** Creador + plataforma + invitación (o creador absorbe el 5% si nadie invitó). */
 export function splitSaleCommissions(input: {
   saleAmount: number;
   creatorId: string;
   inviterId?: string | null;
   /** Usuario raíz (Qlykadmin). Si es el invitador, no se paga el 5%. */
   platformUserId?: string | null;
-  plan?: typeof COMPENSATION_PLAN_V1;
+  plan?: CreatorPlanRates | typeof COMPENSATION_PLAN_V1;
 }): CommissionLine[] {
   const plan = input.plan ?? COMPENSATION_PLAN_V1;
   const saleCents = toCents(input.saleAmount);

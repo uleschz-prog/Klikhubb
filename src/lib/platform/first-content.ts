@@ -33,7 +33,7 @@ export const FIRST_CONTENT = {
     {
       title: "Cobra con la red Qlyk",
       content:
-        "Cada venta reparte 85% creador, 10% plataforma y 5% invitación. Los retiros se procesan manualmente desde tu monedero.",
+        "Cada venta reparte según tu plan: 7% de plataforma (pago cuando vendes) o 0% con el plan mensual de $25. El 5% de invitación se mantiene. Los retiros se procesan desde tu monedero.",
       isFreePreview: false,
       useHeroVideo: false,
     },

@@ -66,10 +66,10 @@ async function settledFromProviderRef(
 }
 
 /**
- * Marca una venta como pagada y escribe el 85/10/5 + wallet + enrollment
+ * Marca una venta como pagada y escribe el reparto (PAYG 7% o FLAT 0%) + wallet + enrollment
  * en la misma transacción. El checkout manual (o demo local) llama esto
  * después de confirmar el cargo.
- * El 10% de plataforma se acredita a Qlykadmin.
+ * La tarifa de plataforma (si aplica) se acredita a Qlykadmin.
  */
 export async function settlePaidOrder(input: {
   buyerId: string;
@@ -105,6 +105,20 @@ export async function settlePaidOrder(input: {
       throw new CommerceError("Usuario no encontrado.", "USER_NOT_FOUND");
     }
 
+    const seller = await tx.user.findUnique({
+      where: { id: product.creatorId },
+      select: { creatorPlan: true, creatorPlanUntil: true },
+    });
+    const { resolveEffectiveCreatorPlan, ratesForCreatorPlan } = await import(
+      "@/lib/commerce/creator-plans"
+    );
+    const sellerPlan = ratesForCreatorPlan(
+      resolveEffectiveCreatorPlan({
+        preferredPlan: seller?.creatorPlan,
+        planUntil: seller?.creatorPlanUntil,
+      }),
+    );
+
     const currency = product.currency.trim();
     const saleAmount = Number(product.price);
     const saleCents = toCents(saleAmount);
@@ -134,12 +148,13 @@ export async function settlePaidOrder(input: {
     }
 
     // El 5% es para un amigo real. Si el invitador es Qlykadmin, split lo
-    // ignora y el creador se queda 90% + plataforma 10%.
+    // ignora y el creador absorbe ese tramo + la tarifa de plataforma.
     const lines = splitSaleCommissions({
       saleAmount,
       creatorId: product.creatorId,
       inviterId: buyer.invitedById,
       platformUserId: platform?.id ?? null,
+      plan: sellerPlan,
     });
 
     const now = new Date();

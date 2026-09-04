@@ -119,14 +119,14 @@ export const termsSections: LegalSection[] = [
           "Por cada Compra completada con éxito, el importe neto de la venta se distribuye así:",
         ],
         list: [
-          "85% para el Creador del Producto vendido.",
-          "10% de tarifa de servicio de plataforma, que recibe siempre la cuenta raíz del Operador (Qlykadmin).",
-          "5% de comisión por invitación, para el Usuario que refirió al comprador mediante código de amigo válido en el momento de la Compra.",
+          "Plan «pago cuando vendo»: 88% para el Creador, 7% de tarifa de plataforma (Qlykadmin) y 5% de invitación.",
+          "Plan mensual ($25 USD / 30 días): 0% de tarifa de plataforma mientras el periodo esté activo; se mantiene el 5% de invitación y el resto para el Creador.",
+          "El Creador puede cambiar de modalidad en cualquier momento desde su dashboard. Cada venta usa el plan efectivo en el momento del pago.",
         ],
       },
       {
         paragraphs: [
-          "Si el comprador no fue referido por ningún Usuario (o no existe referente válido), el 5% de invitación no se paga a terceros: ese tramo se suma al Creador, que recibe el 90% en total, manteniéndose el 10% de plataforma.",
+          "Si el comprador no fue referido por ningún Usuario (o no existe referente válido), el 5% de invitación no se paga a terceros: ese tramo se suma al Creador.",
           "No existe compensación multinivel: solo puede aplicarse una comisión de invitación por compra, vinculada al referente directo del comprador. No hay bonos por niveles, matching, binario ni estructuras piramidales.",
           "Las comisiones se calculan sobre la venta concreta, no sobre el mero registro de nuevos Usuarios. Invitar personas no genera por sí solo derecho económico alguno.",
           "Los importes derivados de ventas pueden quedar en estado pendiente durante un hold de 14 días naturales antes de pasar a saldo disponible para retiro. Este plazo permite gestionar devoluciones, disputas de pago y revisiones antifraude.",

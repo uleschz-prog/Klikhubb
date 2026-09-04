@@ -8,8 +8,10 @@ import {
   CreatorLaunchChecklist,
   loadCreatorLaunchProgress,
 } from "@/components/dashboard/CreatorLaunchChecklist";
+import { CreatorPlanCard } from "@/components/dashboard/CreatorPlanCard";
 import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
 import { getDbUserId, getSession } from "@/lib/auth/session";
+import { getCreatorPlanSnapshot } from "@/lib/commerce/creator-plan-billing";
 import { loadHub } from "@/lib/commerce/catalog";
 import { formatMoney } from "@/lib/commerce/split";
 import Link from "next/link";
@@ -23,6 +25,7 @@ export default async function DashboardPage() {
   const hub = userId ? await loadHub(userId) : null;
   const launchProgress = userId ? await loadCreatorLaunchProgress(userId) : null;
   const launchItems = launchProgress ? buildCreatorLaunchChecklist(launchProgress) : [];
+  const planSnapshot = userId ? await getCreatorPlanSnapshot(userId).catch(() => null) : null;
 
   const wallet = hub?.wallet ?? { available: 0, pending: 0, lifetimeEarned: 0 };
   const holdDays = COMPENSATION_PLAN_V1.holdDays;
@@ -66,6 +69,9 @@ export default async function DashboardPage() {
               <Link href="/admin/payments" className="text-sm font-semibold text-klik-cyan hover:underline">
                 Admin · Pagos SPEI
               </Link>
+              <Link href="/admin/creator-plans" className="text-sm font-semibold text-klik-cyan hover:underline">
+                Admin · Planes
+              </Link>
               <Link href="/admin/payouts" className="text-sm font-semibold text-klik-cyan hover:underline">
                 Admin · Retiros
               </Link>
@@ -79,6 +85,10 @@ export default async function DashboardPage() {
 
       <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-5">
         <ProfileAvatarUpload name={hub?.displayName ?? "Miembro"} imageUrl={hub?.image} />
+      </div>
+
+      <div className="mt-6">
+        <CreatorPlanCard initial={planSnapshot} />
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">

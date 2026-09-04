@@ -66,6 +66,19 @@ enum ProductBilling {
   ONE_TIME
 }
 
+enum CreatorBillingPlan {
+  PAYG
+  FLAT
+}
+
+enum CreatorPlanInvoiceStatus {
+  PENDING
+  PROOF_SUBMITTED
+  PAID
+  REJECTED
+  CANCELED
+}
+
 enum ManualPaymentStatus {
   PENDING
   PROOF_SUBMITTED
@@ -208,6 +221,10 @@ model User {
   kycStatus     KycStatus  @default(NONE)
   referralCode  String     @unique @default(cuid())
   invitedById   String?
+  /// Modalidad preferida: PAYG (7% por venta) o FLAT ($25/mes).
+  creatorPlan     CreatorBillingPlan @default(PAYG)
+  /// Fin del periodo FLAT pagado. Si es null o ya pasó, las ventas usan PAYG.
+  creatorPlanUntil DateTime?
   lastLoginAt   DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -244,6 +261,8 @@ model User {
   enrollments   Enrollment[]
   manualPayments ManualPaymentRequest[] @relation("ManualPaymentBuyer")
   manualPaymentsReviewed ManualPaymentRequest[] @relation("ManualPaymentReviewer")
+  creatorPlanInvoices CreatorPlanInvoice[] @relation("CreatorPlanInvoiceUser")
+  creatorPlanInvoicesReviewed CreatorPlanInvoice[] @relation("CreatorPlanInvoiceReviewer")
   notifications Notification[]
   videoLikes    VideoLike[]
   videoSaves    VideoSave[]
@@ -258,7 +277,35 @@ model User {
   @@index([status, createdAt])
   @@index([kycStatus])
   @@index([invitedById])
+  @@index([creatorPlan, creatorPlanUntil])
   @@map("users")
+}
+
+/// Factura SPEI del plan mensual $25 del creador.
+model CreatorPlanInvoice {
+  id           String                   @id @default(cuid())
+  reference    String                   @unique
+  userId       String
+  amount       Decimal                  @db.Decimal(19, 4)
+  currency     String                   @db.Char(3) @default("USD")
+  status       CreatorPlanInvoiceStatus @default(PENDING)
+  proofUrl     String?
+  proofNote    String?
+  reviewerNote String?
+  reviewedAt   DateTime?
+  reviewedById String?
+  periodStart  DateTime?
+  periodEnd    DateTime?
+  paidAt       DateTime?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  user       User  @relation("CreatorPlanInvoiceUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("CreatorPlanInvoiceReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([userId, status, createdAt])
+  @@map("creator_plan_invoices")
 }
 
 model UserRole {

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { AdminManualPaymentActions } from "@/components/admin/AdminManualPaymentActions";
+import { AdminCreatorPlanActions } from "@/components/admin/AdminCreatorPlanActions";
 import { requireAdminPage } from "@/lib/auth/require-admin";
-import { listPendingManualPayments } from "@/lib/commerce/manual-payments";
+import { listPendingCreatorPlanInvoices } from "@/lib/commerce/creator-plan-billing";
 import { formatMoney } from "@/lib/commerce/split";
 import { formatWalletDate } from "@/lib/commerce/wallet";
 
@@ -19,66 +19,58 @@ function statusLabel(status: string) {
   }
 }
 
-export default async function AdminPaymentsPage() {
+export default async function AdminCreatorPlansPage() {
   await requireAdminPage();
-  const payments = await listPendingManualPayments();
+  const invoices = await listPendingCreatorPlanInvoices();
 
   return (
     <PlatformShell title="Admin">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Operaciones</p>
-      <h1 className="mt-2 font-display text-3xl font-extrabold">Pagos por transferencia</h1>
+      <h1 className="mt-2 font-display text-3xl font-extrabold">Planes mensuales</h1>
       <p className="mt-2 max-w-2xl text-sm text-white/55">
-        Los compradores transfieren por SPEI y suben comprobante. Aprueba cada pago para abrir el acceso al curso
-        y repartir comisiones según el plan del creador (7% por venta o 0% con plan mensual).
+        Facturas SPEI del plan flat $25/mes. Al aprobar se activan 30 días sin comisión de plataforma.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
+        <Link href="/admin/payments" className="font-semibold text-klik-cyan hover:underline">
+          Pagos de cursos
+        </Link>
         <Link href="/dashboard" className="font-semibold text-klik-cyan hover:underline">
           Dashboard
         </Link>
-        <Link href="/admin/setup" className="font-semibold text-klik-cyan hover:underline">
-          Configuración
-        </Link>
-        <Link href="/admin/payouts" className="font-semibold text-klik-cyan hover:underline">
-          Retiros manuales
-        </Link>
       </div>
 
-      {payments.length === 0 ? (
+      {invoices.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
-          <h2 className="font-display text-2xl font-extrabold">No hay pagos pendientes</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            Cuando alguien inicie una compra por transferencia, aparecerá aquí.
-          </p>
+          <h2 className="font-display text-2xl font-extrabold">Sin facturas pendientes</h2>
         </div>
       ) : (
         <div className="mt-8 space-y-3">
-          {payments.map((payment) => (
+          {invoices.map((invoice) => (
             <div
-              key={payment.id}
+              key={invoice.id}
               className="flex flex-col gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4 md:flex-row md:items-start md:justify-between"
             >
               <div className="min-w-0 flex-1">
                 <p className="font-display text-xl font-extrabold text-klik-green">
-                  {formatMoney(payment.amount, payment.currency)}
+                  {formatMoney(invoice.amount, invoice.currency)}
                 </p>
                 <p className="mt-1 text-sm text-white/80">
-                  {payment.product.title} · ref{" "}
-                  <span className="font-mono text-white">{payment.reference}</span>
+                  Plan mensual · ref <span className="font-mono text-white">{invoice.reference}</span>
                 </p>
                 <p className="mt-1 text-sm text-white/60">
-                  {payment.buyer.displayName ?? payment.buyer.username ?? "Comprador"} ·{" "}
-                  {payment.buyer.email ?? payment.buyer.id}
+                  {invoice.user.displayName ?? invoice.user.username ?? "Creador"} ·{" "}
+                  {invoice.user.email ?? invoice.user.id}
                 </p>
                 <p className="mt-1 text-xs text-white/40">
-                  {statusLabel(payment.status)} · {formatWalletDate(payment.createdAt)}
+                  {statusLabel(invoice.status)} · {formatWalletDate(invoice.createdAt)}
                 </p>
-                {payment.proofNote ? (
-                  <p className="mt-2 text-sm text-white/55">Nota: {payment.proofNote}</p>
+                {invoice.proofNote ? (
+                  <p className="mt-2 text-sm text-white/55">Nota: {invoice.proofNote}</p>
                 ) : null}
-                {payment.proofUrl ? (
+                {invoice.proofUrl ? (
                   <a
-                    href={payment.proofUrl}
+                    href={invoice.proofUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-2 inline-block text-sm font-semibold text-klik-cyan hover:underline"
@@ -87,7 +79,7 @@ export default async function AdminPaymentsPage() {
                   </a>
                 ) : null}
               </div>
-              <AdminManualPaymentActions requestId={payment.id} status={payment.status} />
+              <AdminCreatorPlanActions invoiceId={invoice.id} status={invoice.status} />
             </div>
           ))}
         </div>
