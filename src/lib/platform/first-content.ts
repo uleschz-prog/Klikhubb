@@ -6,7 +6,6 @@ import {
   loadStudioCourse,
   updateStudioCourse,
 } from "@/lib/commerce/studio";
-import { publishClip } from "@/lib/video/publish";
 
 export const FIRST_CONTENT = {
   courseSlug: "empieza-en-qlyk",
@@ -115,7 +114,7 @@ export async function getFirstContentStatus(): Promise<FirstContentStatus> {
   const playExists = Boolean(playVideo);
 
   return {
-    ready: courseExists && product?.status === "ACTIVE" && shopExists && playExists,
+    ready: courseExists && product?.status === "ACTIVE",
     course: {
       exists: courseExists,
       slug,
@@ -142,7 +141,7 @@ export type BootstrapFirstContentResult = FirstContentStatus & {
   };
 };
 
-/** Crea curso oficial + clips Shop/Play. Idempotente: no duplica si ya existe. */
+/** Crea el curso oficial en Studio (borrador). No publica clips al feed. Idempotente. */
 export async function bootstrapFirstContent(): Promise<BootstrapFirstContentResult> {
   const admin = await ensurePlatformAdmin();
   const creatorId = admin.id;
@@ -189,42 +188,12 @@ export async function bootstrapFirstContent(): Promise<BootstrapFirstContentResu
     }
   }
 
-  if (course.status !== "ACTIVE") {
-    await updateStudioCourse(creatorId, slug, { status: "ACTIVE" });
+  // Queda en borrador: el feed y marketplace solo muestran contenido real de creadores.
+  if (course.status === "ACTIVE") {
+    await updateStudioCourse(creatorId, slug, { status: "DRAFT" });
   }
 
-  const shopExists = await prisma.video.findFirst({
-    where: { title: FIRST_CONTENT.shopClip.title, lane: "SHOP", status: "PUBLISHED", creatorId },
-    select: { id: true },
-  });
-
-  if (!shopExists) {
-    await publishClip({
-      creatorId,
-      title: FIRST_CONTENT.shopClip.title,
-      caption: FIRST_CONTENT.shopClip.caption,
-      videoUrl: heroUrl,
-      productSlug: slug,
-      lane: "SHOP",
-    });
-    created.shopVideo = true;
-  }
-
-  const playExists = await prisma.video.findFirst({
-    where: { title: FIRST_CONTENT.playClip.title, lane: "PLAY", status: "PUBLISHED", creatorId },
-    select: { id: true },
-  });
-
-  if (!playExists) {
-    await publishClip({
-      creatorId,
-      title: FIRST_CONTENT.playClip.title,
-      caption: FIRST_CONTENT.playClip.caption,
-      videoUrl: heroUrl,
-      lane: "PLAY",
-    });
-    created.playVideo = true;
-  }
+  // No publicamos clips al feed con el video hero demo.
 
   const status = await getFirstContentStatus();
   return { ...status, created };

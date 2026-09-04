@@ -109,7 +109,24 @@ export async function listPublishedVideos(
 ): Promise<FeedVideo[]> {
   try {
     const rows = await prisma.video.findMany({
-      where: { status: "PUBLISHED", ...(lane ? { lane } : {}) },
+      where: {
+        status: "PUBLISHED",
+        ...(lane ? { lane } : {}),
+        AND: [
+          {
+            OR: [
+              { videoUrl: null },
+              { NOT: { videoUrl: { contains: "qlyk-hero-demo" } } },
+            ],
+          },
+          {
+            OR: [
+              { thumbnailUrl: null },
+              { NOT: { thumbnailUrl: { contains: "qlyk-hero-demo" } } },
+            ],
+          },
+        ],
+      },
       orderBy: { publishedAt: "desc" },
       take: Math.min(limit * 3, 120),
       include: videoInclude,
