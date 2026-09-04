@@ -126,14 +126,6 @@ export async function switchCreatorPlan(input: {
 }
 
 export async function ensureFlatInvoice(userId: string) {
-  const instructions = getPaymentInstructions();
-  if (!instructions) {
-    throw new CreatorPlanError(
-      "Pagos SPEI no configurados. Contacta a soporte para activar el plan mensual.",
-      "NOT_CONFIGURED",
-    );
-  }
-
   const existing = await prisma.creatorPlanInvoice.findFirst({
     where: { userId, status: { in: ["PENDING", "PROOF_SUBMITTED"] } },
     orderBy: { createdAt: "desc" },
