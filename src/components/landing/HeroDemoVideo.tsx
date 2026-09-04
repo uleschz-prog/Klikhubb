@@ -26,7 +26,7 @@ export function HeroDemoVideo() {
     <div className="pointer-events-none absolute inset-0 z-0 h-full min-h-[100svh] w-full overflow-hidden bg-klik-black">
       <video
         ref={media}
-        className="absolute inset-0 h-full w-full scale-105 object-cover object-center [transform:translate3d(0,0,0)] will-change-transform"
+        className="absolute inset-0 h-full w-full object-cover object-center [backface-visibility:hidden] [transform:translateZ(0)]"
         src="/videos/qlyk-hero-premium.mp4"
         poster="/videos/qlyk-hero-premium.jpg"
         autoPlay
