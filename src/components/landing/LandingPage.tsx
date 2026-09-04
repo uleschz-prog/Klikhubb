@@ -189,26 +189,6 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-t border-white/5">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,65,0.12),transparent_50%)]" />
-          <motion.div
-            {...fade}
-            className="relative mx-auto flex max-w-3xl flex-col items-center px-4 py-20 text-center md:py-28"
-          >
-            <h2 className="font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-              Empieza gratis hoy.
-            </h2>
-            <p className="mt-4 max-w-md text-white/55">
-              Crea tu perfil, publica un clip con oferta y comparte tu link. Sin lista de espera.
-            </p>
-            <Link
-              href="#registro"
-              className="mt-8 inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black"
-            >
-              Crear cuenta
-            </Link>
-          </motion.div>
-        </section>
       </main>
 
       <Footer />
