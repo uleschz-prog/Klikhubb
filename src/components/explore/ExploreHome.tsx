@@ -9,10 +9,7 @@ import { Logo } from "@/components/brand/Logo";
 import { VideoCard } from "@/components/explore/VideoCard";
 
 const NAV = [
-  { href: "/play", label: "Play", icon: "play" },
   { href: "/feed", tab: "foryou" as const, label: "Para ti", icon: "spark" },
-  { href: "/feed?tab=following", tab: "following" as const, label: "Siguiendo", icon: "follow" },
-  { href: "/feed?tab=saved", tab: "saved" as const, label: "Guardados", icon: "star" },
   { href: "/marketplace", label: "Marketplace", icon: "bag" },
   { href: "/academy", label: "Academy", icon: "book" },
   { href: "/community", label: "Comunidad", icon: "people" },
@@ -81,10 +78,7 @@ export function ExploreHome({
         </Link>
         <nav className="mt-6 space-y-1">
           {NAV.map((item) => {
-            const isCurrent =
-              item.href === "/play"
-                ? false
-                : item.tab != null && item.tab === tab;
+            const isCurrent = item.tab != null ? item.tab === tab : false;
             return (
               <Link
                 key={item.label}

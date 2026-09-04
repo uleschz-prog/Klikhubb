@@ -483,29 +483,6 @@ export function FeedTheater({
                 <LogoMark className="h-8 w-8 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
               </Link>
             </div>
-            <nav className="pointer-events-auto absolute left-1/2 top-[max(0.85rem,env(safe-area-inset-top))] flex -translate-x-1/2 items-center gap-3 text-[12px] font-semibold sm:gap-4 sm:text-[13px]">
-              <Link
-                href="/play"
-                className={home === "play" && feedTab === "foryou" ? "text-white" : "text-white/50"}
-              >
-                Play
-              </Link>
-              <Link
-                href="/play?tab=following"
-                className={home === "play" && feedTab === "following" ? "text-white" : "text-white/50"}
-              >
-                Siguiendo
-              </Link>
-              <Link
-                href="/play?tab=saved"
-                className={home === "play" && feedTab === "saved" ? "text-white" : "text-white/50"}
-              >
-                Guardados
-              </Link>
-              <Link href="/feed" className={home === "shop" ? "text-white" : "text-white/50"}>
-                Tienda
-              </Link>
-            </nav>
             <div className="pointer-events-auto hidden md:block">
               <PlatformNav />
             </div>

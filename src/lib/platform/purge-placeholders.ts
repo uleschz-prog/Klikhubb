@@ -2,8 +2,13 @@ import { Prisma } from "@prisma/client";
 import {
   DEMO_PRODUCT_SLUGS,
   DEMO_USER_EMAILS,
+  DEMO_USERNAMES,
   DEMO_VIDEO_IDS,
+  PLACEHOLDER_ASSET_MARKERS,
   PLACEHOLDER_BOOTSTRAP,
+  PLACEHOLDER_CAPTION_MARKERS,
+  PLACEHOLDER_FEED_TITLES,
+  isPlaceholderMediaUrl,
 } from "@/config/demo-fixtures";
 import { prisma } from "@/lib/prisma";
 import { ensurePlatformAdmin } from "@/lib/auth/ensure-admin";
@@ -31,18 +36,27 @@ async function deleteVideosByIds(tx: Prisma.TransactionClient, videoIds: string[
 
 /** Videos de demo o bootstrap con asset placeholder (no contenido de creadores reales). */
 export async function findPlaceholderVideos() {
-  const marker = PLACEHOLDER_BOOTSTRAP.videoUrlMarker;
+  const assetOr = PLACEHOLDER_ASSET_MARKERS.flatMap((marker) => [
+    { videoUrl: { contains: marker } },
+    { thumbnailUrl: { contains: marker } },
+  ]);
+
+  const captionOr = PLACEHOLDER_CAPTION_MARKERS.map((marker) => ({
+    caption: { contains: marker },
+  }));
+
   return prisma.video.findMany({
     where: {
       OR: [
         { id: { in: [...DEMO_VIDEO_IDS] } },
+        { title: { in: [...PLACEHOLDER_FEED_TITLES] } },
+        ...assetOr,
+        ...captionOr,
         {
-          title: {
-            in: [PLACEHOLDER_BOOTSTRAP.shopClipTitle, PLACEHOLDER_BOOTSTRAP.playClipTitle],
+          creator: {
+            username: { in: [...DEMO_USERNAMES], mode: "insensitive" },
           },
         },
-        { videoUrl: { contains: marker } },
-        { thumbnailUrl: { contains: marker } },
       ],
     },
     select: { id: true, title: true, status: true, lane: true, videoUrl: true },
@@ -56,7 +70,12 @@ export async function purgePlaceholderFeedContent(): Promise<PurgePlaceholderRes
   const placeholderVideoIds = placeholderVideos.map((row) => row.id);
 
   const demoUsers = await prisma.user.findMany({
-    where: { email: { in: [...DEMO_USER_EMAILS] } },
+    where: {
+      OR: [
+        { email: { in: [...DEMO_USER_EMAILS] } },
+        { username: { in: [...DEMO_USERNAMES], mode: "insensitive" } },
+      ],
+    },
     select: { id: true, email: true },
   });
   const demoUserIds = demoUsers.map((user) => user.id);
@@ -206,6 +225,5 @@ export async function purgePlaceholderFeedContent(): Promise<PurgePlaceholderRes
 }
 
 export function isPlaceholderVideoUrl(url: string | null | undefined) {
-  if (!url) return false;
-  return url.includes(PLACEHOLDER_BOOTSTRAP.videoUrlMarker);
+  return isPlaceholderMediaUrl(url);
 }

@@ -1,6 +1,39 @@
+import {
+  DEMO_USERNAMES,
+  DEMO_VIDEO_IDS,
+  PLACEHOLDER_ASSET_MARKERS,
+  PLACEHOLDER_FEED_TITLES,
+  isPlaceholderMediaUrl,
+} from "@/config/demo-fixtures";
 import { prisma } from "@/lib/prisma";
 import { shouldUseDemoFallback } from "@/lib/demo/store";
 import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
+
+function placeholderFeedExclude() {
+  const assetNot = PLACEHOLDER_ASSET_MARKERS.flatMap((marker) => [
+    {
+      OR: [{ videoUrl: null }, { NOT: { videoUrl: { contains: marker } } }],
+    },
+    {
+      OR: [{ thumbnailUrl: null }, { NOT: { thumbnailUrl: { contains: marker } } }],
+    },
+  ]);
+
+  return {
+    AND: [
+      { NOT: { id: { in: [...DEMO_VIDEO_IDS] } } },
+      { NOT: { title: { in: [...PLACEHOLDER_FEED_TITLES] } } },
+      {
+        NOT: {
+          creator: {
+            username: { in: [...DEMO_USERNAMES], mode: "insensitive" as const },
+          },
+        },
+      },
+      ...assetNot,
+    ],
+  };
+}
 
 const videoInclude = {
   creator: { select: { id: true, displayName: true, username: true, name: true, image: true } },
@@ -112,28 +145,23 @@ export async function listPublishedVideos(
       where: {
         status: "PUBLISHED",
         ...(lane ? { lane } : {}),
-        AND: [
-          {
-            OR: [
-              { videoUrl: null },
-              { NOT: { videoUrl: { contains: "qlyk-hero-demo" } } },
-            ],
-          },
-          {
-            OR: [
-              { thumbnailUrl: null },
-              { NOT: { thumbnailUrl: { contains: "qlyk-hero-demo" } } },
-            ],
-          },
-        ],
+        ...placeholderFeedExclude(),
       },
       orderBy: { publishedAt: "desc" },
       take: Math.min(limit * 3, 120),
       include: videoInclude,
     });
 
-    let ordered = rows;
-    if (viewerId && rows.length > 1) {
+    // Capa extra por si algún caption/título placeholder escapa del where de Prisma.
+    const cleaned = rows.filter(
+      (row) =>
+        !isPlaceholderMediaUrl(row.videoUrl) &&
+        !isPlaceholderMediaUrl(row.thumbnailUrl) &&
+        !(PLACEHOLDER_FEED_TITLES as readonly string[]).includes(row.title),
+    );
+
+    let ordered = cleaned;
+    if (viewerId && cleaned.length > 1) {
       const following = await prisma.follow.findMany({
         where: { followerId: viewerId },
         select: { followingId: true },
@@ -141,7 +169,7 @@ export async function listPublishedVideos(
       const followingIds = new Set(following.map((row) => row.followingId));
       const { rankFeed } = await import("@/lib/feed/recommendations");
       const ranked = rankFeed(
-        rows.map((row) => ({
+        cleaned.map((row) => ({
           id: row.id,
           creatorId: row.creator.id,
           publishedAt: row.publishedAt ?? row.createdAt,
@@ -153,10 +181,10 @@ export async function listPublishedVideos(
         })),
         { followingIds, downlineCreatorIds: new Set() },
       );
-      const byId = new Map(rows.map((row) => [row.id, row]));
+      const byId = new Map(cleaned.map((row) => [row.id, row]));
       ordered = ranked.map((item) => byId.get(item.id)!).filter(Boolean).slice(0, limit);
     } else {
-      ordered = rows.slice(0, limit);
+      ordered = cleaned.slice(0, limit);
     }
 
     return withViewerFlags(ordered, viewerId);
@@ -168,11 +196,13 @@ export async function listPublishedVideos(
 
 export async function getPublishedVideo(id: string, viewerId?: string): Promise<FeedVideo | null> {
   try {
+    if ((DEMO_VIDEO_IDS as readonly string[]).includes(id)) return null;
     const row = await prisma.video.findFirst({
-      where: { id, status: "PUBLISHED" },
+      where: { id, status: "PUBLISHED", ...placeholderFeedExclude() },
       include: videoInclude,
     });
     if (!row) return null;
+    if (isPlaceholderMediaUrl(row.videoUrl) || isPlaceholderMediaUrl(row.thumbnailUrl)) return null;
     const [flagged] = await withViewerFlags([row], viewerId);
     return flagged ?? null;
   } catch (error) {
