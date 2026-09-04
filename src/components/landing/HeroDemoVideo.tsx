@@ -26,19 +26,19 @@ export function HeroDemoVideo() {
     <div className="pointer-events-none absolute inset-0 z-0 h-full min-h-[100svh] w-full overflow-hidden bg-klik-black">
       <video
         ref={media}
-        className="absolute inset-0 h-full w-full object-cover object-[70%_center] [transform:translateZ(0)]"
-        src="/videos/qlyk-hero-demo.mp4"
-        poster="/videos/qlyk-hero-demo.jpg"
+        className="absolute inset-0 h-full w-full scale-105 object-cover object-center [transform:translate3d(0,0,0)] will-change-transform"
+        src="/videos/qlyk-hero-premium.mp4"
+        poster="/videos/qlyk-hero-premium.jpg"
         autoPlay
         muted
         loop
         playsInline
         preload="auto"
-        aria-label="Demo de Qlyk: del video al pago en el feed"
+        aria-label="Ambiente premium de Qlyk"
       />
-      <div className="absolute inset-0 z-[2] bg-gradient-to-r from-klik-black/92 via-klik-black/55 to-klik-black/35 md:via-klik-black/45 md:to-klik-black/25" />
-      <div className="absolute inset-0 z-[2] bg-gradient-to-t from-klik-black/90 via-transparent to-klik-black/35" />
-      <div className="absolute inset-0 z-[2] bg-[radial-gradient(circle_at_72%_42%,rgba(0,240,255,0.14),transparent_42%)]" />
+      <div className="absolute inset-0 z-[2] bg-gradient-to-r from-klik-black via-klik-black/70 to-klik-black/40 md:from-klik-black/95 md:via-klik-black/55 md:to-klik-black/30" />
+      <div className="absolute inset-0 z-[2] bg-gradient-to-t from-klik-black/90 via-transparent to-klik-black/40" />
+      <div className="absolute inset-0 z-[2] bg-[radial-gradient(circle_at_68%_45%,rgba(0,240,255,0.12),transparent_45%)]" />
       <button
         type="button"
         onClick={toggleMute}
