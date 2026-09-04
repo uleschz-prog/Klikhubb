@@ -13,7 +13,7 @@ export default async function CheckoutSuccessPage({
 
   const headline = pending ? "Comprobante recibido" : "Ya estás dentro";
   const body = pending
-    ? "Revisaremos tu transferencia pronto. Cuando la confirmemos, el curso aparecerá en tu academy."
+    ? "Revisaremos tu transferencia pronto. Cuando la confirmemos, te avisamos aquí y por email, y el curso aparece en Academy."
     : "Ya pagaste. El curso quedó en tu academy. El creador ve el dinero en el monedero, pendiente 14 días.";
 
   return (
@@ -28,13 +28,16 @@ export default async function CheckoutSuccessPage({
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
-          href="/dashboard"
+          href="/academy"
           className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
         >
-          Ver mis ganancias
-        </Link>
-        <Link href="/academy" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold">
           Ir a Academy
+        </Link>
+        <Link href="/orders" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold">
+          Ver mis pedidos
+        </Link>
+        <Link href="/notifications" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold">
+          Avisos
         </Link>
       </div>
     </PlatformShell>

@@ -144,6 +144,8 @@ export function CheckoutForm({
       }
 
       setSubmitted(true);
+      router.push(`/checkout/success?pending=1&order=${manual.reference}`);
+      router.refresh();
     } catch {
       setError("No se pudo enviar el comprobante.");
     } finally {

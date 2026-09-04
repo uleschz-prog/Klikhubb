@@ -291,7 +291,7 @@ export async function loadHub(userId: string) {
       prisma.userStats.findUnique({ where: { userId } }),
       prisma.user.findUnique({
         where: { id: userId },
-        select: { displayName: true, referralCode: true, image: true },
+        select: { displayName: true, referralCode: true, image: true, username: true },
       }),
       prisma.user.count({ where: { invitedById: userId } }),
       prisma.userStats.findMany({
@@ -314,6 +314,7 @@ export async function loadHub(userId: string) {
       displayName: user?.displayName ?? "Miembro",
       image: user?.image ?? null,
       referralCode: user?.referralCode ?? "",
+      username: user?.username ?? null,
       invitedCount,
       points: stats?.points ?? 0,
       wallet: {

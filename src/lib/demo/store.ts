@@ -522,6 +522,7 @@ export async function demoHub(userId: string) {
     displayName: user?.displayName ?? "Miembro",
     image: user?.image ?? null,
     referralCode: user?.referralCode ?? "",
+    username: user?.username ?? null,
     invitedCount,
     points: user?.points ?? 0,
     wallet,

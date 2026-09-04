@@ -535,6 +535,12 @@ export function FeedTheater({
                 {followed ? "✓" : "+"}
               </span>
             </button>
+            <Link
+              href={`/u/${video.handle}`}
+              className="mt-2 max-w-[4.5rem] truncate text-center text-[10px] font-semibold text-white/80 hover:text-klik-cyan"
+            >
+              @{video.handle}
+            </Link>
             <RailAction
               active={liked}
               label={formatCount(likes)}

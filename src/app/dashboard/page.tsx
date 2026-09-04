@@ -39,13 +39,35 @@ export default async function DashboardPage() {
             Ganancias, puntos y las voces que suenan. Aquí se ve lo que creas y lo que cobras.
             {hub?.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
           </p>
+          {hub?.username ? (
+            <p className="mt-2 text-sm">
+              Tu perfil público:{" "}
+              <Link href={`/u/${hub.username}`} className="font-semibold text-klik-cyan hover:underline">
+                /u/{hub.username}
+              </Link>
+            </p>
+          ) : null}
+          <p className="mt-3 flex flex-wrap gap-4">
+            <Link href="/orders" className="text-sm font-semibold text-white/70 hover:text-klik-cyan hover:underline">
+              Mis pedidos
+            </Link>
+            <Link href="/notifications" className="text-sm font-semibold text-white/70 hover:text-klik-cyan hover:underline">
+              Avisos
+            </Link>
+            <Link href="/search" className="text-sm font-semibold text-white/70 hover:text-klik-cyan hover:underline">
+              Buscar
+            </Link>
+          </p>
           {isAdmin ? (
             <p className="mt-3 flex flex-wrap gap-4">
               <Link href="/admin/setup" className="text-sm font-semibold text-klik-cyan hover:underline">
                 Admin · Configuración
               </Link>
+              <Link href="/admin/payments" className="text-sm font-semibold text-klik-cyan hover:underline">
+                Admin · Pagos SPEI
+              </Link>
               <Link href="/admin/payouts" className="text-sm font-semibold text-klik-cyan hover:underline">
-                Admin · Retiros manuales
+                Admin · Retiros
               </Link>
             </p>
           ) : null}

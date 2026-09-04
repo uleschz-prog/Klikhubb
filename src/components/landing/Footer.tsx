@@ -7,10 +7,11 @@ const columns = [
     title: "Producto",
     links: [
       { href: "/play", label: "Play" },
-      { href: "/feed", label: "Feed" },
+      { href: "/feed", label: "Feed Tienda" },
+      { href: "/search", label: "Buscar" },
       { href: "/marketplace", label: "Marketplace" },
       { href: "/academy", label: "Academy" },
-      { href: "/community", label: "Community" },
+      { href: "/orders", label: "Mis pedidos" },
     ],
   },
   {
@@ -22,12 +23,12 @@ const columns = [
     ],
   },
   {
-    title: "Redes",
+    title: "Creadores",
     links: [
-      { href: "https://x.com", label: "X" },
-      { href: "https://instagram.com", label: "Instagram" },
-      { href: "https://linkedin.com", label: "LinkedIn" },
-      { href: "https://tiktok.com", label: "TikTok" },
+      { href: "/register", label: "Crear cuenta" },
+      { href: "/publish", label: "Publicar" },
+      { href: "/studio/new", label: "Crear curso" },
+      { href: "/wallet", label: "Monedero" },
     ],
   },
 ];

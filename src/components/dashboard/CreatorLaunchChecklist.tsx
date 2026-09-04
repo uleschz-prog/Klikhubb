@@ -6,16 +6,18 @@ export type CreatorLaunchProgress = {
   hasCourse: boolean;
   hasShopVideo: boolean;
   hasPlayVideo: boolean;
+  hasOpenedWalletHint: boolean;
 };
 
 export async function loadCreatorLaunchProgress(userId: string): Promise<CreatorLaunchProgress> {
-  const [courseCount, shopVideos, playVideos, user] = await Promise.all([
+  const [courseCount, shopVideos, playVideos, user, payoutOrLedger] = await Promise.all([
     prisma.product.count({
       where: { creatorId: userId, status: "ACTIVE", type: { in: ["COURSE", "MEMBERSHIP", "DIGITAL"] } },
     }),
     prisma.video.count({ where: { creatorId: userId, status: "PUBLISHED", lane: "SHOP" } }),
     prisma.video.count({ where: { creatorId: userId, status: "PUBLISHED", lane: "PLAY" } }),
     prisma.user.findUnique({ where: { id: userId }, select: { image: true } }),
+    prisma.wallet.findUnique({ where: { userId }, select: { userId: true } }),
   ]);
 
   return {
@@ -23,6 +25,7 @@ export async function loadCreatorLaunchProgress(userId: string): Promise<Creator
     hasCourse: courseCount > 0,
     hasShopVideo: shopVideos > 0,
     hasPlayVideo: playVideos > 0,
+    hasOpenedWalletHint: Boolean(payoutOrLedger),
   };
 }
 
@@ -66,19 +69,25 @@ export function buildCreatorLaunchChecklist(progress: CreatorLaunchProgress): Ch
     },
     {
       id: "wallet",
-      label: "Datos para retiros",
-      done: progress.hasCourse,
+      label: "Revisa tu monedero",
+      done: progress.hasOpenedWalletHint,
       href: "/wallet",
-      hint: "Cuando vendas, pide retiro desde tu monedero.",
+      hint: "Ahí pediras retiros cuando vendas.",
+    },
+    {
+      id: "profile",
+      label: "Comparte tu perfil público",
+      done: progress.hasCourse || progress.hasShopVideo,
+      href: "/dashboard",
+      hint: "Tu link es /u/tu-usuario — compártelo como Beacons.",
     },
   ];
 }
 
 export function CreatorLaunchChecklist({ items }: { items: ChecklistItem[] }) {
-  const doneCount = items.filter((item) => item.done).length;
-  const allDone = doneCount === items.length;
-
-  if (allDone) return null;
+  const required = items.filter((item) => item.id !== "play");
+  const doneCount = required.filter((item) => item.done).length;
+  if (required.every((item) => item.done)) return null;
 
   return (
     <section className="mt-6 rounded-2xl border border-klik-cyan/25 bg-klik-cyan/5 p-5">
@@ -87,11 +96,11 @@ export function CreatorLaunchChecklist({ items }: { items: ChecklistItem[] }) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Lanzamiento</p>
           <h2 className="mt-1 font-display text-xl font-extrabold">Tu checklist de creador</h2>
           <p className="mt-1 text-sm text-white/55">
-            {doneCount} de {items.length} listos. Completa los pasos para empezar a vender en beta.
+            {doneCount} de {required.length} listos. Completa los pasos para empezar a vender en beta.
           </p>
         </div>
         <span className="rounded-full bg-klik-cyan/15 px-3 py-1 text-xs font-bold text-klik-cyan">
-          {Math.round((doneCount / items.length) * 100)}%
+          {Math.round((doneCount / required.length) * 100)}%
         </span>
       </div>
 

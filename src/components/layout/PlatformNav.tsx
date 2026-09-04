@@ -6,10 +6,12 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/play", label: "Play" },
   { href: "/feed", label: "Feed" },
-  { href: "/marketplace", label: "Marketplace" },
+  { href: "/search", label: "Buscar" },
+  { href: "/marketplace", label: "Market" },
   { href: "/academy", label: "Academy" },
-  { href: "/community", label: "Community" },
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/orders", label: "Pedidos" },
+  { href: "/notifications", label: "Avisos" },
+  { href: "/dashboard", label: "Hub" },
 ];
 
 export function PlatformNav() {

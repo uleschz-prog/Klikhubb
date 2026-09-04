@@ -111,14 +111,21 @@ export function ExploreHome({
           </div>
           <form
             className="mx-auto flex h-11 w-full max-w-xl items-center rounded-full bg-white/8 px-4 ring-1 ring-white/10 focus-within:ring-klik-cyan"
+            action="/search"
+            method="get"
             onSubmit={(event) => {
-              event.preventDefault();
+              const value = query.trim();
+              if (value.length >= 2) {
+                event.preventDefault();
+                router.push(`/search?q=${encodeURIComponent(value)}`);
+              }
             }}
           >
             <input
+              name="q"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Buscar clips, creadores o #temas"
+              placeholder="Buscar creadores, cursos o videos"
               className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
             />
             <SearchIcon />

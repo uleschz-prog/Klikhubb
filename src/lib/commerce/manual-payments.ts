@@ -4,6 +4,7 @@ import { getPaymentInstructions } from "@/config/payment-instructions";
 import { prisma } from "@/lib/prisma";
 import { settlePaidOrder } from "@/lib/commerce/settle-order";
 import { revokeCourseAccessForRefund } from "@/lib/commerce/refunds";
+import { notifyAndEmail } from "@/lib/notifications";
 
 export class ManualPaymentError extends Error {
   constructor(
@@ -179,7 +180,7 @@ export async function approveManualPayment(input: {
 }) {
   const row = await prisma.manualPaymentRequest.findUnique({
     where: { id: input.requestId },
-    include: { product: { select: { id: true, title: true } } },
+    include: { product: { select: { id: true, title: true, slug: true, creatorId: true } } },
   });
   if (!row) throw new ManualPaymentError("Solicitud no encontrada.", "NOT_FOUND");
   if (row.status === "APPROVED" && row.orderId) {
@@ -205,6 +206,24 @@ export async function approveManualPayment(input: {
       reviewedById: input.reviewerId,
       reviewerNote: input.note?.trim() || null,
     },
+  });
+
+  await notifyAndEmail({
+    userId: row.buyerId,
+    type: "PAYMENT_APPROVED",
+    title: "Pago confirmado",
+    body: `Ya tienes acceso a «${row.product.title}». Entra a tu academy.`,
+    href: `/academy/${row.product.slug}`,
+    emailSubject: `Qlyk · Acceso a ${row.product.title}`,
+  });
+
+  await notifyAndEmail({
+    userId: row.product.creatorId,
+    type: "NEW_SALE",
+    title: "Nueva venta",
+    body: `Vendiste «${row.product.title}». El dinero entra a tu monedero con hold de 14 días.`,
+    href: "/wallet",
+    emailSubject: `Qlyk · Vendiste ${row.product.title}`,
   });
 
   return { orderId: settled.orderId, reference: row.reference, alreadyApproved: false };
@@ -235,6 +254,15 @@ export async function rejectManualPayment(input: {
       reviewedById: input.reviewerId,
       reviewerNote: note,
     },
+  });
+
+  await notifyAndEmail({
+    userId: row.buyerId,
+    type: "PAYMENT_REJECTED",
+    title: "Pago no confirmado",
+    body: note,
+    href: "/orders",
+    emailSubject: "Qlyk · Revisamos tu transferencia",
   });
 
   return { requestId: updated.id, status: updated.status };

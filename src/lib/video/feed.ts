@@ -111,10 +111,38 @@ export async function listPublishedVideos(
     const rows = await prisma.video.findMany({
       where: { status: "PUBLISHED", ...(lane ? { lane } : {}) },
       orderBy: { publishedAt: "desc" },
-      take: limit,
+      take: Math.min(limit * 3, 120),
       include: videoInclude,
     });
-    return withViewerFlags(rows, viewerId);
+
+    let ordered = rows;
+    if (viewerId && rows.length > 1) {
+      const following = await prisma.follow.findMany({
+        where: { followerId: viewerId },
+        select: { followingId: true },
+      });
+      const followingIds = new Set(following.map((row) => row.followingId));
+      const { rankFeed } = await import("@/lib/feed/recommendations");
+      const ranked = rankFeed(
+        rows.map((row) => ({
+          id: row.id,
+          creatorId: row.creator.id,
+          publishedAt: row.publishedAt ?? row.createdAt,
+          viewCount: row.viewCount,
+          likeCount: row.likeCount,
+          commentCount: row._count.comments,
+          shareCount: row.shareCount,
+          hasProduct: row.products.length > 0,
+        })),
+        { followingIds, downlineCreatorIds: new Set() },
+      );
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      ordered = ranked.map((item) => byId.get(item.id)!).filter(Boolean).slice(0, limit);
+    } else {
+      ordered = rows.slice(0, limit);
+    }
+
+    return withViewerFlags(ordered, viewerId);
   } catch (error) {
     if (!shouldUseDemoFallback(error)) throw error;
     return [];
