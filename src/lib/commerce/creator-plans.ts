@@ -1,4 +1,4 @@
-import { CREATOR_FLAT_PERIOD_DAYS, CREATOR_FLAT_PRICE_USD, type CreatorPlanCode } from "@/config/compensation-plan";
+import { CREATOR_FLAT_PERIOD_DAYS, type CreatorPlanCode } from "@/config/compensation-plan";
 
 export {
   COMPENSATION_PLAN_V1,
