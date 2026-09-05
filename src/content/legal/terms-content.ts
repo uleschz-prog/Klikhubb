@@ -64,7 +64,7 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Durante el registro puedes indicar si entras como Creador, Miembro o ambos. Esa elección determina los roles iniciales asignados a tu Cuenta (p. ej. CREATOR, STUDENT).",
+          "Al registrarte tu Cuenta recibe acceso completo para publicar y comprar. No hay distinción de modalidad Creador/Miembro en el alta.",
           "No existe sistema de referidos ni comisión por invitación. El registro es individual y no genera recompensas por reclutar a otras personas.",
         ],
       },

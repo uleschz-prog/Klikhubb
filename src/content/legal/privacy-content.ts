@@ -22,7 +22,7 @@ export const privacySections: LegalSection[] = [
         list: [
           "Datos identificativos: nombre visible (displayName), nombre de usuario (@username), email, imagen de perfil (si la subes o vinculas con Google).",
           "Datos de acceso: contraseña almacenada de forma cifrada (hash), tokens de sesión, fecha de último acceso.",
-          "Datos de registro: idioma (locale), zona horaria, intención declarada (Creador/Miembro/Ambos), aceptación de términos (marca temporal lógica).",
+          "Datos de registro: idioma (locale), zona horaria, aceptación de términos (marca temporal lógica).",
           "Datos de perfil y actividad social: biografía, publicaciones, comentarios, likes, seguidores, membresías de comunidad.",
           "Contenido multimedia: videos, miniaturas, materiales de cursos y archivos subidos a la Plataforma.",
           "Datos comerciales: historial de pedidos, productos adquiridos o vendidos, importes, moneda, estado de pago, movimientos de monedero, solicitudes de retiro.",

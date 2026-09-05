@@ -21,7 +21,6 @@ export async function POST(request: Request) {
     username: parsed.data.username,
     password: parsed.data.password,
     displayName: parsed.data.displayName,
-    intent: parsed.data.intent,
     locale: parsed.data.locale,
     timezone: parsed.data.timezone,
   };

@@ -10,12 +10,6 @@ import { PasswordInput } from "@/components/auth/PasswordInput";
 
 type Variant = "hero" | "section" | "page";
 
-const intents = [
-  { value: "CREATOR", label: "Creador" },
-  { value: "ENTREPRENEUR", label: "Miembro" },
-  { value: "BOTH", label: "Los dos" },
-] as const;
-
 const inputClass =
   "min-h-12 w-full rounded-2xl border border-white/10 bg-black/50 px-4 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/30 focus:border-klik-cyan/40 focus:ring-2 focus:ring-klik-cyan/30";
 
@@ -39,7 +33,6 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [intent, setIntent] = useState<(typeof intents)[number]["value"]>("BOTH");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [locale, setLocale] = useState("es");
   const [timezone, setTimezone] = useState("UTC");
@@ -70,7 +63,6 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
         email,
         username: username.toLowerCase(),
         password,
-        intent,
         locale,
         timezone,
         acceptTerms: true,
@@ -171,32 +163,6 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
           wrapperClassName={compact ? "" : "mt-2"}
         />
       </label>
-
-      <fieldset>
-        <legend className="sr-only">Cómo entras a Qlyk</legend>
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
-          Vienes a Qlyk como
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {intents.map((option) => {
-            const active = intent === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setIntent(option.value)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition ${
-                  active
-                    ? "border-klik-cyan bg-klik-cyan/10 text-klik-cyan"
-                    : "border-white/10 text-white/50 hover:text-white"
-                }`}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
 
       <label htmlFor={termsId} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
         <input

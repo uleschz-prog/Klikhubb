@@ -341,7 +341,6 @@ export async function demoRegister(input: {
   username: string;
   password: string;
   displayName: string;
-  intent: "CREATOR" | "ENTREPRENEUR" | "BOTH";
   locale?: string;
   timezone?: string;
 }) {
@@ -356,12 +355,7 @@ export async function demoRegister(input: {
   }
 
   const id = `usr_${Math.random().toString(36).slice(2, 10)}`;
-  const roles =
-    input.intent === "CREATOR"
-      ? ["CREATOR", "STUDENT"]
-      : input.intent === "ENTREPRENEUR"
-        ? ["STUDENT"]
-        : ["CREATOR", "STUDENT"];
+  const roles = ["CREATOR", "STUDENT"];
   const displayName =
     input.displayName?.trim() ||
     username.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());

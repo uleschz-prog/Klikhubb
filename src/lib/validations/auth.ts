@@ -13,7 +13,6 @@ export const registerSchema = z.object({
   username: usernameSchema,
   password: z.string().min(8).max(72),
   displayName: z.string().trim().min(2).max(80),
-  intent: z.enum(["CREATOR", "ENTREPRENEUR", "BOTH"]).default("BOTH"),
   locale: z.string().trim().min(2).max(10).default("es"),
   timezone: z.string().trim().min(2).max(64).optional(),
   acceptTerms: z.literal(true, {
