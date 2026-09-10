@@ -96,7 +96,8 @@ export const privacySections: LegalSection[] = [
         list: [
           "Proveedores de infraestructura y hosting (p. ej. Vercel) — alojamiento de la aplicación.",
           "Base de datos PostgreSQL gestionada por el proveedor configurado en el despliegue.",
-          "Almacenamiento de comprobantes de pago (Vercel Blob) — conservación de evidencia de transferencias.",
+          "Mercado Pago — procesamiento de pagos con tarjeta, SPEI u otros medios habilitados en su checkout.",
+          "Almacenamiento de comprobantes de pago (Vercel Blob) — conservación de evidencia de transferencias SPEI manuales.",
           "Resend u otros proveedores de email transaccional — envío de notificaciones operativas.",
           "Vercel Blob u otros almacenes de archivos — alojamiento de videos e imágenes subidas.",
           "Google — únicamente si activas el inicio de sesión OAuth con tu consentimiento.",
