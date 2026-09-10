@@ -29,6 +29,7 @@ export function CheckoutForm({
   cancelPath,
   onPaid,
   manualPaymentsEnabled,
+  mercadoPagoEnabled = false,
 }: {
   slug: string;
   title: string;
@@ -38,6 +39,7 @@ export function CheckoutForm({
   cancelPath?: string;
   onPaid?: (orderId: string) => void;
   manualPaymentsEnabled: boolean;
+  mercadoPagoEnabled?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -66,11 +68,18 @@ export function CheckoutForm({
       amount?: number;
       currency?: string;
       instructions?: ManualInstructions;
+      initPoint?: string;
+      preferenceId?: string;
     };
 
     if (!response.ok) {
       setLoading(false);
       setError(payload.error ?? "No se pudo iniciar el pago.");
+      return;
+    }
+
+    if (payload.mode === "mercadopago" && payload.initPoint) {
+      window.location.href = payload.initPoint;
       return;
     }
 
@@ -235,6 +244,18 @@ export function CheckoutForm({
     );
   }
 
+  const liveLabel = mercadoPagoEnabled
+    ? `Pagar con Mercado Pago — ${title}`
+    : manualPaymentsEnabled
+      ? `Transferir por SPEI — ${title}`
+      : `Pagar ${title}`;
+
+  const liveHint = mercadoPagoEnabled
+    ? "Te llevamos al checkout seguro de Mercado Pago. Al confirmar, el acceso se abre solo."
+    : manualPaymentsEnabled
+      ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
+      : "Entorno local: el acceso se abre al instante, sin transferencia real.";
+
   return (
     <form onSubmit={startCheckout} className={compact ? "space-y-4" : "space-y-6"}>
       {!compact ? (
@@ -253,20 +274,10 @@ export function CheckoutForm({
         disabled={loading}
         className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
       >
-        <span>
-          {loading
-            ? "Procesando…"
-            : manualPaymentsEnabled
-              ? `Transferir por SPEI — ${title}`
-              : `Pagar ${title}`}
-        </span>
+        <span>{loading ? "Procesando…" : liveLabel}</span>
         <span>{formatProductPrice(price, currency)}</span>
       </button>
-      <p className="text-center text-[11px] text-white/35">
-        {manualPaymentsEnabled
-          ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
-          : "Entorno local: el acceso se abre al instante, sin transferencia real."}
-      </p>
+      <p className="text-center text-[11px] text-white/35">{liveHint}</p>
     </form>
   );
 }

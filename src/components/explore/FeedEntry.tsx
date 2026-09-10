@@ -11,6 +11,7 @@ export function FeedEntry({
   tab,
   signedIn,
   manualPaymentsEnabled,
+  mercadoPagoEnabled = false,
   buySlug,
   canceled,
 }: {
@@ -19,6 +20,7 @@ export function FeedEntry({
   tab: "foryou" | "following" | "saved";
   signedIn: boolean;
   manualPaymentsEnabled: boolean;
+  mercadoPagoEnabled?: boolean;
   buySlug?: string;
   canceled?: boolean;
 }) {
@@ -55,6 +57,7 @@ export function FeedEntry({
         initialId={clipId}
         signedIn={signedIn}
         manualPaymentsEnabled={manualPaymentsEnabled}
+        mercadoPagoEnabled={mercadoPagoEnabled}
         buySlug={buySlug}
         canceled={canceled}
       />

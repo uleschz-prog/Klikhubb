@@ -1,50 +1,42 @@
 # Cómo llega el dinero a cada parte (Qlyk)
 
-Este documento explica qué pasa cuando alguien compra un curso, quién cobra qué, y cómo confirmar pagos y retiros manualmente.
+Este documento explica qué pasa cuando alguien compra un curso, quién cobra qué, y cómo confirmar pagos y retiros.
 
 ## Resumen en una frase
 
-**Hoy:** el comprador transfiere por SPEI → sube comprobante → **Qlykadmin confirma el pago** → la app reparte **en la base de datos** (85% creador, 10% plataforma, 5% referidor) → después de 14 días el creador/referidor puede **pedir retiro manual**.
+**Hoy (método principal):** el comprador paga con **Mercado Pago (Checkout Pro)** → webhook confirma `approved` → la app reparte **en la base de datos** (PAYG 93/7 o FLAT 100/0) → después de 14 días el creador puede **pedir retiro manual**.
+
+**Respaldo:** SPEI manual + comprobante + aprobación en `/admin/payments` (solo si no hay `MP_ACCESS_TOKEN`).
 
 ---
 
-## Paso a paso: una venta de $100 USD
+## Paso a paso: una venta con Mercado Pago
 
 ### 1. El comprador paga
 
-- Botón **Comprar** → datos bancarios + referencia `QLYK-XXXXXX`.
-- El comprador transfiere el monto exacto y sube comprobante (PDF/imagen).
-- El pago queda en `manual_payment_requests` con estado `PROOF_SUBMITTED`.
+- Botón **Pagar con Mercado Pago** → `POST /api/checkout` crea una Preference.
+- Redirect a `init_point` (o sandbox).
+- `external_reference` = `qlyk:{buyerId}:{productId}:{nonce}`.
 
-### 2. Qlykadmin confirma
+### 2. Mercado Pago notifica
 
-- Panel `/admin/payments` → **Aprobar pago**.
-- Se ejecuta `settlePaidOrder()` con `provider: manual`.
+- Webhook `POST /api/webhooks/mercadopago` (también IPN GET).
+- La app consulta `GET /v1/payments/{id}` con el Access Token.
+- Si `status === approved` → `settlePaidOrder({ provider: "mercadopago", providerRef: payment.id })`.
+- Tras el redirect, `/checkout/success` puede llamar `POST /api/checkout/mercadopago/confirm` por si el webhook llega tarde (idempotente).
 
 ### 3. La app reparte la venta (contabilidad interna)
 
-| Parte | Porcentaje | Ejemplo $100 | Dónde queda |
-|-------|-----------|--------------|-------------|
-| **Creador del curso** | 85% | $85 | Monedero `pending` (14 días) |
-| **Quien invitó al comprador** | 5% | $5 | Monedero `pending` (14 días) |
-| **Plataforma (Qlykadmin)** | 10% | $10 | Monedero `available` de inmediato |
+| Parte | PAYG | FLAT |
+|-------|------|------|
+| **Creador** | 93% | 100% |
+| **Plataforma (Qlykadmin)** | 7% | 0% |
 
-**Si nadie invitó al comprador:** el 5% se suma al creador → **90% creador + 10% plataforma**.
+Reglas en `src/lib/commerce/split.ts` y `src/config/compensation-plan.ts`. Hold 14 días en monedero pending.
 
-Reglas en `src/lib/commerce/split.ts` y `src/config/compensation-plan.ts`.
-
-### 4. Hold de 14 días
-
-- Las comisiones del creador y referidor quedan en estado `LOCKED`.
-- Tras 14 días, un cron (`/api/cron/release-wallets`) las pasa a `APPROVED` y mueve el saldo de **pendiente → disponible** en el monedero.
-
-Motivo: margen para reembolsos antes de liberar retiro.
-
-### 5. Retiro
+### 4. Retiro
 
 - El usuario pide retiro en `/wallet`.
-- Se crea un registro `Payout` con `method: manual`, `status: PENDING`.
-- Se descuenta su saldo **interno**.
 - **Qlykadmin** transfiere por fuera (SPEI, PayPal, etc.) y marca pagado en `/admin/payouts`.
 
 ---
@@ -52,13 +44,29 @@ Motivo: margen para reembolsos antes de liberar retiro.
 ## Variables en Vercel (producción)
 
 ```env
-PAYMENT_BANK_NAME="BBVA"
-PAYMENT_BENEFICIARY="Qlyk SA de CV"
-PAYMENT_CLABE="012345678901234567"
-PAYMENT_ACCOUNT_NUMBER="0123456789"
-BLOB_READ_WRITE_TOKEN="..."
+# Principal
+MP_ACCESS_TOKEN="APP_USR-... o TEST-..."
+MP_PUBLIC_KEY="APP_USR-... o TEST-..."
+MP_WEBHOOK_SECRET="..."   # de Webhooks en el panel MP
+SITE_URL="https://qlyk.vercel.app"
+NEXTAUTH_URL="https://qlyk.vercel.app"
+
+# Respaldo SPEI (opcional si hay MP)
+PAYMENT_BANK_NAME=""
+PAYMENT_BENEFICIARY=""
+PAYMENT_CLABE=""
+BLOB_READ_WRITE_TOKEN="..."   # solo necesario para comprobantes SPEI
 PLATFORM_ADMIN_PASSWORD="..."
 ```
+
+### Configurar webhooks en Mercado Pago
+
+1. [Tus integraciones](https://www.mercadopago.com.mx/developers/panel/app) → tu aplicación.
+2. **Webhooks** → URL de producción:
+   `https://TU_DOMINIO/api/webhooks/mercadopago`
+3. Evento: **Payments**.
+4. Copia el **secret** a `MP_WEBHOOK_SECRET`.
+5. Prueba con usuario de prueba (credenciales `TEST-`).
 
 Checklist: `/admin/setup`
 
@@ -66,4 +74,5 @@ Checklist: `/admin/setup`
 
 ## Entorno local
 
-Sin variables bancarias, el checkout usa `provider: demo` y abre acceso al instante (solo desarrollo).
+Sin `VERCEL_ENV=production`, el checkout usa `provider: demo` y abre acceso al instante.
+Con token `TEST-` puedes probar Preferences en sandbox (`MP_USE_SANDBOX=1` opcional).

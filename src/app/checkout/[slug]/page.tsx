@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { CheckoutStage } from "@/components/commerce/CheckoutStage";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutPreview } from "@/lib/commerce/catalog";
-import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
+import { getCheckoutPaymentFlags } from "@/lib/payments/checkout-flags";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default async function CheckoutPage({
   const preview = await getCheckoutPreview(params.slug, buyerId);
   if (!preview) notFound();
 
-  const manualPaymentsEnabled = isLivePaymentsRequired() && isManualPaymentsConfigured();
+  const flags = getCheckoutPaymentFlags();
 
   return (
     <CheckoutStage
@@ -40,7 +40,8 @@ export default async function CheckoutPage({
         creatorName: preview.product.creatorName,
       }}
       signedIn
-      manualPaymentsEnabled={manualPaymentsEnabled}
+      manualPaymentsEnabled={flags.manualPaymentsEnabled}
+      mercadoPagoEnabled={flags.mercadoPagoEnabled}
       canceled={searchParams.canceled === "1"}
     />
   );

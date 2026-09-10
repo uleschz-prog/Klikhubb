@@ -7,8 +7,16 @@ import {
   createManualPaymentRequest,
   ManualPaymentError,
 } from "@/lib/commerce/manual-payments";
-import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
+import {
+  isLivePaymentsRequired,
+  isManualPaymentsConfigured,
+} from "@/config/payment-instructions";
 import { demoSettleOrder } from "@/lib/demo/store";
+import {
+  createCheckoutPreference,
+  isMercadoPagoConfigured,
+  MercadoPagoError,
+} from "@/lib/payments/mercadopago";
 import { checkoutSchema } from "@/lib/validations/auth";
 
 export const runtime = "nodejs";
@@ -27,6 +35,7 @@ export async function POST(request: Request) {
   }
 
   const slug = parsed.data.slug;
+  const cancelPath = parsed.data.cancelPath;
   const product = await resolveProduct(slug);
   if (!product) {
     return NextResponse.json({ error: "Producto no encontrado." }, { status: 404 });
@@ -42,9 +51,42 @@ export async function POST(request: Request) {
   }
 
   if (isLivePaymentsRequired()) {
+    if (isMercadoPagoConfigured()) {
+      try {
+        const preference = await createCheckoutPreference({
+          buyerId,
+          productId: product.id,
+          title: product.title,
+          description: product.description,
+          amount: product.price,
+          currency: product.currency,
+          buyerEmail: session.user.email,
+          failurePath: cancelPath || `/checkout/${slug}?canceled=1`,
+          pendingPath: "/checkout/pending",
+          successPath: "/checkout/success",
+        });
+        return NextResponse.json({
+          ok: true,
+          mode: "mercadopago",
+          preferenceId: preference.id,
+          initPoint: preference.initPoint,
+          externalReference: preference.externalReference,
+        });
+      } catch (error) {
+        if (error instanceof MercadoPagoError) {
+          return NextResponse.json({ error: error.message, code: error.code }, { status: 502 });
+        }
+        console.error(error);
+        return NextResponse.json({ error: "No se pudo iniciar el pago con Mercado Pago." }, { status: 500 });
+      }
+    }
+
     if (!isManualPaymentsConfigured()) {
       return NextResponse.json(
-        { error: "Los pagos por transferencia aún no están activos. Falta configurar datos bancarios." },
+        {
+          error:
+            "Los pagos aún no están activos. Configura MP_ACCESS_TOKEN (Mercado Pago) o los datos SPEI en Vercel.",
+        },
         { status: 503 },
       );
     }

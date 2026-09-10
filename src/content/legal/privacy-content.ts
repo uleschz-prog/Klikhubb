@@ -62,7 +62,7 @@ export const privacySections: LegalSection[] = [
           "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato (art. 6.1.b RGPD).",
           "Operar el feed, comunidad, academia, checkout y monedero — ejecución del contrato.",
           "Calcular y abonar importes de ventas (93/7 o plan mensual), aplicar retenciones de 14 días y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
-          "Procesar pagos por transferencia bancaria y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
+          "Procesar pagos (Mercado Pago y, en su caso, transferencia bancaria) y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
           "Enviar comunicaciones operativas (confirmaciones, seguridad, cambios legales) — ejecución del contrato e interés legítimo.",
           "Enviar comunicaciones comerciales propias — consentimiento o interés legítimo conforme a la LSSI, con opción de baja en todo momento.",
           "Moderar contenido, investigar abusos y proteger la Plataforma — interés legítimo en seguridad.",

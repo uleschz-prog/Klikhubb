@@ -3,12 +3,15 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { MarketplaceShop } from "@/components/commerce/MarketplaceShop";
 import { listCatalogProducts } from "@/lib/commerce/catalog";
 import { getSession } from "@/lib/auth/session";
-import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
+import { getCheckoutPaymentFlags } from "@/lib/payments/checkout-flags";
 
 export const dynamic = "force-dynamic";
 
 export default async function MarketplacePage() {
   const [products, session] = await Promise.all([listCatalogProducts(), getSession()]);
+
+
+  const flags = getCheckoutPaymentFlags();
 
   return (
     <PlatformShell title="Marketplace">
@@ -17,7 +20,7 @@ export default async function MarketplacePage() {
       <p className="mt-2 max-w-xl text-sm text-white/55">
         Cursos, digitales, membresías y físicos. Cada producto puede vivir dentro de un video.
       </p>
-      <MarketplaceShop products={products} signedIn={Boolean(session?.user)} manualPaymentsEnabled={isLivePaymentsRequired() && isManualPaymentsConfigured()} />
+      <MarketplaceShop products={products} signedIn={Boolean(session?.user)} manualPaymentsEnabled={flags.manualPaymentsEnabled} mercadoPagoEnabled={flags.mercadoPagoEnabled} />
       <Link href="/feed" className="mt-8 inline-block text-sm text-klik-cyan">
         Ver productos dentro del feed →
       </Link>

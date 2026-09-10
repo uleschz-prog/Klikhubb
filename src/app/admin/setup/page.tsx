@@ -44,7 +44,7 @@ export default async function AdminSetupPage() {
         </p>
         <p className="mt-1 text-sm text-white/55">
           {readiness.readyForBeta
-            ? "Transferencias SPEI, comprobantes y datos legales configurados."
+            ? "Mercado Pago (o SPEI de respaldo) y datos legales configurados."
             : "Completa los ítems en rojo en Vercel y redeploy."}
         </p>
       </div>

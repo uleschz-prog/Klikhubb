@@ -8,11 +8,13 @@ export function CheckoutStage({
   item,
   signedIn,
   manualPaymentsEnabled,
+  mercadoPagoEnabled = false,
   canceled,
 }: {
   item: BuyItem;
   signedIn: boolean;
   manualPaymentsEnabled: boolean;
+  mercadoPagoEnabled?: boolean;
   canceled?: boolean;
 }) {
   const router = useRouter();
@@ -28,6 +30,7 @@ export function CheckoutStage({
         item={item}
         signedIn={signedIn}
         manualPaymentsEnabled={manualPaymentsEnabled}
+        mercadoPagoEnabled={mercadoPagoEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent(`/checkout/${item.slug}`)}`}
         cancelPath={`/checkout/${item.slug}`}
         canceled={canceled}

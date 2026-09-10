@@ -9,10 +9,12 @@ export function MarketplaceShop({
   products,
   signedIn,
   manualPaymentsEnabled,
+  mercadoPagoEnabled = false,
 }: {
   products: CatalogProduct[];
   signedIn: boolean;
   manualPaymentsEnabled: boolean;
+  mercadoPagoEnabled?: boolean;
 }) {
   const [slug, setSlug] = useState<string | null>(null);
   const selected = useMemo(() => products.find((item) => item.slug === slug) ?? null, [products, slug]);
@@ -51,6 +53,7 @@ export function MarketplaceShop({
         item={item}
         signedIn={signedIn}
         manualPaymentsEnabled={manualPaymentsEnabled}
+        mercadoPagoEnabled={mercadoPagoEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent("/marketplace")}`}
         cancelPath="/marketplace"
       />

@@ -30,6 +30,7 @@ export function BuyDrawer({
   item,
   signedIn,
   manualPaymentsEnabled,
+  mercadoPagoEnabled = false,
   loginHref,
   cancelPath,
   canceled,
@@ -39,6 +40,7 @@ export function BuyDrawer({
   item: BuyItem | null;
   signedIn: boolean;
   manualPaymentsEnabled: boolean;
+  mercadoPagoEnabled?: boolean;
   loginHref: string;
   cancelPath?: string;
   canceled?: boolean;
@@ -175,6 +177,7 @@ export function BuyDrawer({
                 compact
                 cancelPath={cancelPath}
                 manualPaymentsEnabled={manualPaymentsEnabled}
+                mercadoPagoEnabled={mercadoPagoEnabled}
                 onPaid={() => setPaid(true)}
               />
             </div>

@@ -20,7 +20,24 @@ export function isManualPaymentsConfigured() {
   return getPaymentInstructions() !== null;
 }
 
-/** En Vercel producción no se regala el acceso: hace falta transferencia confirmada. */
+/** En Vercel producción no se regala el acceso: hace falta pago real (MP o SPEI). */
 export function isLivePaymentsRequired() {
   return process.env.VERCEL_ENV === "production";
+}
+
+export function isLiveCheckoutConfigured() {
+  const mp =
+    Boolean(process.env.MP_ACCESS_TOKEN?.trim()) ||
+    Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN?.trim());
+  return mp || isManualPaymentsConfigured();
+}
+
+/** Preferencia: Mercado Pago si hay token; SPEI solo como respaldo. */
+export function preferredLiveCheckoutMode(): "mercadopago" | "manual" | null {
+  const mp =
+    Boolean(process.env.MP_ACCESS_TOKEN?.trim()) ||
+    Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN?.trim());
+  if (mp) return "mercadopago";
+  if (isManualPaymentsConfigured()) return "manual";
+  return null;
 }
