@@ -21,11 +21,11 @@ export default async function StudioPage() {
   const courses = await listStudioCourses(userId);
 
   return (
-    <PlatformShell title="Studio">
+    <PlatformShell title="Crear">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Creador</p>
-          <h1 className="mt-2 font-display text-3xl font-extrabold">Studio</h1>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">Crear cursos</h1>
           <p className="mt-2 max-w-xl text-sm text-white/55">
             Arma tu academia: módulos, lecciones con video o archivos, y publícala cuando esté lista.
           </p>

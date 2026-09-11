@@ -6,9 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 
 const nav = [
-  { href: "#porque", label: "Por qué" },
-  { href: "#como-funciona", label: "Cómo" },
-  { href: "/feed", label: "Feed" },
+  { href: "/play", label: "Inicio" },
+  { href: "/feed", label: "Tienda" },
+  { href: "/dashboard", label: "Cuenta" },
 ];
 
 export function Navbar({ transparent = false }: { transparent?: boolean }) {

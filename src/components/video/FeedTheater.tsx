@@ -24,7 +24,7 @@ import type { PublicComment } from "@/lib/video/social";
 import { YouTubeStage } from "@/components/video/YouTubeStage";
 import { youtubeVideoId } from "@/lib/video/source";
 
-type Panel = "none" | "comments" | "playlist" | "more";
+type Panel = "none" | "comments" | "playlist";
 type Menu = "none" | "speed" | "quality" | "volume";
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
@@ -83,7 +83,6 @@ export function FeedTheater({
   const [liked, setLiked] = useState(Boolean(video.likedByMe));
   const [saved, setSaved] = useState(Boolean(video.savedByMe));
   const [followed, setFollowed] = useState(Boolean(video.followedByMe));
-  const [listening, setListening] = useState(false);
   const [panel, setPanel] = useState<Panel>("none");
   const [menu, setMenu] = useState<Menu>("none");
   const [toast, setToast] = useState("");
@@ -542,7 +541,7 @@ export function FeedTheater({
             </RailAction>
             <RailAction
               active={!muted}
-              label={muted ? "Sin audio" : "Audio"}
+              label={muted ? "Audio" : "Audio"}
               ariaLabel={muted ? "Activar audio" : "Silenciar"}
               onClick={() => {
                 if (muted) enableAudio();
@@ -551,21 +550,6 @@ export function FeedTheater({
               compact
             >
               {muted || volume === 0 ? <RailMuteIcon /> : <RailVolumeIcon />}
-            </RailAction>
-            <RailAction
-              active={listening}
-              label="Escuchar"
-              onClick={() => {
-                setListening((value) => !value);
-                enableAudio();
-                showToast(listening ? "Volviste al video." : "Modo escuchar activo.");
-              }}
-              compact
-            >
-              <HeadphonesIcon />
-            </RailAction>
-            <RailAction label="Más" onClick={() => setPanel(panel === "more" ? "none" : "more")}>
-              <DotsIcon />
             </RailAction>
             {video.product ? (
               <RailAction label="Comprar" onClick={openShop}>
@@ -591,21 +575,9 @@ export function FeedTheater({
               <button
                 type="button"
                 onClick={openShop}
-                className="mt-3 inline-flex items-center gap-2 rounded-md bg-white/12 px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur"
-              >
-                <CollectionIcon />
-                Serie · {video.product.title}
-              </button>
-            ) : !video.product ? (
-              <p className="mt-3 text-[11px] text-white/40">Feed · Qlyk</p>
-            ) : null}
-            {video.product && !shopOpen ? (
-              <button
-                type="button"
-                onClick={openShop}
                 className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-green px-4 py-2.5 text-sm font-bold text-klik-black"
               >
-                <span>Llevar {video.product.title}</span>
+                <span>Comprar · {video.product.title}</span>
                 <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
                   {formatProductPrice(video.product.price, video.product.currency)}
                 </span>
@@ -811,29 +783,6 @@ export function FeedTheater({
         </SidePanel>
       ) : null}
 
-      {panel === "more" ? (
-        <SidePanel title="Más" onClose={() => setPanel("none")}>
-          <button type="button" className="block w-full rounded-xl px-3 py-3 text-left text-sm hover:bg-white/10" onClick={() => void shareVideo()}>
-            Copiar enlace
-          </button>
-          <Link href="/community" className="block rounded-xl px-3 py-3 text-sm hover:bg-white/10">
-            Ir a la comunidad
-          </Link>
-          <Link href="/publish" className="block rounded-xl px-3 py-3 text-sm hover:bg-white/10">
-            Publicar el tuyo
-          </Link>
-          <button
-            type="button"
-            className="block w-full rounded-xl px-3 py-3 text-left text-sm text-white/55 hover:bg-white/10"
-            onClick={() => {
-              showToast("Recibido. Lo revisamos.");
-              setPanel("none");
-            }}
-          >
-            Reportar
-          </button>
-        </SidePanel>
-      ) : null}
 
       <BuyDrawer
         open={shopOpen}
@@ -990,22 +939,6 @@ function ShareIcon() {
     </svg>
   );
 }
-function HeadphonesIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-none stroke-white" strokeWidth="1.8" aria-hidden>
-      <path d="M4 13a8 8 0 0 1 16 0v6h-4v-5h4M4 19h4v-5H4z" />
-    </svg>
-  );
-}
-function DotsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-9 w-9 overflow-visible fill-white" aria-hidden>
-      <circle cx="6" cy="12" r="1.6" />
-      <circle cx="12" cy="12" r="1.6" />
-      <circle cx="18" cy="12" r="1.6" />
-    </svg>
-  );
-}
 function ChevronUp() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2">
@@ -1090,13 +1023,6 @@ function ExpandIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
       <path d="M4 10V4h6M20 14v6h-6M20 10V4h-6M4 14v6h6" />
-    </svg>
-  );
-}
-function CollectionIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.8">
-      <path d="M4 7h16v12H4zM8 7V5h8v2" />
     </svg>
   );
 }

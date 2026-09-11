@@ -4,13 +4,13 @@ import { brand } from "@/config/site";
 
 const columns = [
   {
-    title: "Producto",
+    title: "App",
     links: [
-      { href: "/feed", label: "Feed Tienda" },
+      { href: "/play", label: "Inicio" },
+      { href: "/feed", label: "Tienda" },
       { href: "/search", label: "Buscar" },
-      { href: "/marketplace", label: "Marketplace" },
-      { href: "/academy", label: "Academy" },
-      { href: "/orders", label: "Mis pedidos" },
+      { href: "/orders", label: "Compras" },
+      { href: "/dashboard", label: "Cuenta" },
     ],
   },
   {

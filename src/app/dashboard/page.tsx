@@ -30,105 +30,111 @@ export default async function DashboardPage() {
   const holdDays = COMPENSATION_PLAN_V1.holdDays;
 
   return (
-    <PlatformShell title="Dashboard">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Tu espacio</p>
-          <h1 className="mt-2 font-display text-3xl font-extrabold">
-            {hub?.displayName ?? "Dashboard"}
-          </h1>
-          <p className="mt-2 max-w-xl text-sm text-white/55">
-            Ganancias, puntos y las voces que suenan. Aquí se ve lo que creas y lo que cobras.
-            {hub?.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
-          </p>
-          {hub?.username ? (
-            <p className="mt-2 text-sm">
-              Tu perfil público:{" "}
-              <Link href={`/u/${hub.username}`} className="font-semibold text-klik-cyan hover:underline">
-                /u/{hub.username}
+    <PlatformShell title="Cuenta">
+      <div className="space-y-6">
+        <header className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-white/50">Hola</p>
+            <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight">
+              {hub?.displayName ?? "Tu cuenta"}
+            </h1>
+            {hub?.username ? (
+              <Link href={`/u/${hub.username}`} className="mt-2 inline-block text-sm text-klik-cyan hover:underline">
+                Ver perfil @{hub.username}
               </Link>
-            </p>
-          ) : null}
-          <p className="mt-3 flex flex-wrap gap-4">
-            <Link href="/orders" className="text-sm font-semibold text-white/70 hover:text-klik-cyan hover:underline">
-              Mis pedidos
+            ) : null}
+          </div>
+          <LogoutButton />
+        </header>
+
+        <section className="rounded-3xl border border-klik-line bg-gradient-to-br from-klik-card to-klik-black p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">Tu dinero</p>
+          <p className="mt-3 font-display text-4xl font-extrabold text-klik-green">{formatMoney(wallet.available)}</p>
+          <p className="mt-1 text-sm text-white/50">Disponible para retirar</p>
+          <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3 text-sm">
+            <span className="text-white/55">En espera ({holdDays} días)</span>
+            <span className="font-semibold text-klik-cyan">{formatMoney(wallet.pending)}</span>
+          </div>
+          <Link
+            href="/wallet"
+            className="mt-4 flex min-h-12 items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black"
+          >
+            Abrir monedero
+          </Link>
+        </section>
+
+        <section>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/40">Accesos</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/orders" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
+              <p className="font-display text-lg font-bold">Compras</p>
+              <p className="mt-1 text-xs text-white/45">Pedidos y cursos</p>
             </Link>
-            <Link href="/notifications" className="text-sm font-semibold text-white/70 hover:text-klik-cyan hover:underline">
-              Avisos
+            <Link href="/academy" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
+              <p className="font-display text-lg font-bold">Mis cursos</p>
+              <p className="mt-1 text-xs text-white/45">Lo que ya tienes</p>
             </Link>
-            <Link href="/search" className="text-sm font-semibold text-white/70 hover:text-klik-cyan hover:underline">
-              Buscar
+            <Link href="/publish" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
+              <p className="font-display text-lg font-bold">Publicar</p>
+              <p className="mt-1 text-xs text-white/45">Sube un video</p>
             </Link>
-          </p>
-          {isAdmin ? (
-            <p className="mt-3 flex flex-wrap gap-4">
-              <Link href="/admin/setup" className="text-sm font-semibold text-klik-cyan hover:underline">
-                Admin · Configuración
-              </Link>
-              <Link href="/admin/payments" className="text-sm font-semibold text-klik-cyan hover:underline">
-                Admin · Pagos SPEI
-              </Link>
-              <Link href="/admin/creator-plans" className="text-sm font-semibold text-klik-cyan hover:underline">
-                Admin · Planes
-              </Link>
-              <Link href="/admin/payouts" className="text-sm font-semibold text-klik-cyan hover:underline">
-                Admin · Retiros
-              </Link>
-            </p>
-          ) : null}
-        </div>
-        <LogoutButton />
-      </div>
+            <Link href="/notifications" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
+              <p className="font-display text-lg font-bold">Avisos</p>
+              <p className="mt-1 text-xs text-white/45">Notificaciones</p>
+            </Link>
+          </div>
+        </section>
 
-      {launchItems.length ? <CreatorLaunchChecklist items={launchItems} /> : null}
+        <section className="rounded-2xl border border-klik-line bg-klik-card p-5">
+          <ProfileAvatarUpload name={hub?.displayName ?? "Miembro"} imageUrl={hub?.image} />
+        </section>
 
-      <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-5">
-        <ProfileAvatarUpload name={hub?.displayName ?? "Miembro"} imageUrl={hub?.image} />
-      </div>
+        {launchItems.length ? <CreatorLaunchChecklist items={launchItems} /> : null}
 
-      <div className="mt-6">
-        <CreatorPlanCard initial={planSnapshot} />
-      </div>
+        <section>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/40">Crear</p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/studio"
+              className="inline-flex min-h-12 items-center rounded-full bg-klik-cyan px-6 text-sm font-bold text-klik-black"
+            >
+              Crear curso
+            </Link>
+            <Link
+              href="/publish"
+              className="inline-flex min-h-12 items-center rounded-full border border-white/15 px-6 text-sm font-bold text-white"
+            >
+              Publicar video
+            </Link>
+          </div>
+          <div className="mt-4">
+            <CreatorPlanCard initial={planSnapshot} />
+          </div>
+        </section>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <a href="/wallet" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
-          <p className="text-[11px] uppercase tracking-wider text-white/40">Disponible</p>
-          <p className="mt-2 font-display text-2xl font-extrabold text-klik-green">{formatMoney(wallet.available)}</p>
-        </a>
-        <a href="/wallet" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
-          <p className="text-[11px] uppercase tracking-wider text-white/40">Pendiente ({holdDays} días)</p>
-          <p className="mt-2 font-display text-2xl font-extrabold text-klik-cyan">{formatMoney(wallet.pending)}</p>
-        </a>
-        <div className="rounded-2xl border border-klik-line bg-klik-card p-4">
-          <p className="text-[11px] uppercase tracking-wider text-white/40">Puntos</p>
-          <p className="mt-2 font-display text-2xl font-extrabold text-white">
-            {(hub?.points ?? 0).toLocaleString("es-MX")}
-          </p>
-        </div>
-      </div>
-      <p className="mt-2 text-xs text-white/40">Toca el saldo para abrir tu monedero.</p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <a
-          href="/wallet"
-          className="inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black"
-        >
-          Monedero
-        </a>
-        <a
-          href="/studio"
-          className="inline-flex min-h-12 items-center rounded-full bg-klik-cyan px-6 text-sm font-bold text-klik-black"
-        >
-          Studio de cursos
-        </a>
-        <a
-          href="/publish"
-          className="inline-flex min-h-12 items-center rounded-full border border-white/15 px-6 text-sm font-bold text-white"
-        >
-          Publicar video
-        </a>
-      </div>
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Leaderboard rows={hub?.leaderboard ?? []} />
+        {isAdmin ? (
+          <section className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm">
+            <p className="font-semibold text-amber-200">Admin</p>
+            <div className="mt-2 flex flex-wrap gap-3">
+              <Link href="/admin/setup" className="text-klik-cyan hover:underline">
+                Setup
+              </Link>
+              <Link href="/admin/payments" className="text-klik-cyan hover:underline">
+                Pagos
+              </Link>
+              <Link href="/admin/creator-plans" className="text-klik-cyan hover:underline">
+                Planes
+              </Link>
+              <Link href="/admin/payouts" className="text-klik-cyan hover:underline">
+                Retiros
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
+        <section>
+          <Leaderboard rows={hub?.leaderboard ?? []} />
+        </section>
       </div>
     </PlatformShell>
   );
