@@ -33,7 +33,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   }
 
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center bg-klik-black px-4">
+    <main className="flex min-h-app items-center justify-center bg-klik-black px-4">
       <div className="w-full max-w-md rounded-3xl border border-klik-line bg-klik-card p-8">
         <Logo href="/" />
         <h1 className="mt-6 font-display text-3xl font-extrabold text-white">Entra a tu feed</h1>

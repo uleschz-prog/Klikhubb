@@ -115,7 +115,7 @@ export function YouTubeStage({
     <div className={`${className ?? ""} overflow-hidden`}>
       <iframe
         ref={frame}
-        className="pointer-events-none absolute left-1/2 top-1/2 min-h-[100dvh] min-w-[177.78dvh] -translate-x-1/2 -translate-y-1/2 border-0"
+        className="pointer-events-none absolute left-1/2 top-1/2 min-h-app-cover min-w-app-cover -translate-x-1/2 -translate-y-1/2 border-0"
         src={embed}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

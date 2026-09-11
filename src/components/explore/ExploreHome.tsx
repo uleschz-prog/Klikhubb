@@ -67,7 +67,7 @@ export function ExploreHome({
   }, [videos, tab, following, tag, query]);
 
   return (
-    <div className="min-h-[100dvh] bg-[#0a0a0d] text-white">
+    <div className="min-h-app bg-[#0a0a0d] text-white">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col bg-[#0a0a0d] px-4 py-5 md:flex">
         <Logo href="/feed" />
         <Link
