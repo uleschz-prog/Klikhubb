@@ -47,17 +47,17 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-klik-black text-white">
+    <div className="min-h-app bg-klik-black text-white">
       <Navbar transparent />
 
       <main>
         <section
           id="registro"
-          className="relative isolate min-h-[100svh] overflow-hidden bg-klik-black"
+          className="relative isolate min-h-app overflow-hidden bg-klik-black"
         >
           <HeroDemoVideo />
 
-          <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-6xl items-center gap-10 px-4 pb-16 pt-28 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-12 md:pb-24 md:pt-24">
+          <div className="relative z-10 mx-auto grid min-h-app max-w-6xl items-center gap-10 px-4 pb-16 pt-28 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-12 md:pb-24 md:pt-24">
             <div className="flex flex-col justify-center">
               <p className="hero-rise font-display text-[clamp(3.4rem,11vw,7rem)] font-extrabold leading-[0.9] tracking-tight">
                 <span className="text-klik-cyan">Q</span>lyk

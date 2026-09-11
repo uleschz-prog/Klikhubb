@@ -33,7 +33,7 @@ export function FeedEntry({
   }, []);
 
   if (desktop === null) {
-    return <div className="min-h-[100dvh] bg-[#0a0a0d]" aria-hidden />;
+    return <div className="min-h-app bg-[#0a0a0d]" aria-hidden />;
   }
 
   const theaterVideos =

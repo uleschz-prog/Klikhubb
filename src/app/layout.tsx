@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Syne } from "next/font/google";
+import { ViewportHeightSync } from "@/components/layout/ViewportHeightSync";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { PwaInstallHint } from "@/components/pwa/PwaInstallHint";
 import { PwaRoot } from "@/components/pwa/PwaRoot";
@@ -110,6 +111,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${outfit.variable} ${syne.variable} bg-klik-black font-sans antialiased`}>
+        <ViewportHeightSync />
         <PwaRoot />
         <AppProviders>
           {children}

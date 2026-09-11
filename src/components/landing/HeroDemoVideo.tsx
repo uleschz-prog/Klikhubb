@@ -23,7 +23,7 @@ export function HeroDemoVideo() {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 h-full min-h-[100svh] w-full overflow-hidden bg-klik-black">
+    <div className="pointer-events-none absolute inset-0 z-0 h-full min-h-app w-full overflow-hidden bg-klik-black">
       <video
         ref={media}
         className="absolute inset-0 h-full w-full object-cover object-center [backface-visibility:hidden] [transform:translateZ(0)]"

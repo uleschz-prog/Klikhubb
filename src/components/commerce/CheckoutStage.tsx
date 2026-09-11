@@ -18,7 +18,7 @@ export function CheckoutStage({
   const router = useRouter();
 
   return (
-    <div className="relative min-h-[100dvh] bg-klik-black">
+    <div className="relative min-h-app bg-klik-black">
       <header className="absolute left-4 top-4 z-10">
         <Logo href="/feed" />
       </header>

@@ -391,7 +391,7 @@ export function FeedTheater({
   return (
     <div
       ref={stage}
-      className="relative h-[100dvh] overflow-hidden bg-black text-white"
+      className="relative h-app overflow-hidden bg-black text-white"
       onWheel={onWheel}
       onTouchStart={(event) => {
         startY.current = event.touches[0]?.clientY ?? null;
@@ -488,7 +488,7 @@ export function FeedTheater({
             </div>
           </header>
 
-          <aside className="absolute right-2 z-30 flex max-h-[calc(100dvh-11rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col items-center gap-2 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] max-md:top-auto md:right-8 md:top-[12%] md:max-h-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <aside className="absolute right-2 z-30 flex max-h-[calc(var(--app-vh,100vh)-11rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] flex-col items-center gap-2 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[var(--tabbar-offset)] max-md:top-auto md:right-8 md:top-[12%] md:max-h-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden">
             <div className="hidden md:contents">
               <NavArrow label="Anterior" disabled={index === 0} onClick={() => go(index - 1)}>
                 <ChevronUp />
@@ -574,7 +574,7 @@ export function FeedTheater({
             ) : null}
           </aside>
 
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-4.75rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
+          <div className="absolute bottom-[var(--tabbar-offset)] left-3 z-20 max-w-[calc(100%-4.75rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
             <p className="text-sm font-semibold text-white drop-shadow">
               @{video.handle}
               {video.publishedAt ? <span className="font-normal text-white/70"> · {formatFeedDate(video.publishedAt)}</span> : null}
@@ -855,7 +855,7 @@ export function FeedTheater({
       <Link
         href={home === "play" ? "/publish?lane=play" : "/publish"}
         aria-label={home === "play" ? "Subir un clip" : "Publicar y vender"}
-        className="absolute bottom-[calc(4.85rem+env(safe-area-inset-bottom))] right-2 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-8 md:right-8 md:h-14 md:w-14 md:text-3xl"
+        className="absolute bottom-[var(--tabbar-offset)] right-2 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-8 md:right-8 md:h-14 md:w-14 md:text-3xl"
       >
         +
       </Link>

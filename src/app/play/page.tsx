@@ -36,7 +36,7 @@ export default async function PlayPage({
   if (tab === "saved" && !viewerId) {
     return (
       <PlatformShell title="Play" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
+        <div className="flex h-[calc(var(--app-vh,100vh)-3.5rem)] flex-col items-center justify-center px-6 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Guardados</p>
           <h1 className="mt-3 font-display text-3xl font-extrabold">Entra para ver lo que guardaste</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">La estrella se queda en tu cuenta, no en el teléfono.</p>
@@ -54,7 +54,7 @@ export default async function PlayPage({
   if (theaterVideos.length === 0 && tab === "foryou") {
     return (
       <PlatformShell title="Play" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
+        <div className="flex h-[calc(var(--app-vh,100vh)-3.5rem)] flex-col items-center justify-center px-6 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Play</p>
           <h1 className="mt-3 font-display text-3xl font-extrabold">El primer clip eres tú</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">
@@ -74,7 +74,7 @@ export default async function PlayPage({
   if (tab === "following" && theaterVideos.length === 0) {
     return (
       <PlatformShell title="Play" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
+        <div className="flex h-[calc(var(--app-vh,100vh)-3.5rem)] flex-col items-center justify-center px-6 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Siguiendo</p>
           <h1 className="mt-3 font-display text-3xl font-extrabold">Todavía no sigues a nadie</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">En Play, toca el + bajo el avatar. Quien sigas aparece aquí.</p>
@@ -89,7 +89,7 @@ export default async function PlayPage({
   if (tab === "saved" && theaterVideos.length === 0) {
     return (
       <PlatformShell title="Play" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
+        <div className="flex h-[calc(var(--app-vh,100vh)-3.5rem)] flex-col items-center justify-center px-6 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Guardados</p>
           <h1 className="mt-3 font-display text-3xl font-extrabold">Todavía no guardas nada</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">En un clip, toca la estrella. Aquí se queda.</p>

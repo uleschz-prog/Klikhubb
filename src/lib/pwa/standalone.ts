@@ -15,5 +15,5 @@ export function isIosDevice() {
 
 export function isMobileUserAgent() {
   if (typeof window === "undefined") return false;
-  return /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent);
+  return /Android|HarmonyOS|Huawei|HUAWEI|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent);
 }
