@@ -1,119 +1,119 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { Navbar } from "@/components/landing/Navbar";
-import { Footer } from "@/components/landing/Footer";
-import { PremiumRegisterForm } from "@/components/auth/PremiumRegisterForm";
-import { HeroDemoVideo } from "@/components/landing/HeroDemoVideo";
+import type { FeedVideo } from "@/lib/video/types";
+import { LandingNav } from "@/components/landing/LandingNav";
+import { LandingThemeProvider } from "@/components/landing/LandingTheme";
+import { LandingVideoCard } from "@/components/landing/LandingVideoCard";
+import { brand } from "@/config/site";
 
-export function LandingPage() {
-  const reduce = useReducedMotion();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const fade = {
-    initial: reduce || !mounted ? false : { opacity: 0, y: 24 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-60px" as const },
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
-  };
-
+export function LandingPage({ videos }: { videos: FeedVideo[] }) {
   return (
-    <div className="min-h-[100dvh] bg-klik-black text-white">
-      <Navbar transparent />
-
-      <main>
-        <section id="registro" className="relative isolate min-h-[100svh] overflow-hidden bg-klik-black">
-          <HeroDemoVideo />
-
-          <div className="relative z-10 mx-auto grid min-h-[100svh] max-w-6xl items-center gap-10 px-4 pb-16 pt-28 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-12 md:pb-24 md:pt-24">
-            <div className="flex flex-col justify-center">
-              <p className="hero-rise font-display text-[clamp(3.4rem,11vw,7rem)] font-extrabold leading-[0.9] tracking-tight">
-                <span className="text-klik-cyan">Q</span>lyk
-              </p>
-
-              <h1 className="hero-rise hero-rise-delay-1 mt-5 max-w-xl font-display text-[1.85rem] font-extrabold leading-[1.08] tracking-tight text-balance sm:text-4xl md:text-5xl">
-                Videos como TikTok.
-                <span className="block bg-gradient-to-r from-klik-cyan to-klik-green bg-clip-text text-transparent">
-                  Dinero como tu banco.
-                </span>
-              </h1>
-
-              <p className="hero-rise hero-rise-delay-2 mt-4 max-w-md text-base leading-7 text-white/70 sm:text-lg">
-                Desliza clips, compra en un toque y mira tu saldo en Cuenta.
-              </p>
-
-              <div className="hero-rise hero-rise-delay-3 mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/play"
-                  className="inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black"
-                >
-                  Abrir Inicio
-                </Link>
-                <Link
-                  href="/feed"
-                  className="inline-flex min-h-12 items-center rounded-full border border-white/20 px-6 text-sm font-bold text-white"
-                >
-                  Ir a Tienda
-                </Link>
-              </div>
-            </div>
-
-            <div className="hero-rise hero-rise-delay-3 w-full md:justify-self-end md:max-w-md">
-              <Suspense fallback={null}>
-                <PremiumRegisterForm variant="hero" />
-              </Suspense>
-            </div>
+    <LandingThemeProvider>
+      <LandingNav />
+      <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:pt-10">
+        <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-xl">
+            <h1
+              className="text-[2rem] font-semibold leading-[1.1] tracking-tight sm:text-[2.5rem]"
+              style={{ color: "var(--l-fg)" }}
+            >
+              Mira. Compra. Listo.
+            </h1>
+            <p className="mt-3 max-w-md text-[15px] leading-6 sm:text-base" style={{ color: "var(--l-muted)" }}>
+              Videos de la gente. Si te gusta uno, lo puedes llevar.
+            </p>
           </div>
-        </section>
+          <Link
+            href="/feed"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition hover:opacity-90"
+            style={{ background: "var(--l-accent)" }}
+          >
+            Ver todo
+          </Link>
+        </div>
 
-        <section id="como" className="border-t border-white/5">
-          <div className="mx-auto max-w-6xl px-4 py-20 md:py-24">
-            <motion.h2 {...fade} className="font-display text-3xl font-extrabold tracking-tight md:text-4xl">
-              Tres pantallas. Nada más.
-            </motion.h2>
-            <div className="mt-10 grid gap-8 md:grid-cols-3">
-              {[
-                {
-                  title: "Inicio",
-                  line: "Clips verticales. Desliza, like, sigue. Como TikTok.",
-                  href: "/play",
-                },
-                {
-                  title: "Tienda",
-                  line: "Mismo feed, pero con comprar. Un botón verde y listo.",
-                  href: "/feed",
-                },
-                {
-                  title: "Cuenta",
-                  line: "Tu saldo, compras y publicar. Como la app de tu banco.",
-                  href: "/dashboard",
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.title}
-                  {...fade}
-                  transition={{ duration: 0.5, delay: index * 0.08 }}
-                  className="border-t border-white/10 pt-6"
-                >
-                  <p className="font-display text-2xl font-bold text-white">{item.title}</p>
-                  <p className="mt-3 text-sm leading-6 text-white/55">{item.line}</p>
-                  <Link href={item.href} className="mt-4 inline-block text-sm font-semibold text-klik-cyan hover:underline">
-                    Abrir →
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+        {videos.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {videos.map((video) => (
+              <LandingVideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        )}
+
+        <section
+          className="mt-14 rounded-3xl border px-5 py-8 text-center sm:mt-16 sm:px-8"
+          style={{ borderColor: "var(--l-border)", background: "var(--l-surface)" }}
+        >
+          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl" style={{ color: "var(--l-fg)" }}>
+            ¿Quieres subir el tuyo?
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6" style={{ color: "var(--l-muted)" }}>
+            Crea tu cuenta gratis y publica en un minuto.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
+              style={{ background: "var(--l-accent)" }}
+            >
+              Crear cuenta
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex min-h-11 items-center rounded-full border px-5 text-sm font-medium"
+              style={{ borderColor: "var(--l-border)", color: "var(--l-fg)" }}
+            >
+              Entrar
+            </Link>
           </div>
         </section>
       </main>
 
-      <Footer />
+      <footer className="border-t py-8" style={{ borderColor: "var(--l-border)" }}>
+        <div
+          className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 text-sm sm:flex-row"
+          style={{ color: "var(--l-muted)" }}
+        >
+          <p>© {new Date().getFullYear()} {brand.name}</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/legal/terms" className="hover:opacity-80">
+              Términos
+            </Link>
+            <Link href="/legal/privacy" className="hover:opacity-80">
+              Privacidad
+            </Link>
+            <Link href="/play" className="hover:opacity-80">
+              Videos
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </LandingThemeProvider>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div
+      className="rounded-3xl border px-6 py-16 text-center"
+      style={{ borderColor: "var(--l-border)", background: "var(--l-surface)" }}
+    >
+      <h2 className="text-xl font-semibold tracking-tight" style={{ color: "var(--l-fg)" }}>
+        Aún no hay videos
+      </h2>
+      <p className="mx-auto mt-2 max-w-sm text-sm leading-6" style={{ color: "var(--l-muted)" }}>
+        Sé el primero en publicar algo.
+      </p>
+      <Link
+        href="/register"
+        className="mt-6 inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
+        style={{ background: "var(--l-accent)" }}
+      >
+        Crear cuenta
+      </Link>
     </div>
   );
 }

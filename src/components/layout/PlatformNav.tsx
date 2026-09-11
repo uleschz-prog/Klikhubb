@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 
 /** Desktop: mismos 5 destinos que móvil, sin jerga (Hub/Market/Academy). */
 const links = [
-  { href: "/play", label: "Inicio", match: ["/play"] },
-  { href: "/feed", label: "Tienda", match: ["/feed", "/marketplace"] },
+  { href: "/play", label: "Ver", match: ["/play"] },
+  { href: "/feed", label: "Comprar", match: ["/feed", "/marketplace"] },
   { href: "/search", label: "Buscar", match: ["/search"] },
-  { href: "/orders", label: "Compras", match: ["/orders", "/academy"] },
-  { href: "/dashboard", label: "Cuenta", match: ["/dashboard", "/wallet", "/studio", "/notifications"] },
+  { href: "/orders", label: "Mis cosas", match: ["/orders", "/academy"] },
+  { href: "/dashboard", label: "Yo", match: ["/dashboard", "/wallet", "/studio", "/notifications"] },
 ];
 
 export function PlatformNav() {
