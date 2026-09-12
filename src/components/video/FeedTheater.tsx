@@ -879,7 +879,7 @@ function NavArrow({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white disabled:opacity-25"
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white ring-1 ring-white/20 disabled:opacity-25"
     >
       {children}
     </button>
