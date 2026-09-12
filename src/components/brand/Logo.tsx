@@ -3,23 +3,33 @@ import { LogoMark } from "@/components/brand/LogoMark";
 import { brand } from "@/config/site";
 
 type LogoProps = {
-  href?: string;
+  href?: string | null;
   className?: string;
+  markClassName?: string;
+  showWordmark?: boolean;
 };
 
-export function Logo({ href = "/", className = "" }: LogoProps) {
+/** Logo Qlyk. El texto hereda `currentColor` para claro/oscuro. */
+export function Logo({
+  href = "/",
+  className = "",
+  markClassName = "h-8 w-8",
+  showWordmark = true,
+}: LogoProps) {
   const mark = (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <LogoMark className="h-9 w-9 drop-shadow-[0_0_12px_rgba(0,240,255,0.35)]" />
-      <span className="font-display text-xl font-extrabold tracking-tight text-white">
-        <span className="text-klik-cyan">Q</span>lyk
-      </span>
+    <span className={`inline-flex items-center gap-2 ${className}`}>
+      <LogoMark className={markClassName} />
+      {showWordmark ? (
+        <span className="text-[17px] font-semibold tracking-tight">
+          {brand.name}
+        </span>
+      ) : null}
     </span>
   );
 
   if (!href) return mark;
   return (
-    <Link href={href} className="shrink-0" aria-label={brand.name}>
+    <Link href={href} className="shrink-0 text-inherit" aria-label={brand.name}>
       {mark}
     </Link>
   );

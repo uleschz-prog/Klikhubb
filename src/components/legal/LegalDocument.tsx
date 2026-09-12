@@ -12,7 +12,7 @@ type LegalDocumentProps = {
 export function LegalDocument({ title, intro, sections, related }: LegalDocumentProps) {
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 text-white/70">
-      <Logo />
+      <Logo className="text-white" />
       <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/35">
         Versión {legalMeta.version} · Última actualización: {legalMeta.lastUpdated}
       </p>

@@ -13,7 +13,19 @@ html {
 
 body {
   color: var(--foreground);
-  background: #050505;
+  background: #000000;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    var(--font-sans),
+    "Segoe UI",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── PWA instalada: experiencia app nativa premium ── */
@@ -30,7 +42,7 @@ html.pwa-standalone body {
 }
 
 html.pwa-standalone body {
-  background: #050505;
+  background: #000000;
   user-select: none;
 }
 
@@ -151,17 +163,7 @@ html.pwa-standalone .pwa-install-hint {
 
 /* ── Landing Apple / Skool ── */
 .font-apple {
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Text",
-    "SF Pro Display",
-    "Segoe UI",
-    Helvetica,
-    Arial,
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: inherit;
 }
 
 .landing-root {

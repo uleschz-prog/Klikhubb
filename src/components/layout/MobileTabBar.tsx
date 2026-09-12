@@ -35,7 +35,7 @@ export function MobileTabBar() {
                 }`}
               >
                 <span
-                  className={`h-1 w-5 rounded-full ${active ? "bg-klik-cyan shadow-[0_0_12px_#00F0FF]" : "bg-transparent"}`}
+                  className={`h-1 w-4 rounded-full ${active ? "bg-klik-cyan" : "bg-transparent"}`}
                   aria-hidden
                 />
                 {tab.label}
