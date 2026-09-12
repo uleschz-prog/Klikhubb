@@ -24,17 +24,24 @@ const STORAGE_KEY = "qlyk-landing-theme";
 
 function readInitialMode(): LandingMode {
   if (typeof window === "undefined") return "light";
+  const fromQuery = new URLSearchParams(window.location.search).get("theme");
+  if (fromQuery === "light" || fromQuery === "dark") return fromQuery;
   const saved = window.localStorage.getItem(STORAGE_KEY);
   if (saved === "light" || saved === "dark") return saved;
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function LandingThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<LandingMode>("light");
+  const [mode, setModeState] = useState<LandingMode>(() => readInitialMode());
 
   useEffect(() => {
+    // Sync if URL/localStorage changed after mount (e.g. ?theme=)
     setModeState(readInitialMode());
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-landing-theme", mode);
+  }, [mode]);
 
   const setMode = useCallback((next: LandingMode) => {
     setModeState(next);
@@ -53,6 +60,11 @@ export function LandingThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <LandingThemeContext.Provider value={value}>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var q=new URLSearchParams(location.search).get('theme');var t=(q==='dark'||q==='light')?q:localStorage.getItem('${STORAGE_KEY}');if(t!=='dark'&&t!=='light'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-landing-theme',t);}catch(e){}})();`,
+        }}
+      />
       <div className="landing-root font-apple min-h-[100dvh] transition-colors duration-300" data-theme={mode}>
         {children}
       </div>

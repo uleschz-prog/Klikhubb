@@ -181,7 +181,8 @@ html.pwa-standalone .pwa-install-hint {
   --l-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
 }
 
-.landing-root[data-theme="dark"] {
+.landing-root[data-theme="dark"],
+html[data-landing-theme="dark"] .landing-root {
   --l-bg: #000000;
   --l-fg: #f5f5f7;
   --l-muted: #a1a1a6;
@@ -191,4 +192,9 @@ html.pwa-standalone .pwa-install-hint {
   --l-nav: rgb(0 0 0 / 0.72);
   --l-accent: #0a84ff;
   --l-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
+}
+
+html[data-landing-theme="dark"] .landing-root {
+  color: var(--l-fg);
+  background: var(--l-bg);
 }
