@@ -7,12 +7,14 @@ import { Logo } from "@/components/brand/Logo";
 export function CheckoutStage({
   item,
   signedIn,
-  manualPaymentsEnabled,
+  stripeEnabled,
+  speiEnabled,
   canceled,
 }: {
   item: BuyItem;
   signedIn: boolean;
-  manualPaymentsEnabled: boolean;
+  stripeEnabled: boolean;
+  speiEnabled: boolean;
   canceled?: boolean;
 }) {
   const router = useRouter();
@@ -27,7 +29,8 @@ export function CheckoutStage({
         onClose={() => router.push("/feed")}
         item={item}
         signedIn={signedIn}
-        manualPaymentsEnabled={manualPaymentsEnabled}
+        stripeEnabled={stripeEnabled}
+        speiEnabled={speiEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent(`/checkout/${item.slug}`)}`}
         cancelPath={`/checkout/${item.slug}`}
         canceled={canceled}

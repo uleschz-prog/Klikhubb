@@ -1,0 +1,45 @@
+import { NextResponse } from "next/server";
+import { fulfillCheckoutSession, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(request: Request) {
+  if (!isStripeEnabled()) {
+    return NextResponse.json({ error: "Webhook de Stripe no configurado." }, { status: 501 });
+  }
+
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  if (!secret) {
+    return NextResponse.json({ error: "Falta STRIPE_WEBHOOK_SECRET." }, { status: 501 });
+  }
+
+  const signature = request.headers.get("stripe-signature");
+  if (!signature) {
+    return NextResponse.json({ error: "Falta stripe-signature." }, { status: 400 });
+  }
+
+  const raw = Buffer.from(await request.arrayBuffer()).toString("utf8");
+  let event;
+  try {
+    event = getStripe().webhooks.constructEvent(raw, signature, secret);
+  } catch (error) {
+    console.error("stripe webhook signature", error);
+    return NextResponse.json({ error: "Firma de webhook inválida." }, { status: 400 });
+  }
+
+  if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
+    const session = event.data.object;
+    try {
+      const result = await fulfillCheckoutSession(session.id);
+      if (result.unpaid) {
+        return NextResponse.json({ received: true, ignored: "unpaid" });
+      }
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo asentar la venta." }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({ received: true });
+}

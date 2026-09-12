@@ -4,7 +4,7 @@ Este documento explica qué pasa cuando alguien compra un curso, quién cobra qu
 
 ## Resumen en una frase
 
-**Hoy:** el comprador transfiere por SPEI → sube comprobante → **Qlykadmin confirma el pago** → la app reparte **en la base de datos** (85% creador, 10% plataforma, 5% referidor) → después de 14 días el creador/referidor puede **pedir retiro manual**.
+**Hoy:** el comprador elige **tarjeta (Stripe)** o **SPEI**. Con Stripe, el webhook (o la página de éxito) asienta la venta. Con SPEI, sube comprobante → **Qlykadmin confirma** → la app reparte **en la base de datos** → después de 14 días el creador puede **pedir retiro manual**.
 
 ---
 
@@ -12,7 +12,17 @@ Este documento explica qué pasa cuando alguien compra un curso, quién cobra qu
 
 ### 1. El comprador paga
 
-- Botón **Comprar** → datos bancarios + referencia `QLYK-XXXXXX`.
+Hay dos métodos en checkout:
+
+**Tarjeta (Stripe)**
+
+- Botón **Pagar con tarjeta** → Stripe Checkout (`mode: payment`).
+- Al confirmar, Stripe llama `/api/webhooks/stripe` y/o el comprador vuelve a `/checkout/success?session_id=…`.
+- Se ejecuta `settlePaidOrder()` con `provider: stripe`.
+
+**SPEI**
+
+- Botón **Transferir por SPEI** → datos bancarios + referencia `QLYK-XXXXXX`.
 - El comprador transfiere el monto exacto y sube comprobante (PDF/imagen).
 - El pago queda en `manual_payment_requests` con estado `PROOF_SUBMITTED`.
 
@@ -52,6 +62,8 @@ Motivo: margen para reembolsos antes de liberar retiro.
 ## Variables en Vercel (producción)
 
 ```env
+STRIPE_SECRET_KEY="sk_live_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
 PAYMENT_BANK_NAME="BBVA"
 PAYMENT_BENEFICIARY="Qlyk SA de CV"
 PAYMENT_CLABE="012345678901234567"
@@ -60,10 +72,14 @@ BLOB_READ_WRITE_TOKEN="..."
 PLATFORM_ADMIN_PASSWORD="..."
 ```
 
+Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed` y `checkout.session.async_payment_succeeded`).
+
+Basta con **un** método activo (Stripe completo o SPEI). Pueden convivir los dos.
+
 Checklist: `/admin/setup`
 
 ---
 
 ## Entorno local
 
-Sin variables bancarias, el checkout usa `provider: demo` y abre acceso al instante (solo desarrollo).
+Sin Stripe ni datos bancarios, el checkout usa `provider: demo` y abre acceso al instante (solo desarrollo).

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listPublishedVideos, listSavedVideos, getPublishedVideo } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
-import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
+import { getCheckoutMethods } from "@/config/checkout-methods";
 import { FeedTheater } from "@/components/video/FeedTheater";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
@@ -101,6 +101,8 @@ export default async function PlayPage({
     );
   }
 
+  const methods = getCheckoutMethods();
+
   return (
     <FeedTheater
       home="play"
@@ -108,7 +110,8 @@ export default async function PlayPage({
       videos={theaterVideos}
       initialId={searchParams.v}
       signedIn={Boolean(session?.user)}
-      manualPaymentsEnabled={isLivePaymentsRequired() && isManualPaymentsConfigured()}
+      stripeEnabled={methods.stripe}
+      speiEnabled={methods.spei}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
     />

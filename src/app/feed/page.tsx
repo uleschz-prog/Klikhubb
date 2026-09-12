@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listPublishedVideos, listSavedVideos } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
-import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
+import { getCheckoutMethods } from "@/config/checkout-methods";
 import { FeedEntry } from "@/components/explore/FeedEntry";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
@@ -39,13 +39,16 @@ export default async function FeedPage({
     );
   }
 
+  const methods = getCheckoutMethods();
+
   return (
     <FeedEntry
       videos={videos}
       clipId={searchParams.v}
       tab={tab}
       signedIn={Boolean(session?.user)}
-      manualPaymentsEnabled={isLivePaymentsRequired() && isManualPaymentsConfigured()}
+      stripeEnabled={methods.stripe}
+      speiEnabled={methods.spei}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
     />

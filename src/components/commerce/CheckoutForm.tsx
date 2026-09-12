@@ -28,7 +28,8 @@ export function CheckoutForm({
   compact = false,
   cancelPath,
   onPaid,
-  manualPaymentsEnabled,
+  stripeEnabled = false,
+  speiEnabled = false,
 }: {
   slug: string;
   title: string;
@@ -37,30 +38,38 @@ export function CheckoutForm({
   compact?: boolean;
   cancelPath?: string;
   onPaid?: (orderId: string) => void;
-  manualPaymentsEnabled: boolean;
+  stripeEnabled?: boolean;
+  speiEnabled?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingMethod, setLoadingMethod] = useState<"stripe" | "spei" | "demo" | null>(null);
   const [manual, setManual] = useState<ManualCheckout | null>(null);
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  async function startCheckout(event: React.FormEvent) {
-    event.preventDefault();
-    setLoading(true);
+  const busy = loadingMethod !== null;
+  const hasLiveMethod = stripeEnabled || speiEnabled;
+
+  async function startCheckout(method: "stripe" | "spei" | "demo") {
+    setLoadingMethod(method);
     setError("");
 
     const response = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, cancelPath }),
+      body: JSON.stringify({
+        slug,
+        cancelPath,
+        ...(method === "demo" ? {} : { method }),
+      }),
     });
     const payload = (await response.json()) as {
       error?: string;
       orderId?: string;
       mode?: string;
+      url?: string;
       requestId?: string;
       reference?: string;
       amount?: number;
@@ -69,8 +78,13 @@ export function CheckoutForm({
     };
 
     if (!response.ok) {
-      setLoading(false);
+      setLoadingMethod(null);
       setError(payload.error ?? "No se pudo iniciar el pago.");
+      return;
+    }
+
+    if (payload.mode === "stripe" && payload.url) {
+      window.location.href = payload.url;
       return;
     }
 
@@ -82,17 +96,17 @@ export function CheckoutForm({
         currency: payload.currency ?? currency,
         instructions: payload.instructions,
       });
-      setLoading(false);
+      setLoadingMethod(null);
       return;
     }
 
     if (!payload.orderId) {
-      setLoading(false);
+      setLoadingMethod(null);
       setError("No se pudo completar el pago.");
       return;
     }
 
-    setLoading(false);
+    setLoadingMethod(null);
     if (onPaid) {
       onPaid(payload.orderId);
       return;
@@ -103,9 +117,9 @@ export function CheckoutForm({
 
   async function submitProof(event: React.FormEvent) {
     event.preventDefault();
-    if (!manual) return;
+    if (!manual || busy) return;
 
-    setLoading(true);
+    setLoadingMethod("spei");
     setError("");
 
     try {
@@ -149,7 +163,7 @@ export function CheckoutForm({
     } catch {
       setError("No se pudo enviar el comprobante.");
     } finally {
-      setLoading(false);
+      setLoadingMethod(null);
     }
   }
 
@@ -226,17 +240,25 @@ export function CheckoutForm({
 
         <button
           type="submit"
-          disabled={loading || (!proofFile && !proofNote.trim())}
+          disabled={busy || (!proofFile && !proofNote.trim())}
           className="flex min-h-12 w-full items-center justify-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
         >
-          {loading ? "Enviando…" : "Ya transferí — enviar comprobante"}
+          {loadingMethod === "spei" ? "Enviando…" : "Ya transferí — enviar comprobante"}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => setManual(null)}
+          className="flex min-h-11 w-full items-center justify-center rounded-full bg-white/10 px-6 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          Elegir otro método
         </button>
       </form>
     );
   }
 
   return (
-    <form onSubmit={startCheckout} className={compact ? "space-y-4" : "space-y-6"}>
+    <div className={compact ? "space-y-4" : "space-y-6"}>
       {!compact ? (
         <div className="rounded-2xl border border-klik-line bg-klik-card p-5">
           <p className="text-[11px] uppercase tracking-wider text-white/40">Lo que te llevas</p>
@@ -248,25 +270,58 @@ export function CheckoutForm({
         </div>
       ) : null}
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      <button
-        type="submit"
-        disabled={loading}
-        className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
-      >
-        <span>
-          {loading
-            ? "Procesando…"
-            : manualPaymentsEnabled
-              ? `Transferir por SPEI — ${title}`
-              : `Pagar ${title}`}
-        </span>
-        <span>{formatProductPrice(price, currency)}</span>
-      </button>
+
+      <div className="space-y-3">
+        {stripeEnabled ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => startCheckout("stripe")}
+            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+          >
+            <span>{loadingMethod === "stripe" ? "Abriendo Stripe…" : "Pagar con tarjeta"}</span>
+            <span>{formatProductPrice(price, currency)}</span>
+          </button>
+        ) : null}
+
+        {speiEnabled ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => startCheckout("spei")}
+            className={
+              stripeEnabled
+                ? "flex min-h-12 w-full items-center justify-between rounded-full border border-white/20 bg-white/8 px-6 text-sm font-bold text-white disabled:opacity-60"
+                : "flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+            }
+          >
+            <span>{loadingMethod === "spei" ? "Preparando SPEI…" : "Transferir por SPEI"}</span>
+            <span>{formatProductPrice(price, currency)}</span>
+          </button>
+        ) : null}
+
+        {!hasLiveMethod ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => startCheckout("demo")}
+            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+          >
+            <span>{loadingMethod === "demo" ? "Procesando…" : `Pagar ${title}`}</span>
+            <span>{formatProductPrice(price, currency)}</span>
+          </button>
+        ) : null}
+      </div>
+
       <p className="text-center text-[11px] text-white/35">
-        {manualPaymentsEnabled
-          ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
-          : "Entorno local: el acceso se abre al instante, sin transferencia real."}
+        {stripeEnabled && speiEnabled
+          ? "Tarjeta con Stripe, o transferencia SPEI con comprobante para confirmar a mano."
+          : stripeEnabled
+            ? "Pago seguro con Stripe. El acceso se abre al confirmar el cargo."
+            : speiEnabled
+              ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
+              : "Entorno local: el acceso se abre al instante, sin cobro real."}
       </p>
-    </form>
+    </div>
   );
 }

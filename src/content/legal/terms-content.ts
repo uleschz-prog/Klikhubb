@@ -24,7 +24,7 @@ export const termsSections: LegalSection[] = [
           '«Creador»: Usuario que publica contenido, productos, cursos o membresías en la Plataforma.',
           '«Miembro» o «Estudiante»: Usuario que consume contenido, participa en comunidades o realiza compras.',
           '«Producto»: bien o servicio digital (curso, membresía, contenido descargable u otro activo digital) ofrecido por un Creador.',
-          '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (transferencia bancaria con confirmación manual).',
+          '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (Stripe Checkout con tarjeta y/o transferencia bancaria SPEI con confirmación manual).',
           '«Monedero»: saldo interno que refleja importes pendientes o disponibles derivados de ventas o ajustes, sujeto a retenciones y verificaciones.',
           '«Hold» o «retención»: periodo de 14 días naturales durante el cual ciertos importes permanecen bloqueados antes de poder retirarse, para gestionar devoluciones, contracargos o incidencias.',
         ],
@@ -137,7 +137,7 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Los pagos de los compradores se procesan mediante transferencia bancaria (SPEI u otro método indicado en checkout). El Operador no almacena números completos de tarjeta en sus servidores.",
+          "Los pagos de los compradores se procesan por Stripe Checkout (tarjeta) y/o transferencia bancaria SPEI, según los métodos habilitados en el checkout. El Operador no almacena números completos de tarjeta en sus servidores; el cargo con tarjeta lo procesa Stripe.",
           "El Monedero muestra saldos pendientes y disponibles con carácter informativo. Un saldo disponible no implica necesariamente que el retiro sea inmediato si faltan verificaciones de identidad (KYC), datos bancarios o revisiones de riesgo.",
           "Las solicitudes de retiro pueden estar sujetas a importes mínimos, comisiones de terceros, plazos de procesamiento y comprobaciones antilavado. Nos reservamos el derecho de rechazar retiros si existen indicios de fraude o incumplimiento.",
           "El Operador no es entidad de crédito ni custodio de depósitos bancarios regulados. Los saldos reflejan derechos económicos internos derivados de la actividad en la Plataforma, convertibles según las reglas vigentes.",

@@ -22,6 +22,7 @@ export const registerSchema = z.object({
 
 export const checkoutSchema = z.object({
   slug: z.string().trim().min(2).max(120),
+  method: z.enum(["stripe", "spei"]).optional(),
   cancelPath: z
     .string()
     .trim()

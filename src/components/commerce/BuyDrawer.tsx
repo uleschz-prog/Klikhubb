@@ -29,7 +29,8 @@ export function BuyDrawer({
   onClose,
   item,
   signedIn,
-  manualPaymentsEnabled,
+  stripeEnabled = false,
+  speiEnabled = false,
   loginHref,
   cancelPath,
   canceled,
@@ -38,7 +39,8 @@ export function BuyDrawer({
   onClose: () => void;
   item: BuyItem | null;
   signedIn: boolean;
-  manualPaymentsEnabled: boolean;
+  stripeEnabled?: boolean;
+  speiEnabled?: boolean;
   loginHref: string;
   cancelPath?: string;
   canceled?: boolean;
@@ -174,7 +176,8 @@ export function BuyDrawer({
                 currency={item.currency}
                 compact
                 cancelPath={cancelPath}
-                manualPaymentsEnabled={manualPaymentsEnabled}
+                stripeEnabled={stripeEnabled}
+                speiEnabled={speiEnabled}
                 onPaid={() => setPaid(true)}
               />
             </div>

@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { assertCanPurchase, resolveProduct } from "@/lib/commerce/catalog";
+import { createStripeCheckoutSession } from "@/lib/commerce/stripe";
 import { CommerceError, settlePaidOrder } from "@/lib/commerce/settle-order";
 import {
   createManualPaymentRequest,
   ManualPaymentError,
 } from "@/lib/commerce/manual-payments";
-import { isLivePaymentsRequired, isManualPaymentsConfigured } from "@/config/payment-instructions";
+import { isLivePaymentsRequired } from "@/config/payment-instructions";
+import { isSpeiEnabled, isStripeEnabled, resolveCheckoutIntent } from "@/config/checkout-methods";
 import { demoSettleOrder } from "@/lib/demo/store";
 import { checkoutSchema } from "@/lib/validations/auth";
 
@@ -27,6 +29,7 @@ export async function POST(request: Request) {
   }
 
   const slug = parsed.data.slug;
+  const method = parsed.data.method;
   const product = await resolveProduct(slug);
   if (!product) {
     return NextResponse.json({ error: "Producto no encontrado." }, { status: 404 });
@@ -41,14 +44,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se pudo validar la compra." }, { status: 500 });
   }
 
-  if (isLivePaymentsRequired()) {
-    if (!isManualPaymentsConfigured()) {
+  const stripeOn = isStripeEnabled();
+  const speiOn = isSpeiEnabled();
+  const intent = resolveCheckoutIntent(method, stripeOn, speiOn);
+
+  if (intent === "stripe") {
+    if (!stripeOn) {
+      return NextResponse.json({ error: "El pago con tarjeta no está activo." }, { status: 503 });
+    }
+    try {
+      const checkout = await createStripeCheckoutSession({
+        buyerId,
+        buyerEmail: session.user.email,
+        product,
+        cancelPath: parsed.data.cancelPath,
+      });
+      if (!checkout.url) {
+        return NextResponse.json({ error: "Stripe no devolvió una URL de pago." }, { status: 502 });
+      }
+      return NextResponse.json({ ok: true, url: checkout.url, mode: "stripe" });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo abrir Stripe Checkout." }, { status: 502 });
+    }
+  }
+
+  if (intent === "spei") {
+    if (!speiOn) {
       return NextResponse.json(
         { error: "Los pagos por transferencia aún no están activos. Falta configurar datos bancarios." },
         { status: 503 },
       );
     }
-
     try {
       const manual = await createManualPaymentRequest({
         buyerId,
@@ -73,6 +100,18 @@ export async function POST(request: Request) {
       console.error(error);
       return NextResponse.json({ error: "No se pudo iniciar el pago." }, { status: 500 });
     }
+  }
+
+  if (intent === "choose" || isLivePaymentsRequired()) {
+    return NextResponse.json(
+      {
+        error:
+          intent === "choose"
+            ? "Elige tarjeta o transferencia SPEI."
+            : "Elige un método de pago. Falta conectar Stripe o los datos SPEI.",
+      },
+      { status: 503 },
+    );
   }
 
   try {

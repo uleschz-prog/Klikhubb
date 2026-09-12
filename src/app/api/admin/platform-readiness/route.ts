@@ -5,7 +5,7 @@ import { getPlatformReadiness } from "@/lib/platform/readiness";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Checklist de configuración para el operador (legal, pagos SPEI). */
+/** Checklist de configuración para el operador (legal, Stripe, SPEI). */
 export async function GET() {
   const auth = await requireAdminApi();
   if ("error" in auth) return auth.error;
