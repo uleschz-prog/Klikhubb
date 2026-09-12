@@ -46,12 +46,28 @@ export function LandingThemeProvider({ children }: { children: ReactNode }) {
   const setMode = useCallback((next: LandingMode) => {
     setModeState(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+    document.documentElement.setAttribute("data-landing-theme", next);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("theme", next);
+      window.history.replaceState({}, "", url);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const toggle = useCallback(() => {
     setModeState((current) => {
       const next = current === "light" ? "dark" : "light";
       window.localStorage.setItem(STORAGE_KEY, next);
+      document.documentElement.setAttribute("data-landing-theme", next);
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("theme", next);
+        window.history.replaceState({}, "", url);
+      } catch {
+        /* ignore */
+      }
       return next;
     });
   }, []);
@@ -85,8 +101,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   return (
     <button
       type="button"
-      onClick={toggle}
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${className}`}
+      className={`relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border transition hover:opacity-80 ${className}`}
       style={{
         borderColor: "var(--l-border)",
         color: "var(--l-fg)",
@@ -94,6 +109,11 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       }}
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       title={isDark ? "Modo claro" : "Modo oscuro"}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggle();
+      }}
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </button>
