@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { LANDING_THEME_STORAGE_KEY } from "@/components/landing/landing-theme-boot";
 
 export type LandingMode = "light" | "dark";
 
@@ -20,7 +21,7 @@ type LandingThemeContextValue = {
 
 const LandingThemeContext = createContext<LandingThemeContextValue | null>(null);
 
-const STORAGE_KEY = "qlyk-landing-theme";
+const STORAGE_KEY = LANDING_THEME_STORAGE_KEY;
 
 function readInitialMode(): LandingMode {
   if (typeof window === "undefined") return "light";
@@ -76,11 +77,6 @@ export function LandingThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <LandingThemeContext.Provider value={value}>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `(function(){try{var q=new URLSearchParams(location.search).get('theme');var t=(q==='dark'||q==='light')?q:localStorage.getItem('${STORAGE_KEY}');if(t!=='dark'&&t!=='light'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-landing-theme',t);}catch(e){}})();`,
-        }}
-      />
       <div className="landing-root font-apple min-h-[100dvh] transition-colors duration-300" data-theme={mode}>
         {children}
       </div>
