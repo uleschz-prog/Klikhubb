@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/components/landing/LandingTheme";
-import { brand } from "@/config/site";
 
 export function LandingNav() {
   const [open, setOpen] = useState(false);
@@ -14,20 +14,11 @@ export function LandingNav() {
       style={{
         borderColor: "var(--l-border)",
         background: "var(--l-nav)",
+        color: "var(--l-fg)",
       }}
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:h-16">
-        <Link href="/" className="flex items-center gap-2" aria-label={brand.name}>
-          <span
-            className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold tracking-tight text-white"
-            style={{ background: "var(--l-accent)" }}
-          >
-            Q
-          </span>
-          <span className="text-[17px] font-semibold tracking-tight" style={{ color: "var(--l-fg)" }}>
-            {brand.name}
-          </span>
-        </Link>
+        <Logo markClassName="h-8 w-8" />
 
         <div className="hidden items-center gap-2 sm:flex">
           <ThemeToggle />

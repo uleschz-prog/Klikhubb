@@ -1,21 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Syne } from "next/font/google";
+import { Inter } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { PwaInstallHint } from "@/components/pwa/PwaInstallHint";
 import { PwaRoot } from "@/components/pwa/PwaRoot";
 import { site } from "@/config/site";
 import "./globals.css";
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  display: "swap",
-});
-
-const syne = Syne({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["600", "700", "800"],
   display: "swap",
 });
 
@@ -109,7 +102,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${outfit.variable} ${syne.variable} bg-klik-black font-sans antialiased`}>
+      <body className={`${inter.variable} bg-klik-black font-sans antialiased`}>
         <PwaRoot />
         <AppProviders>
           {children}

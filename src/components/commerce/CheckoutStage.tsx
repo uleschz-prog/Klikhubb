@@ -20,7 +20,7 @@ export function CheckoutStage({
   return (
     <div className="relative min-h-[100dvh] bg-klik-black">
       <header className="absolute left-4 top-4 z-10">
-        <Logo href="/feed" />
+        <Logo href="/feed" className="text-white" />
       </header>
       <BuyDrawer
         open

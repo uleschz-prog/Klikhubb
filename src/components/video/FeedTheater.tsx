@@ -479,7 +479,7 @@ export function FeedTheater({
           <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <div className="pointer-events-auto flex items-center gap-3">
               <Link href={basePath} className="flex items-center gap-2" aria-label="Qlyk">
-                <LogoMark className="h-8 w-8 drop-shadow-[0_0_12px_rgba(0,240,255,0.4)]" />
+                <LogoMark className="h-8 w-8" />
               </Link>
             </div>
             <div className="pointer-events-auto hidden md:block">
