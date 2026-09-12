@@ -477,14 +477,20 @@ export function FeedTheater({
 
       {!hidden ? (
         <>
+          <div className="pointer-events-none absolute inset-0 z-10">
+            <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/80 via-black/35 to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-black/55 to-transparent md:w-40" />
+            <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+          </div>
+
           <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <div className="pointer-events-auto flex items-center gap-3">
-              <Link href={basePath} className="flex items-center gap-2" aria-label="Qlyk">
+              <Link href={basePath} className="flex items-center gap-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" aria-label="Qlyk">
                 <LogoMark className="h-8 w-8" />
               </Link>
             </div>
             <div className="pointer-events-auto hidden items-center gap-3 md:flex">
-              <PlatformNav />
+              <PlatformNav tone="video" />
               <ThemeToggle />
             </div>
             <div className="pointer-events-auto md:hidden">
@@ -518,7 +524,7 @@ export function FeedTheater({
             </button>
             <Link
               href={`/u/${video.handle}`}
-              className="mt-2 max-w-[4.5rem] truncate text-center text-[10px] font-semibold text-white/80 hover:text-klik-cyan"
+              className="mt-2 max-w-[5.5rem] truncate rounded-full bg-black/65 px-2 py-0.5 text-center text-[10px] font-semibold text-white ring-1 ring-white/15"
             >
               @{video.handle}
             </Link>
@@ -564,11 +570,12 @@ export function FeedTheater({
           </aside>
 
           <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-4.75rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
-            <p className="text-sm font-semibold text-white drop-shadow">
+            <div className="rounded-2xl bg-black/55 px-3.5 py-3 backdrop-blur-md ring-1 ring-white/10">
+            <p className="text-sm font-semibold text-white">
               @{video.handle}
-              {video.publishedAt ? <span className="font-normal text-white/70"> · {formatFeedDate(video.publishedAt)}</span> : null}
+              {video.publishedAt ? <span className="font-normal text-white/80"> · {formatFeedDate(video.publishedAt)}</span> : null}
             </p>
-            <p className="mt-2 text-[15px] leading-6 text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.85)]">{video.caption}</p>
+            <p className="mt-2 text-[15px] leading-6 text-white">{video.caption}</p>
             {tags.length ? (
               <p className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-[13px] font-medium text-white/90">
                 {tags.map((tag) => (
@@ -576,6 +583,7 @@ export function FeedTheater({
                 ))}
               </p>
             ) : null}
+            </div>
             {video.product && !shopOpen ? (
               <button
                 type="button"
@@ -838,16 +846,16 @@ function RailAction({
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 overflow-visible ${compact ? "w-11 md:w-12" : "w-11 md:w-12"}`}
+      className="flex min-w-[3rem] flex-col items-center gap-1 overflow-visible"
     >
       <span
-        className={`flex items-center justify-center overflow-visible ${
+        className={`flex items-center justify-center overflow-visible rounded-full bg-black/45 shadow-[0_2px_12px_rgba(0,0,0,0.55)] ring-1 ring-white/20 ${
           compact ? "h-10 w-10 md:h-12 md:w-12" : "h-10 w-10 md:h-12 md:w-12"
         } ${active ? "text-[#FE2C55]" : "text-white"}`}
       >
         {children}
       </span>
-      <span className="max-w-[3.25rem] truncate text-center text-[10px] font-medium leading-tight text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.85)] md:text-[11px]">
+      <span className="max-w-[4.25rem] truncate rounded-full bg-black/70 px-2 py-0.5 text-center text-[10px] font-semibold leading-tight text-white ring-1 ring-white/15 md:text-[11px]">
         {label}
       </span>
     </button>
