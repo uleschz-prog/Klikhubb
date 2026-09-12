@@ -67,8 +67,8 @@ export function ExploreHome({
   }, [videos, tab, following, tag, query]);
 
   return (
-    <div className="min-h-[100dvh] bg-[#0a0a0d] text-white">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col bg-[#0a0a0d] px-4 py-5 md:flex">
+    <div className="min-h-[100dvh] bg-background text-foreground">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[220px] flex-col bg-background px-4 py-5 md:flex">
         <Logo href="/feed" />
         <Link
           href="/publish"
@@ -99,7 +99,7 @@ export function ExploreHome({
       </aside>
 
       <div className="md:pl-[220px]">
-        <header className="sticky top-0 z-20 flex items-center gap-3 bg-[#0a0a0d]/92 px-4 py-3 backdrop-blur md:px-8">
+        <header className="sticky top-0 z-20 flex items-center gap-3 bg-background/92 px-4 py-3 backdrop-blur md:px-8">
           <div className="md:hidden">
             <Logo href="/feed" />
           </div>

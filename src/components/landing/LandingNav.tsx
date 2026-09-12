@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { ThemeToggle } from "@/components/landing/LandingTheme";
+import { ThemeToggle } from "@/components/theme/ThemeProvider";
 
 export function LandingNav() {
   const [open, setOpen] = useState(false);
@@ -31,7 +31,7 @@ export function LandingNav() {
           </Link>
           <Link
             href="/register"
-            className="rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            className="on-accent rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
             style={{ background: "var(--l-accent)" }}
           >
             Crear cuenta
@@ -70,7 +70,7 @@ export function LandingNav() {
             <Link
               href="/register"
               onClick={() => setOpen(false)}
-              className="rounded-xl px-4 py-3 text-center text-sm font-semibold text-white"
+              className="on-accent rounded-xl px-4 py-3 text-center text-sm font-semibold text-white"
               style={{ background: "var(--l-accent)" }}
             >
               Crear cuenta

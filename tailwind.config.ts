@@ -9,16 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "rgb(var(--app-bg) / <alpha-value>)",
+        foreground: "rgb(var(--app-fg) / <alpha-value>)",
         klik: {
           black: "#000000",
           green: "#30D158",
           pastel: "#A8DAB5",
           cyan: "#0A84FF",
-          card: "#1C1C1E",
-          line: "#2C2C2E",
-          mute: "#8E8E93",
+          card: "rgb(var(--app-surface) / <alpha-value>)",
+          line: "rgb(var(--app-line) / <alpha-value>)",
+          mute: "rgb(var(--app-muted) / <alpha-value>)",
         },
       },
       fontFamily: {

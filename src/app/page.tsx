@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { LandingPage } from "@/components/landing/LandingPage";
-import { LANDING_THEME_BOOT_SCRIPT } from "@/components/landing/landing-theme-boot";
 import { site } from "@/config/site";
 import { listPublishedVideos } from "@/lib/video/feed";
 
@@ -23,12 +21,5 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const videos = await listPublishedVideos(24).catch(() => []);
-  return (
-    <>
-      <Script id="landing-theme-boot" strategy="beforeInteractive">
-        {LANDING_THEME_BOOT_SCRIPT}
-      </Script>
-      <LandingPage videos={videos} />
-    </>
-  );
+  return <LandingPage videos={videos} />;
 }

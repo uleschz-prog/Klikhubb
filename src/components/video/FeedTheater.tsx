@@ -9,6 +9,7 @@ import { UserAvatar } from "@/components/profile/UserAvatar";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { ThemeToggle } from "@/components/theme/ThemeProvider";
 import { formatProductPrice } from "@/lib/commerce/billing";
 import { BuyDrawer, type BuyItem } from "@/components/commerce/BuyDrawer";
 import {
@@ -390,7 +391,7 @@ export function FeedTheater({
   return (
     <div
       ref={stage}
-      className="relative h-[100dvh] overflow-hidden bg-black text-white"
+      className="theme-media relative h-[100dvh] overflow-hidden bg-black text-white"
       onWheel={onWheel}
       onTouchStart={(event) => {
         startY.current = event.touches[0]?.clientY ?? null;
@@ -482,8 +483,12 @@ export function FeedTheater({
                 <LogoMark className="h-8 w-8" />
               </Link>
             </div>
-            <div className="pointer-events-auto hidden md:block">
+            <div className="pointer-events-auto hidden items-center gap-3 md:flex">
               <PlatformNav />
+              <ThemeToggle />
+            </div>
+            <div className="pointer-events-auto md:hidden">
+              <ThemeToggle />
             </div>
           </header>
 

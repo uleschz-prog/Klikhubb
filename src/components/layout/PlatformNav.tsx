@@ -24,7 +24,7 @@ export function PlatformNav() {
             key={link.href}
             href={link.href}
             className={`text-sm font-semibold transition ${
-              active ? "text-klik-cyan" : "text-white/55 hover:text-white"
+              active ? "text-klik-cyan" : "text-foreground/55 hover:text-foreground"
             }`}
           >
             {link.label}
