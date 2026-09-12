@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import type { FeedVideo } from "@/lib/video/types";
-import { Logo } from "@/components/brand/Logo";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingThemeProvider } from "@/components/landing/LandingTheme";
 import { LandingVideoCard } from "@/components/landing/LandingVideoCard";
@@ -15,7 +14,6 @@ export function LandingPage({ videos }: { videos: FeedVideo[] }) {
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:pt-10">
         <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl" style={{ color: "var(--l-fg)" }}>
-            <Logo href={null} markClassName="h-12 w-12 sm:h-14 sm:w-14" className="mb-4 text-[22px] sm:text-[26px]" />
             <h1 className="text-[2rem] font-semibold leading-[1.1] tracking-tight sm:text-[2.5rem]">
               Mira. Compra. Listo.
             </h1>

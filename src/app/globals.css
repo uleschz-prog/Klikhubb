@@ -171,6 +171,20 @@ html.pwa-standalone .pwa-install-hint {
   background: var(--l-bg);
 }
 
+/* Disco detrás del play: mismo color que el fondo de la página. */
+.logo-play-disc {
+  fill: #000000;
+}
+
+.landing-root[data-theme="light"] .logo-play-disc {
+  fill: #f5f5f7;
+}
+
+.landing-root[data-theme="dark"] .logo-play-disc,
+html[data-landing-theme="dark"] .logo-play-disc {
+  fill: #000000;
+}
+
 .landing-root[data-theme="light"] {
   --l-bg: #f5f5f7;
   --l-fg: #1d1d1f;
