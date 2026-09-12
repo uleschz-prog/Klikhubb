@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/auth/PasswordInput";
+import { ThemeToggle } from "@/components/theme/ThemeProvider";
 
 type Variant = "hero" | "section" | "page";
 
@@ -221,6 +222,9 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
   if (isPage) {
     return (
       <main className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-background px-4 py-10">
+        <div className="absolute right-4 top-4 z-10">
+          <ThemeToggle />
+        </div>
         <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-klik-cyan/10 blur-[100px]" />
         <div className="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-klik-green/10 blur-[110px]" />
         <div className="relative w-full max-w-lg rounded-[2rem] border border-white/10 bg-klik-card/90 p-8 shadow-[0_0_80px_rgba(10,132,255,0.08)] backdrop-blur-xl">
