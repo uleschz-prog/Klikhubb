@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/auth/PasswordInput";
+import { ThemeToggle } from "@/components/theme/ThemeProvider";
 
 export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   const params = useSearchParams();
@@ -33,7 +34,10 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
   }
 
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
+    <main className="relative flex min-h-[100dvh] items-center justify-center bg-background px-4">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md rounded-3xl border border-klik-line bg-klik-card p-8">
         <Logo href="/" className="text-foreground" />
         <h1 className="mt-6 font-display text-3xl font-extrabold text-foreground">Entra a tu feed</h1>
