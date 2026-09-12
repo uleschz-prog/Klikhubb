@@ -14,7 +14,7 @@ export function LogoMark({ className = "h-8 w-8", framed = false }: LogoMarkProp
       </g>
       <circle cx="30" cy="30" r="16.2" fill="none" stroke="#00F0FF" strokeWidth="6.2" />
       <path d="M41.2 41.2 L52 52" fill="none" stroke="#00F0FF" strokeWidth="6.2" strokeLinecap="round" />
-      <circle cx="30" cy="30" r="12.4" fill="var(--l-bg, #000000)" />
+      <circle cx="30" cy="30" r="12.4" className="logo-play-disc" />
       <path d="M25.2 23.8 L39.4 30 L25.2 36.2 Z" fill="#00F0FF" />
     </svg>
   );
