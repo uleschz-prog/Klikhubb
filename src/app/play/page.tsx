@@ -56,15 +56,15 @@ export default async function PlayPage({
       <PlatformShell title="Inicio" flush>
         <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Inicio</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">El primer clip eres tú</h1>
+          <h1 className="mt-3 font-display text-3xl font-extrabold">Aún no hay videos</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">
-            Un video corto. Swipe. Sin vender, si no quieres. Estilo Douyin, en Qlyk.
+            Aquí vas a ver los videos de la gente. Sube el tuyo si quieres ser el primero.
           </p>
           <Link
             href="/publish?lane=play"
             className="mt-6 rounded-full bg-klik-green px-6 py-3 text-sm font-bold text-klik-black"
           >
-            Subir clip
+            Subir video
           </Link>
         </div>
       </PlatformShell>

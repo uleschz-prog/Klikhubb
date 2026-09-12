@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { PwaInstallHint } from "@/components/pwa/PwaInstallHint";
 import { PwaRoot } from "@/components/pwa/PwaRoot";
+import { THEME_BOOT_SCRIPT } from "@/components/theme/theme-boot";
 import { site } from "@/config/site";
 import "./globals.css";
 
@@ -14,10 +16,10 @@ const inter = Inter({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#050505" },
-    { media: "(prefers-color-scheme: light)", color: "#050505" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
-  colorScheme: "dark",
+  colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -101,8 +103,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
-      <body className={`${inter.variable} bg-klik-black font-sans antialiased`}>
+    <html lang="es" data-theme="light" suppressHydrationWarning>
+      <body className={`${inter.variable} bg-background font-sans text-foreground antialiased`}>
+        <Script id="theme-boot" strategy="beforeInteractive">
+          {THEME_BOOT_SCRIPT}
+        </Script>
         <PwaRoot />
         <AppProviders>
           {children}

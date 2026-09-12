@@ -3,13 +3,12 @@
 import Link from "next/link";
 import type { FeedVideo } from "@/lib/video/types";
 import { LandingNav } from "@/components/landing/LandingNav";
-import { LandingThemeProvider } from "@/components/landing/LandingTheme";
 import { LandingVideoCard } from "@/components/landing/LandingVideoCard";
 import { brand } from "@/config/site";
 
 export function LandingPage({ videos }: { videos: FeedVideo[] }) {
   return (
-    <LandingThemeProvider>
+    <div className="landing-root font-apple min-h-[100dvh] transition-colors duration-300">
       <LandingNav />
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:pt-10">
         <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
@@ -23,7 +22,7 @@ export function LandingPage({ videos }: { videos: FeedVideo[] }) {
           </div>
           <Link
             href="/feed"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition hover:opacity-90"
+            className="on-accent inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition hover:opacity-90"
             style={{ background: "var(--l-accent)" }}
           >
             Ver todo
@@ -53,7 +52,7 @@ export function LandingPage({ videos }: { videos: FeedVideo[] }) {
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/register"
-              className="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
+              className="on-accent inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
               style={{ background: "var(--l-accent)" }}
             >
               Crear cuenta
@@ -88,7 +87,7 @@ export function LandingPage({ videos }: { videos: FeedVideo[] }) {
           </div>
         </div>
       </footer>
-    </LandingThemeProvider>
+    </div>
   );
 }
 
@@ -106,7 +105,7 @@ function EmptyState() {
       </p>
       <Link
         href="/register"
-        className="mt-6 inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
+        className="on-accent mt-6 inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
         style={{ background: "var(--l-accent)" }}
       >
         Crear cuenta

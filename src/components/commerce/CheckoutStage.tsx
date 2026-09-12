@@ -18,9 +18,9 @@ export function CheckoutStage({
   const router = useRouter();
 
   return (
-    <div className="relative min-h-[100dvh] bg-klik-black">
+    <div className="relative min-h-[100dvh] bg-background">
       <header className="absolute left-4 top-4 z-10">
-        <Logo href="/feed" className="text-white" />
+        <Logo href="/feed" className="text-foreground" />
       </header>
       <BuyDrawer
         open

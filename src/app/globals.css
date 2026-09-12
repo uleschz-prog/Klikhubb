@@ -2,9 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #050505;
-  --foreground: #f4f4f4;
+:root,
+html[data-theme="light"] {
+  --app-bg: 245 245 247;
+  --app-fg: 29 29 31;
+  --app-muted: 110 110 115;
+  --app-surface: 255 255 255;
+  --app-line: 210 210 214;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --l-bg: #f5f5f7;
+  --l-fg: #1d1d1f;
+  --l-muted: #6e6e73;
+  --l-muted-bg: #e8e8ed;
+  --l-surface: #ffffff;
+  --l-border: rgb(0 0 0 / 0.08);
+  --l-nav: rgb(245 245 247 / 0.82);
+  --l-accent: #0071e3;
+  --l-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --app-bg: 0 0 0;
+  --app-fg: 245 245 247;
+  --app-muted: 142 142 147;
+  --app-surface: 28 28 30;
+  --app-line: 44 44 46;
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --l-bg: #000000;
+  --l-fg: #f5f5f7;
+  --l-muted: #a1a1a6;
+  --l-muted-bg: #1c1c1e;
+  --l-surface: #1c1c1e;
+  --l-border: rgb(255 255 255 / 0.12);
+  --l-nav: rgb(0 0 0 / 0.72);
+  --l-accent: #0a84ff;
+  --l-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
+  color-scheme: dark;
 }
 
 html {
@@ -12,8 +48,8 @@ html {
 }
 
 body {
-  color: var(--foreground);
-  background: #000000;
+  color: rgb(var(--app-fg));
+  background: rgb(var(--app-bg));
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -42,7 +78,7 @@ html.pwa-standalone body {
 }
 
 html.pwa-standalone body {
-  background: #000000;
+  background: rgb(var(--app-bg));
   user-select: none;
 }
 
@@ -157,13 +193,13 @@ html.pwa-standalone .pwa-install-hint {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a1a1a;
+  background: rgb(var(--app-line) / 0.45);
   border-radius: 99px;
 }
 
-/* ── Landing Apple / Skool ── */
-.font-apple {
-  font-family: inherit;
+/* Disco detrás del play: mismo color que el fondo. */
+.logo-play-disc {
+  fill: rgb(var(--app-bg));
 }
 
 .landing-root {
@@ -171,46 +207,125 @@ html.pwa-standalone .pwa-install-hint {
   background: var(--l-bg);
 }
 
-/* Disco detrás del play: mismo color que el fondo de la página. */
-.logo-play-disc {
+/* En claro, el blanco de Tailwind es tinta (salvo overlays de video y botones de color). */
+html[data-theme="light"] .text-white { color: rgb(var(--app-fg)) !important; }
+html[data-theme="light"] .text-white\/10 { color: rgb(var(--app-fg) / 0.1) !important; }
+html[data-theme="light"] .text-white\/15 { color: rgb(var(--app-fg) / 0.15) !important; }
+html[data-theme="light"] .text-white\/20 { color: rgb(var(--app-fg) / 0.2) !important; }
+html[data-theme="light"] .text-white\/25 { color: rgb(var(--app-fg) / 0.25) !important; }
+html[data-theme="light"] .text-white\/30 { color: rgb(var(--app-fg) / 0.3) !important; }
+html[data-theme="light"] .text-white\/35 { color: rgb(var(--app-fg) / 0.35) !important; }
+html[data-theme="light"] .text-white\/40 { color: rgb(var(--app-fg) / 0.4) !important; }
+html[data-theme="light"] .text-white\/45 { color: rgb(var(--app-fg) / 0.45) !important; }
+html[data-theme="light"] .text-white\/50 { color: rgb(var(--app-fg) / 0.5) !important; }
+html[data-theme="light"] .text-white\/55 { color: rgb(var(--app-fg) / 0.55) !important; }
+html[data-theme="light"] .text-white\/60 { color: rgb(var(--app-fg) / 0.6) !important; }
+html[data-theme="light"] .text-white\/70 { color: rgb(var(--app-fg) / 0.7) !important; }
+html[data-theme="light"] .text-white\/80 { color: rgb(var(--app-fg) / 0.8) !important; }
+html[data-theme="light"] .text-white\/85 { color: rgb(var(--app-fg) / 0.85) !important; }
+html[data-theme="light"] .text-white\/90 { color: rgb(var(--app-fg) / 0.9) !important; }
+html[data-theme="light"] .hover\:text-white:hover { color: rgb(var(--app-fg)) !important; }
+html[data-theme="light"] .placeholder\:text-white\/30::placeholder { color: rgb(var(--app-fg) / 0.3) !important; }
+html[data-theme="light"] .placeholder\:text-white\/35::placeholder { color: rgb(var(--app-fg) / 0.35) !important; }
+
+html[data-theme="light"] .bg-klik-black,
+html[data-theme="light"] .bg-\[\#0a0a0d\],
+html[data-theme="light"] .bg-\[\#050505\] {
+  background-color: rgb(var(--app-bg)) !important;
+}
+html[data-theme="light"] .bg-klik-black\/90,
+html[data-theme="light"] .bg-klik-black\/95,
+html[data-theme="light"] .bg-klik-black\/80,
+html[data-theme="light"] .bg-klik-black\/75,
+html[data-theme="light"] .supports-\[backdrop-filter\]\:bg-klik-black\/75:supports-[backdrop-filter],
+html[data-theme="light"] .supports-\[backdrop-filter\]\:bg-klik-black\/80:supports-[backdrop-filter] {
+  background-color: rgb(var(--app-bg) / 0.88) !important;
+}
+html[data-theme="light"] .bg-\[\#0a0a0d\]\/92 {
+  background-color: rgb(var(--app-bg) / 0.92) !important;
+}
+html[data-theme="light"] .bg-black\/20,
+html[data-theme="light"] .bg-black\/30,
+html[data-theme="light"] .bg-black\/40,
+html[data-theme="light"] .bg-black\/50,
+html[data-theme="light"] .bg-black\/55 {
+  background-color: rgb(var(--app-fg) / 0.05) !important;
+}
+html[data-theme="light"] .bg-white\/5,
+html[data-theme="light"] .bg-white\/8,
+html[data-theme="light"] .bg-white\/\[0\.03\] {
+  background-color: rgb(var(--app-fg) / 0.04) !important;
+}
+html[data-theme="light"] .bg-white\/10,
+html[data-theme="light"] .hover\:bg-white\/5:hover,
+html[data-theme="light"] .hover\:bg-white\/8:hover,
+html[data-theme="light"] .hover\:bg-white\/10:hover {
+  background-color: rgb(var(--app-fg) / 0.06) !important;
+}
+html[data-theme="light"] .border-white\/5,
+html[data-theme="light"] .border-white\/10,
+html[data-theme="light"] .border-white\/15 {
+  border-color: rgb(var(--app-fg) / 0.1) !important;
+}
+html[data-theme="light"] .ring-white\/10,
+html[data-theme="light"] .ring-1.ring-white\/10 {
+  --tw-ring-color: rgb(var(--app-fg) / 0.12);
+}
+
+html[data-theme="light"] .on-accent,
+html[data-theme="light"] .on-accent .text-white,
+html[data-theme="light"] .bg-klik-cyan.text-white,
+html[data-theme="light"] [style*="--l-accent"].text-white {
+  color: #ffffff !important;
+}
+
+/* El escenario de video sigue negro para que el texto se lea. */
+html[data-theme="light"] .theme-media,
+html[data-theme="light"] .theme-media .text-white,
+html[data-theme="light"] .theme-media .text-white\/10,
+html[data-theme="light"] .theme-media .text-white\/15,
+html[data-theme="light"] .theme-media .text-white\/20,
+html[data-theme="light"] .theme-media .text-white\/25,
+html[data-theme="light"] .theme-media .text-white\/30,
+html[data-theme="light"] .theme-media .text-white\/35,
+html[data-theme="light"] .theme-media .text-white\/40,
+html[data-theme="light"] .theme-media .text-white\/45,
+html[data-theme="light"] .theme-media .text-white\/50,
+html[data-theme="light"] .theme-media .text-white\/55,
+html[data-theme="light"] .theme-media .text-white\/60,
+html[data-theme="light"] .theme-media .text-white\/70,
+html[data-theme="light"] .theme-media .text-white\/80,
+html[data-theme="light"] .theme-media .text-white\/85,
+html[data-theme="light"] .theme-media .text-white\/90 {
+  color: rgb(255 255 255 / 0.92) !important;
+}
+html[data-theme="light"] .theme-media .text-white { color: #fff !important; }
+html[data-theme="light"] .theme-media {
+  color: #fff;
+}
+html[data-theme="light"] .theme-media .bg-black,
+html[data-theme="light"] .theme-media.bg-black {
+  background-color: #000 !important;
+}
+html[data-theme="light"] .theme-media .logo-play-disc {
   fill: #000000;
 }
 
-.landing-root[data-theme="light"] .logo-play-disc {
-  fill: #f5f5f7;
+.font-apple {
+  font-family: inherit;
 }
 
-.landing-root[data-theme="dark"] .logo-play-disc,
-html[data-landing-theme="dark"] .logo-play-disc {
-  fill: #000000;
+html[data-theme="light"] .to-klik-black {
+  --tw-gradient-to: rgb(var(--app-bg)) var(--tw-gradient-to-position);
 }
 
-.landing-root[data-theme="light"] {
-  --l-bg: #f5f5f7;
-  --l-fg: #1d1d1f;
-  --l-muted: #6e6e73;
-  --l-muted-bg: #e8e8ed;
-  --l-surface: #ffffff;
-  --l-border: rgb(0 0 0 / 0.08);
-  --l-nav: rgb(245 245 247 / 0.82);
-  --l-accent: #0071e3;
-  --l-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
+html[data-theme="light"] .from-klik-black {
+  --tw-gradient-from: rgb(var(--app-bg)) var(--tw-gradient-from-position);
 }
 
-.landing-root[data-theme="dark"],
-html[data-landing-theme="dark"] .landing-root {
-  --l-bg: #000000;
-  --l-fg: #f5f5f7;
-  --l-muted: #a1a1a6;
-  --l-muted-bg: #1c1c1e;
-  --l-surface: #1c1c1e;
-  --l-border: rgb(255 255 255 / 0.12);
-  --l-nav: rgb(0 0 0 / 0.72);
-  --l-accent: #0a84ff;
-  --l-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
+html[data-theme="light"] input.bg-black,
+html[data-theme="light"] textarea.bg-black {
+  background-color: rgb(var(--app-surface)) !important;
+  color: rgb(var(--app-fg)) !important;
 }
 
-html[data-landing-theme="dark"] .landing-root {
-  color: var(--l-fg);
-  background: var(--l-bg);
-}

@@ -38,7 +38,7 @@ export function LandingVideoCard({ video }: { video: FeedVideo }) {
         )}
         {price ? (
           <span
-            className="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+            className="on-accent absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
             style={{ background: "var(--l-accent)" }}
           >
             {price}

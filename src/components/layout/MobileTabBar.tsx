@@ -20,7 +20,7 @@ export function MobileTabBar() {
 
   return (
     <nav
-      className="pwa-native-bar fixed inset-x-0 bottom-0 z-40 border-t border-klik-line bg-klik-black/95 backdrop-blur-xl supports-[backdrop-filter]:bg-klik-black/80 md:hidden"
+      className="pwa-native-bar fixed inset-x-0 bottom-0 z-40 border-t border-klik-line bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/80 md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <ul className="grid h-14 grid-cols-5">
@@ -31,7 +31,7 @@ export function MobileTabBar() {
               <Link
                 href={tab.href}
                 className={`flex h-full min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-semibold tracking-wide ${
-                  active ? "text-klik-cyan" : "text-white/45"
+                  active ? "text-klik-cyan" : "text-foreground/45"
                 }`}
               >
                 <span
