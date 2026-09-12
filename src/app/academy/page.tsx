@@ -54,7 +54,7 @@ export default async function AcademyPage() {
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
           <h2 className="font-display text-2xl font-extrabold">Todavía no tienes cursos</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            En el feed, toca Comprar. Cuando confirmemos tu transferencia, el curso aparece aquí.
+            En Tienda toca Comprar. Cuando confirmemos el pago (tarjeta o SPEI), el curso aparece aquí.
           </p>
           <Link
             href="/feed"

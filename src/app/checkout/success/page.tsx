@@ -12,6 +12,7 @@ export default async function CheckoutSuccessPage({
   let orderRef = searchParams.order ?? null;
   let unpaid = false;
   let alreadyOwned = false;
+  let settleFailed = false;
   const pending = searchParams.pending === "1";
 
   if (searchParams.session_id && isStripeEnabled()) {
@@ -23,27 +24,31 @@ export default async function CheckoutSuccessPage({
         orderRef = result.settled.orderId;
       }
     } catch {
-      unpaid = true;
+      settleFailed = true;
     }
   }
 
   const headline = pending
     ? "Comprobante recibido"
-    : unpaid
-      ? "Estamos confirmando el pago"
-      : "Ya estás dentro";
+    : settleFailed
+      ? "No pudimos confirmar el acceso"
+      : unpaid
+        ? "Estamos confirmando el pago"
+        : "Ya estás dentro";
   const body = pending
     ? "Revisaremos tu transferencia pronto. Cuando la confirmemos, te avisamos aquí y por email, y el curso aparece en Mis cursos."
-    : unpaid
-      ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
-      : alreadyOwned
-        ? "Este producto ya estaba en tu academy. No se cobró de nuevo."
-        : "Ya pagaste. El curso quedó en Mis cursos. El creador ve el dinero en el monedero, pendiente 14 días.";
+    : settleFailed
+      ? "El cargo puede estar bien, pero el acceso no se asentó. Escribe a soporte con el id de la sesión de Stripe."
+      : unpaid
+        ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
+        : alreadyOwned
+          ? "Este producto ya estaba en tu academy. No se cobró de nuevo."
+          : "Ya pagaste. El curso quedó en Mis cursos. El creador ve el dinero en el monedero, pendiente 14 días.";
 
   return (
     <PlatformShell title="Pago">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
-        {pending ? "Pago en revisión" : unpaid ? "Pago en proceso" : "Pago confirmado"}
+        {pending ? "Pago en revisión" : settleFailed ? "Hay un problema" : unpaid ? "Pago en proceso" : "Pago confirmado"}
       </p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">{headline}</h1>
       <p className="mt-3 max-w-xl text-sm text-white/60">

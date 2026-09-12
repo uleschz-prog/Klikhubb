@@ -19,14 +19,14 @@ export default async function OrdersPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Compras</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Mis pedidos</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Aquí ves el estado de tus transferencias SPEI y el acceso a cada curso.
+        Aquí ves tus pagos con tarjeta (Stripe) y tus transferencias SPEI, y el acceso a cada curso.
       </p>
 
       {purchases.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
           <h2 className="font-display text-2xl font-extrabold">Aún no has comprado</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            En el feed Tienda toca Comprar, transfiere y sube tu comprobante.
+            En Tienda toca Comprar. Pagas con tarjeta o por SPEI.
           </p>
           <Link
             href="/feed"

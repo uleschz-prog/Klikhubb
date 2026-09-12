@@ -28,7 +28,7 @@ https://qlyk.vercel.app
 
 1️⃣ Creas cuenta gratis → https://qlyk.vercel.app/register
 2️⃣ Subes video con tu oferta (/publish) o armes un curso (/studio)
-3️⃣ Tu gente compra *desde el feed* con transferencia SPEI
+3️⃣ Tu gente compra *desde el feed* con tarjeta o SPEI
 4️⃣ Cobras en tu monedero
 
 *¿Cuánto te quedas?*
@@ -61,7 +61,7 @@ https://qlyk.vercel.app?ref=TUCODIGO
 Reparto: 85% creador · 10% plataforma · 5% referido (1 solo nivel).
 *No es MLM.* Sin pago por reclutar.
 
-*Estado:* producto live, pagos SPEI manual, Course Studio, wallet, legal RGPD.
+*Estado:* producto live, pagos Stripe + SPEI, Course Studio, wallet, legal RGPD.
 *URL:* https://qlyk.vercel.app
 
 Buscamos capital para growth de creadores ancla y escala LATAM/hispano.

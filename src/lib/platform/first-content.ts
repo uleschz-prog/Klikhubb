@@ -19,7 +19,7 @@ export const FIRST_CONTENT = {
     {
       title: "Bienvenida a Qlyk",
       content:
-        "Conoce la experiencia Play y Shop: publica clips verticales, enlaza productos y recibe pagos por transferencia.",
+        "Conoce la experiencia Play y Shop: publica clips verticales, enlaza productos y cobra con tarjeta o SPEI.",
       isFreePreview: true,
       useHeroVideo: true,
     },

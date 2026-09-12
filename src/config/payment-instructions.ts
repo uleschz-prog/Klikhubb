@@ -20,7 +20,9 @@ export function isManualPaymentsConfigured() {
   return getPaymentInstructions() !== null;
 }
 
-/** En Vercel producción no se regala el acceso: hace falta transferencia confirmada. */
+/** En Vercel producción no se regala el acceso: hace falta Stripe o SPEI confirmado. */
 export function isLivePaymentsRequired() {
+  if (process.env.REQUIRE_LIVE_PAYMENTS === "0") return false;
+  if (process.env.REQUIRE_LIVE_PAYMENTS === "1") return true;
   return process.env.VERCEL_ENV === "production";
 }

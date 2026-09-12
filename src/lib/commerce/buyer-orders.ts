@@ -76,7 +76,9 @@ export async function listBuyerPurchases(buyerId: string): Promise<BuyerOrderRow
       status: order.status,
       statusLabel:
         order.status === "PAID"
-          ? "Pagado · acceso activo"
+          ? order.payments[0]?.provider === "stripe"
+            ? "Pagado con tarjeta · acceso activo"
+            : "Pagado · acceso activo"
           : order.status === "REFUNDED"
             ? "Reembolsado"
             : order.status,

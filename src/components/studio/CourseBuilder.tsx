@@ -257,7 +257,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
             </select>
           </label>
         </div>
-        <p className="text-xs text-white/45">Pago único por transferencia SPEI con confirmación manual.</p>
+        <p className="text-xs text-white/45">Pago único: el comprador elige tarjeta (Stripe) o transferencia SPEI.</p>
         <button
           type="submit"
           disabled={busy}

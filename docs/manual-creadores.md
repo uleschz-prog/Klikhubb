@@ -208,7 +208,7 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 - [ ] Primer producto creado (Studio o desde Publish)
 - [ ] Primer video SHOP publicado en Feed
 - [ ] Enlace con `?ref=TUCODIGO` en redes sociales
-- [ ] Compra de prueba con transferencia SPEI y comprobante
+- [ ] Compra de prueba con tarjeta (Stripe) y otra con SPEI + comprobante
 - [ ] Revisado monedero y entendido el hold de 14 días
 - [ ] Términos y privacidad leídos
 

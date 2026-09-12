@@ -14,7 +14,7 @@ export function getStripe() {
   if (!key) {
     throw new Error("STRIPE_NOT_CONFIGURED");
   }
-  return new Stripe(key);
+  return new Stripe(key, { apiVersion: "2026-07-29.dahlia" });
 }
 
 export function appBaseUrl() {

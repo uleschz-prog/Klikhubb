@@ -81,8 +81,8 @@ Los creadores suelen estar fragmentados entre redes sociales (alcance), platafor
 
 ### 2.11 Checkout y pagos
 - Checkout por producto (`/checkout/[slug]`).
-- Pagos por transferencia SPEI: datos bancarios, referencia `QLYK-XXXXXX`, subida de comprobante.
-- Confirmación manual por Qlykadmin en `/admin/payments` → acredita comisiones al monedero.
+- Pagos: tarjeta con Stripe Checkout y/o transferencia SPEI (datos bancarios, referencia `QLYK-XXXXXX`, comprobante).
+- Confirmación: Stripe asienta solo; SPEI lo aprueba Qlykadmin en `/admin/payments`.
 - Página de éxito post-compra (cuando el pago está aprobado).
 
 ---
@@ -160,7 +160,7 @@ Cada venta completada se reparte al 100%:
 2. Crea un producto en Studio o al publicar un video.
 3. Sube un clip en `/publish` (lane SHOP) vinculado al producto.
 4. El video aparece en el Feed con CTA de compra.
-5. Un miembro transfiere por SPEI y sube comprobante; Qlykadmin aprueba en `/admin/payments`.
+5. Un miembro paga con tarjeta (Stripe) o transfiere por SPEI y sube comprobante; Qlykadmin aprueba SPEI en `/admin/payments`.
 6. El comprador accede al curso/comunidad en Academy.
 7. El creador ve la comisión en su monedero (pendiente 14 días, luego disponible).
 8. Solicita retiro cuando supera el mínimo.
@@ -196,7 +196,7 @@ Cada venta completada se reparte al 100%:
 - **Backend:** API Routes de Next.js, Prisma ORM.
 - **Base de datos:** PostgreSQL.
 - **Autenticación:** NextAuth (email/contraseña + Google OAuth opcional).
-- **Pagos:** transferencia SPEI manual + confirmación admin en `/admin/payments`.
+- **Pagos:** Stripe Checkout (tarjeta) y/o SPEI manual con confirmación admin.
 - **Almacenamiento de video:** Vercel Blob.
 - **Email transaccional:** Resend (opcional).
 - **Despliegue:** Vercel (con cron para liberación de monedero).
@@ -226,15 +226,7 @@ Email, nombre, usuario, contraseña (hash), idioma, zona horaria, intención de 
 
 ## 9. Credenciales de demostración
 
-**Contraseña demo general:** KlikHubb2026!
-
-| Usuario | Email | Rol |
-|---------|-------|-----|
-| Qlykadmin | qlykadmin@qlyk.app / usuario Qlykadmin | Admin + creador. Contraseña: Codigo1. |
-| Maya (creadora) | maya@klikhubb.dev | Creadora de cursos demo |
-| Rafa (comprador) | rafa@klikhubb.dev | Miembro/comprador demo |
-
-**Código de invitación admin:** QLYKADMIN
+Las cuentas y contraseñas de prueba se eliminaron del producto. El operador entra como Qlykadmin con `PLATFORM_ADMIN_PASSWORD` en producción.
 
 ---
 
@@ -268,7 +260,7 @@ Email, nombre, usuario, contraseña (hash), idioma, zona horaria, intención de 
 ### Para inversionistas
 - Take rate claro del 10% sobre GMV.
 - No es MLM; modelo legalmente defendible.
-- Producto live con pagos SPEI manual, studio, wallet y legal RGPD.
+- Producto live con pagos Stripe y SPEI, studio, wallet y legal RGPD.
 - Mercado: creator economy hispano/latino.
 
 ### Para redes sociales (WhatsApp, Reels)
@@ -285,7 +277,7 @@ Email, nombre, usuario, contraseña (hash), idioma, zona horaria, intención de 
 - Registro directo ampliado.
 - Feed, Play, Marketplace, Academy, Community.
 - Course Studio y publicación de video.
-- Checkout SPEI, confirmación admin (`/admin/payments`), monedero, hold 14 días.
+- Checkout Stripe + SPEI, confirmación admin (`/admin/payments`), monedero, hold 14 días.
 - Términos, privacidad, cookies completos.
 - Preview Open Graph para WhatsApp.
 

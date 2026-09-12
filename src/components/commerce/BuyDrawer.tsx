@@ -84,10 +84,10 @@ export function BuyDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="buy-drawer-title"
-        className="qlyk-buy-drawer fixed inset-y-0 right-0 z-[60] flex w-[min(92vw,440px)]"
+        className="qlyk-buy-drawer fixed inset-y-0 right-0 z-[60] flex h-[100dvh] w-[min(92vw,440px)]"
       >
         <div className="w-10 shrink-0 bg-gradient-to-r from-transparent to-[rgba(10,10,12,0.82)]" aria-hidden />
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[rgba(10,10,12,0.82)] backdrop-blur-2xl backdrop-saturate-150">
+        <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col bg-[#0a0a0c] backdrop-blur-2xl backdrop-saturate-150">
         <div className="flex items-center justify-between px-5 py-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">Comprar</p>
           <button

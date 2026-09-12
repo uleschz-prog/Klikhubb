@@ -210,7 +210,7 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
       where: { slug },
       include: { creator: { select: { displayName: true, username: true } } },
     });
-    if (!product) return null;
+    if (!product || product.status !== "ACTIVE") return null;
     const lines = splitSaleCommissions({
       saleAmount: Number(product.price),
       creatorId: product.creatorId,

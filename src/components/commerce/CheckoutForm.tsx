@@ -249,7 +249,7 @@ export function CheckoutForm({
           type="button"
           disabled={busy}
           onClick={() => setManual(null)}
-          className="flex min-h-11 w-full items-center justify-center rounded-full bg-white/10 px-6 text-sm font-semibold text-white disabled:opacity-60"
+          className="flex min-h-11 w-full items-center justify-center rounded-full border border-white/25 bg-white/15 px-6 text-sm font-semibold text-white disabled:opacity-60"
         >
           Elegir otro método
         </button>
