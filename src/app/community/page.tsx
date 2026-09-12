@@ -10,9 +10,9 @@ export default async function CommunityPage() {
   const spaces = userId ? await listMyCommunities(userId) : [];
 
   return (
-    <PlatformShell title="Community">
+    <PlatformShell title="Comunidad">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Comunidad</p>
-      <h1 className="mt-2 font-display text-3xl font-extrabold">Community</h1>
+      <h1 className="mt-2 font-display text-3xl font-extrabold">Comunidad</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
         Aquí se queda tu gente. Quien compra tu membresía entra. Tú publicas. Ellos no se evaporan.
       </p>
@@ -34,13 +34,13 @@ export default async function CommunityPage() {
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
           <h2 className="font-display text-2xl font-extrabold">Todavía no tienes comunidades</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            Publica una membresía o, en el feed, toca Llevar. Cuando confirmemos tu pago, entras aquí.
+            Publica una membresía o, en el feed, toca Comprar. Cuando confirmemos tu pago, entras aquí.
           </p>
           <Link
             href="/feed"
             className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
-            Ir al feed
+            Ir a Tienda
           </Link>
         </div>
       ) : (

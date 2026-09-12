@@ -17,11 +17,11 @@ export default async function AcademyPage() {
   const enrollments = userId ? await listMyAcademy(userId) : [];
 
   return (
-    <PlatformShell title="Academy">
+    <PlatformShell title="Mis cursos">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Educación</p>
-          <h1 className="mt-2 font-display text-3xl font-extrabold">Academy</h1>
+          <h1 className="mt-2 font-display text-3xl font-extrabold">Mis cursos</h1>
           <p className="mt-2 max-w-xl text-sm text-white/55">
             El video te descubre. La academia te queda. Entra y ves las lecciones de lo que ya pagaste o de lo
             que tú publicaste.
@@ -32,14 +32,14 @@ export default async function AcademyPage() {
             href="/studio"
             className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
           >
-            Abrir Studio
+            Crear curso
           </Link>
         ) : null}
       </div>
 
       {!userId ? (
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
-          <h2 className="font-display text-2xl font-extrabold">Entra para ver tu academy</h2>
+          <h2 className="font-display text-2xl font-extrabold">Entra para ver tus cursos</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
             El acceso se guarda en tu cuenta, no en el teléfono.
           </p>
@@ -52,15 +52,15 @@ export default async function AcademyPage() {
         </div>
       ) : enrollments.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
-          <h2 className="font-display text-2xl font-extrabold">Todavía no tienes academias</h2>
+          <h2 className="font-display text-2xl font-extrabold">Todavía no tienes cursos</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            En el feed, toca Llevar. Cuando confirmemos tu transferencia, el curso aparece aquí.
+            En el feed, toca Comprar. Cuando confirmemos tu transferencia, el curso aparece aquí.
           </p>
           <Link
             href="/feed"
             className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
-            Ir al feed
+            Ir a Tienda
           </Link>
         </div>
       ) : (

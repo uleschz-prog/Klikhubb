@@ -32,8 +32,8 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: "Play",
-        short_name: "Play",
+        name: "Inicio",
+        short_name: "Inicio",
         url: "/play?source=pwa-shortcut",
         icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
       },
@@ -44,14 +44,14 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
       },
       {
-        name: "Hub",
-        short_name: "Hub",
+        name: "Cuenta",
+        short_name: "Cuenta",
         url: "/dashboard?source=pwa-shortcut",
         icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
       },
       {
         name: "Monedero",
-        short_name: "Wallet",
+        short_name: "Monedero",
         url: "/wallet?source=pwa-shortcut",
         icons: [{ src: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" }],
       },

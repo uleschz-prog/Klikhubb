@@ -13,8 +13,8 @@ export default async function CheckoutSuccessPage({
 
   const headline = pending ? "Comprobante recibido" : "Ya estás dentro";
   const body = pending
-    ? "Revisaremos tu transferencia pronto. Cuando la confirmemos, te avisamos aquí y por email, y el curso aparece en Academy."
-    : "Ya pagaste. El curso quedó en tu academy. El creador ve el dinero en el monedero, pendiente 14 días.";
+    ? "Revisaremos tu transferencia pronto. Cuando la confirmemos, te avisamos aquí y por email, y el curso aparece en Mis cursos."
+    : "Ya pagaste. El curso quedó en Mis cursos. El creador ve el dinero en el monedero, pendiente 14 días.";
 
   return (
     <PlatformShell title="Pago">
@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({
           href="/academy"
           className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
         >
-          Ir a Academy
+          Ver mis cursos
         </Link>
         <Link href="/orders" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold">
           Ver mis pedidos

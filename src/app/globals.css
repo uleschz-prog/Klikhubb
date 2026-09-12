@@ -148,3 +148,53 @@ html.pwa-standalone .pwa-install-hint {
   background: #1a1a1a;
   border-radius: 99px;
 }
+
+/* ── Landing Apple / Skool ── */
+.font-apple {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "SF Pro Display",
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.landing-root {
+  color: var(--l-fg);
+  background: var(--l-bg);
+}
+
+.landing-root[data-theme="light"] {
+  --l-bg: #f5f5f7;
+  --l-fg: #1d1d1f;
+  --l-muted: #6e6e73;
+  --l-muted-bg: #e8e8ed;
+  --l-surface: #ffffff;
+  --l-border: rgb(0 0 0 / 0.08);
+  --l-nav: rgb(245 245 247 / 0.82);
+  --l-accent: #0071e3;
+  --l-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
+}
+
+.landing-root[data-theme="dark"],
+html[data-landing-theme="dark"] .landing-root {
+  --l-bg: #000000;
+  --l-fg: #f5f5f7;
+  --l-muted: #a1a1a6;
+  --l-muted-bg: #1c1c1e;
+  --l-surface: #1c1c1e;
+  --l-border: rgb(255 255 255 / 0.12);
+  --l-nav: rgb(0 0 0 / 0.72);
+  --l-accent: #0a84ff;
+  --l-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
+}
+
+html[data-landing-theme="dark"] .landing-root {
+  color: var(--l-fg);
+  background: var(--l-bg);
+}

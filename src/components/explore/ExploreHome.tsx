@@ -9,11 +9,11 @@ import { Logo } from "@/components/brand/Logo";
 import { VideoCard } from "@/components/explore/VideoCard";
 
 const NAV = [
-  { href: "/feed", tab: "foryou" as const, label: "Para ti", icon: "spark" },
-  { href: "/marketplace", label: "Marketplace", icon: "bag" },
-  { href: "/academy", label: "Academy", icon: "book" },
-  { href: "/community", label: "Comunidad", icon: "people" },
-  { href: "/dashboard", label: "Hub", icon: "hub" },
+  { href: "/play", label: "Inicio", icon: "play" },
+  { href: "/feed", tab: "foryou" as const, label: "Tienda", icon: "spark" },
+  { href: "/search", label: "Buscar", icon: "star" },
+  { href: "/orders", label: "Compras", icon: "bag" },
+  { href: "/dashboard", label: "Cuenta", icon: "hub" },
 ];
 
 export function ExploreHome({
@@ -137,7 +137,7 @@ export function ExploreHome({
                 href="/dashboard"
                 className="rounded-full bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white"
               >
-                Hub
+                Cuenta
               </Link>
             ) : (
               <Link
@@ -185,7 +185,7 @@ export function ExploreHome({
                 }
                 className="mt-6 rounded-full bg-klik-green px-5 py-2.5 text-sm font-bold text-klik-black"
               >
-                {signedIn ? "Ir a Para ti" : "Entrar"}
+                {signedIn ? "Ver Tienda" : "Entrar"}
               </button>
             </div>
           ) : tab === "saved" && visible.length === 0 ? (
@@ -205,7 +205,7 @@ export function ExploreHome({
                 }
                 className="mt-6 rounded-full bg-klik-green px-5 py-2.5 text-sm font-bold text-klik-black"
               >
-                {signedIn ? "Ir a Para ti" : "Entrar"}
+                {signedIn ? "Ver Tienda" : "Entrar"}
               </button>
             </div>
           ) : visible.length === 0 ? (

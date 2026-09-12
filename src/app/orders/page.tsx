@@ -15,7 +15,7 @@ export default async function OrdersPage() {
   const purchases = await listBuyerPurchases(userId);
 
   return (
-    <PlatformShell title="Pedidos">
+    <PlatformShell title="Compras">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Compras</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Mis pedidos</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
@@ -32,7 +32,7 @@ export default async function OrdersPage() {
             href="/feed"
             className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
-            Ir al feed
+            Ir a Tienda
           </Link>
         </div>
       ) : (
@@ -64,7 +64,7 @@ export default async function OrdersPage() {
                         href={`/academy/${row.productSlug}`}
                         className="rounded-full bg-klik-green px-4 py-2 text-xs font-bold text-klik-black"
                       >
-                        Ir a Academy
+                        Ver curso
                       </Link>
                     ) : null}
                     {row.status === "PENDING" || row.status === "PROOF_SUBMITTED" ? (

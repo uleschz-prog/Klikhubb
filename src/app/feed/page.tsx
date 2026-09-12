@@ -23,10 +23,10 @@ export default async function FeedPage({
 
   if (tab === "foryou" && videos.length === 0) {
     return (
-      <PlatformShell title="Feed" flush>
+      <PlatformShell title="Tienda" flush>
         <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Feed</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">El feed está vacío</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Tienda</p>
+          <h1 className="mt-3 font-display text-3xl font-extrabold">La Tienda está vacía</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">Sé el primero en vender desde el feed. Un clip con oferta.</p>
           <Link
             href="/publish"
