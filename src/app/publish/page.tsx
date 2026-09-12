@@ -32,16 +32,16 @@ export default async function PublishPage({
   }
 
   return (
-    <PlatformShell title={lane === "PLAY" ? "Subir clip" : "Publicar"}>
+    <PlatformShell title={lane === "PLAY" ? "Subir video" : "Publicar"}>
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">
-        {lane === "PLAY" ? "Play" : "Feed"}
+        {lane === "PLAY" ? "Inicio" : "Tienda"}
       </p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">
-        {lane === "PLAY" ? "Sube un clip" : "Publica y vende"}
+        {lane === "PLAY" ? "Sube un video" : "Publica y vende"}
       </h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
         {lane === "PLAY"
-          ? "Estilo Douyin. Un video corto, swipe, likes. Si quieres vender, marca la casilla."
+          ? "Un video corto para que la gente lo vea. Si quieres vender algo, marca la casilla."
           : "Un video corto. Un producto. El botón de compra vive dentro del clip. Sube el archivo o pega un YouTube."}
       </p>
       <p className="mt-3 text-sm">
