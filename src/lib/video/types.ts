@@ -54,10 +54,31 @@ export function muxPlaybackUrl(playbackId: string) {
   return `https://stream.mux.com/${playbackId}.m3u8`;
 }
 
+export function muxThumbnailUrl(playbackId: string) {
+  return `https://image.mux.com/${playbackId}/thumbnail.jpg?time=1&width=720`;
+}
+
+export function muxPreviewMp4Url(playbackId: string) {
+  return `https://stream.mux.com/${playbackId}/low.mp4`;
+}
+
+export function muxPlaybackIdFromUrl(url: string) {
+  const match = url.match(/stream\.mux\.com\/([A-Za-z0-9]+)/);
+  return match?.[1] ?? null;
+}
+
+export function isHoverPlayableVideoUrl(url: string) {
+  if (!url || youtubePoster(url)) return false;
+  if (/\.m3u8(\?|$)/i.test(url)) return false;
+  return true;
+}
+
 export function posterFromVideoUrl(videoUrl: string | null): string | null {
   if (!videoUrl) return null;
   const youtube = youtubePoster(videoUrl);
   if (youtube) return youtube;
+  const muxId = muxPlaybackIdFromUrl(videoUrl);
+  if (muxId) return muxThumbnailUrl(muxId);
   if (!videoUrl.startsWith("/") || !videoUrl.endsWith(".mp4")) return null;
   return `${videoUrl.slice(0, -4)}.jpg`;
 }

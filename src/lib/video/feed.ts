@@ -7,7 +7,13 @@ import {
 } from "@/config/demo-fixtures";
 import { prisma } from "@/lib/prisma";
 import { shouldUseDemoFallback } from "@/lib/demo/store";
-import { muxPlaybackUrl, posterFromVideoUrl, videoGradient, type FeedVideo } from "@/lib/video/types";
+import {
+  muxPlaybackUrl,
+  muxThumbnailUrl,
+  posterFromVideoUrl,
+  videoGradient,
+  type FeedVideo,
+} from "@/lib/video/types";
 
 function placeholderFeedExclude() {
   const assetNot = PLACEHOLDER_ASSET_MARKERS.flatMap((marker) => [
@@ -74,7 +80,10 @@ function toFeedVideo(
     title: row.title,
     videoUrl: row.videoUrl ?? playback,
     playbackId: row.playbackId,
-    thumbnailUrl: row.thumbnailUrl ?? posterFromVideoUrl(row.videoUrl),
+    thumbnailUrl:
+      row.thumbnailUrl ??
+      posterFromVideoUrl(row.videoUrl) ??
+      (row.playbackId ? muxThumbnailUrl(row.playbackId) : null),
     durationMs: row.durationMs,
     likes: row.likeCount,
     comments: row._count.comments,
