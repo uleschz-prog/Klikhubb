@@ -7,6 +7,7 @@ export type CreatorLaunchProgress = {
   hasShopVideo: boolean;
   hasPlayVideo: boolean;
   hasOpenedWalletHint: boolean;
+  hasStripeLinked: boolean;
 };
 
 export async function loadCreatorLaunchProgress(userId: string): Promise<CreatorLaunchProgress> {
@@ -16,7 +17,7 @@ export async function loadCreatorLaunchProgress(userId: string): Promise<Creator
     }),
     prisma.video.count({ where: { creatorId: userId, status: "PUBLISHED", lane: "SHOP" } }),
     prisma.video.count({ where: { creatorId: userId, status: "PUBLISHED", lane: "PLAY" } }),
-    prisma.user.findUnique({ where: { id: userId }, select: { image: true } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { image: true, stripePayoutsEnabled: true } }),
     prisma.wallet.findUnique({ where: { userId }, select: { userId: true } }),
   ]);
 
@@ -26,6 +27,7 @@ export async function loadCreatorLaunchProgress(userId: string): Promise<Creator
     hasShopVideo: shopVideos > 0,
     hasPlayVideo: playVideos > 0,
     hasOpenedWalletHint: Boolean(payoutOrLedger),
+    hasStripeLinked: Boolean(user?.stripePayoutsEnabled),
   };
 }
 
@@ -73,6 +75,13 @@ export function buildCreatorLaunchChecklist(progress: CreatorLaunchProgress): Ch
       done: progress.hasOpenedWalletHint,
       href: "/wallet",
       hint: "Ahí pediras retiros cuando vendas.",
+    },
+    {
+      id: "stripe",
+      label: "Vincular Stripe para cobros",
+      done: progress.hasStripeLinked,
+      href: "/wallet",
+      hint: "Conecta tu cuenta para que te transfiramos el dinero.",
     },
     {
       id: "profile",

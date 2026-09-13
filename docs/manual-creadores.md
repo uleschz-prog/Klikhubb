@@ -144,7 +144,8 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 ### Retirar dinero
 
 - **Mínimo:** 10 USD
-- **Hoy:** solicitas retiro desde `/wallet` → el equipo transfiere (SPEI u otro) y marca pagado en `/admin/payouts`
+- **Stripe:** en `/wallet` pulsa **Vincular cuenta de Stripe**, completa el onboarding y pide retiro. El dinero va a tu Stripe y de ahí a tu banco.
+- **Respaldo:** si Connect no está activo, el equipo deposita a mano y marca pagado en `/admin/payouts`
 
 ---
 

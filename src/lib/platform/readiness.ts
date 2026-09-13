@@ -1,6 +1,7 @@
 import { legalIdentityComplete, legalMeta } from "@/config/legal";
 import { getPaymentInstructions, isManualPaymentsConfigured } from "@/config/payment-instructions";
 import { isStripeEnabled } from "@/config/checkout-methods";
+import { isConnectPayoutsEnabled } from "@/lib/commerce/stripe-connect";
 
 export type SetupCheck = {
   id: string;
@@ -34,6 +35,7 @@ export function getPlatformReadiness() {
   const stripeKey = isStripeEnabled();
   const stripeWebhook = Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim());
   const stripeReady = stripeKey && stripeWebhook;
+  const connectEnabled = isConnectPayoutsEnabled();
   const paymentsReady = stripeReady || manualPayments;
   const adminPassword = Boolean(process.env.PLATFORM_ADMIN_PASSWORD?.trim());
   const blob = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
@@ -58,6 +60,16 @@ export function getPlatformReadiness() {
         : stripeKey
           ? "Falta STRIPE_WEBHOOK_SECRET (endpoint /api/webhooks/stripe)"
           : "Opcional si SPEI está activo. Define STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET",
+    },
+    {
+      id: "stripe_connect",
+      label: "Stripe Connect (retiros)",
+      ok: !stripeReady || connectEnabled,
+      hint: connectEnabled
+        ? "Los creadores pueden vincular Express y recibir transferencias"
+        : stripeReady
+          ? "Connect apagado (STRIPE_CONNECT_ENABLED=false). Los retiros siguen siendo manuales"
+          : "Se activa al configurar Stripe. En Dashboard: Connect + evento account.updated",
     },
     {
       id: "payment_bank",
@@ -96,7 +108,7 @@ export function getPlatformReadiness() {
   ];
 
   const blockers = checks.filter((check) => {
-    if (check.id === "stripe" || check.id === "payment_bank") return false;
+    if (check.id === "stripe" || check.id === "payment_bank" || check.id === "stripe_connect") return false;
     return !check.ok;
   });
 

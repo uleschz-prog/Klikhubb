@@ -52,10 +52,9 @@ Motivo: margen para reembolsos antes de liberar retiro.
 
 ### 5. Retiro
 
-- El usuario pide retiro en `/wallet`.
-- Se crea un registro `Payout` con `method: manual`, `status: PENDING`.
-- Se descuenta su saldo **interno**.
-- **Qlykadmin** transfiere por fuera (SPEI, PayPal, etc.) y marca pagado en `/admin/payouts`.
+- El creador vincula su cuenta de Stripe (Express) en `/wallet`.
+- Pide retiro (mínimo 10 USD). Si Connect está listo, Qlyk hace un `transfer` al Stripe del creador y Stripe le deposita al banco.
+- Si Stripe no está configurado, el retiro queda `manual` y **Qlykadmin** lo marca pagado en `/admin/payouts`.
 
 ---
 
@@ -72,7 +71,9 @@ BLOB_READ_WRITE_TOKEN="..."
 PLATFORM_ADMIN_PASSWORD="..."
 ```
 
-Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed` y `checkout.session.async_payment_succeeded`).
+Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded` y `account.updated`).
+
+En Stripe Dashboard activa **Connect**. Los creadores vinculan su cuenta en `/wallet`. País por defecto: `STRIPE_CONNECT_COUNTRY=MX`. Para apagar Connect: `STRIPE_CONNECT_ENABLED=false`.
 
 Basta con **un** método activo (Stripe completo o SPEI). Pueden convivir los dos.
 
