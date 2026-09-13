@@ -9,11 +9,7 @@ import {
   muxPreviewMp4Url,
   muxThumbnailUrl,
 } from "@/lib/video/types";
-import { youtubeEmbedSrc, youtubePoster, youtubeVideoId } from "@/lib/video/source";
-
-function canUseMouseHover() {
-  return typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches;
-}
+import { youtubePoster } from "@/lib/video/source";
 
 function landingPoster(video: FeedVideo) {
   if (video.thumbnailUrl) return video.thumbnailUrl;
@@ -39,10 +35,6 @@ export function LandingVideoCard({ video }: { video: FeedVideo }) {
   const [previewFailed, setPreviewFailed] = useState(false);
   const poster = landingPoster(video);
   const previewSrc = previewFailed ? null : landingPreviewSrc(video);
-  const youTubeId = youtubeVideoId(video.videoUrl ?? "");
-  const youTubeEmbed = youTubeId
-    ? youtubeEmbedSrc(video.videoUrl ?? "", { autoplay: true, muted: true })
-    : null;
   const price =
     video.product != null
       ? new Intl.NumberFormat("es-MX", {
@@ -74,10 +66,12 @@ export function LandingVideoCard({ video }: { video: FeedVideo }) {
         background: "var(--l-surface)",
         boxShadow: "var(--l-shadow)",
       }}
-      onMouseEnter={() => {
-        if (canUseMouseHover()) setHovered(true);
-      }}
+      onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") setHovered(true);
+      }}
+      onPointerLeave={() => setHovered(false)}
     >
       <div className="relative aspect-[4/5] overflow-hidden" style={{ background: "var(--l-muted-bg)" }}>
         {previewSrc ? (
@@ -93,21 +87,12 @@ export function LandingVideoCard({ video }: { video: FeedVideo }) {
             aria-hidden
             onError={() => setPreviewFailed(true)}
           />
-        ) : poster && !(hovered && youTubeEmbed) ? (
+        ) : poster ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        ) : !youTubeEmbed ? (
+        ) : (
           <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
-        ) : null}
-        {hovered && youTubeEmbed ? (
-          <iframe
-            src={youTubeEmbed}
-            title=""
-            allow="autoplay; encrypted-media"
-            className="pointer-events-none absolute inset-0 h-full w-full border-0"
-            tabIndex={-1}
-          />
-        ) : null}
+        )}
         {price ? (
           <span
             className="on-accent pointer-events-none absolute left-3 top-3 z-10 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
