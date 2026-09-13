@@ -57,7 +57,7 @@ export function PwaInstallHint() {
     <div className="pwa-install-hint fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[60] md:hidden">
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0f]/95 shadow-[0_16px_48px_rgba(0,0,0,0.55)] ring-1 ring-klik-cyan/20 backdrop-blur-xl">
         <div className="flex items-start gap-3 p-4">
-          <img src="/icons/icon-96x96.png" alt="" className="h-12 w-12 shrink-0 rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.25)]" />
+          <img src="/icons/icon-96x96.png" alt="" className="h-12 w-12 shrink-0 rounded-2xl" />
           <div className="min-w-0 flex-1">
             <p className="font-display text-sm font-bold text-white">Instala Qlyk</p>
             <p className="mt-1 text-xs leading-5 text-white/60">

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { FeedVideo } from "@/lib/video/types";
 import { formatCount, formatFeedDate, formatTimecode } from "@/lib/video/format";
 import { UserAvatar } from "@/components/profile/UserAvatar";
-import { LogoMark } from "@/components/brand/LogoMark";
+import { Logo } from "@/components/brand/Logo";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { ThemeToggle } from "@/components/theme/ThemeProvider";
@@ -481,9 +481,7 @@ export function FeedTheater({
         <>
           <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <div className="pointer-events-auto flex items-center gap-3">
-              <Link href={basePath} className="flex items-center gap-2" aria-label="Qlyk">
-                <LogoMark className="h-8 w-8" />
-              </Link>
+              <Logo href={basePath} className="text-white" markClassName="h-8 w-8" />
             </div>
             <div className="pointer-events-auto hidden items-center gap-3 md:flex">
               <PlatformNav />

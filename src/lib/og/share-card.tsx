@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { brand, site } from "@/config/site";
+import { site } from "@/config/site";
 
 export const ogImageSize = {
   width: 1200,
@@ -7,6 +7,20 @@ export const ogImageSize = {
 } as const;
 
 export const ogImageContentType = "image/png";
+
+const ACCENT = "#0071e3";
+
+function QlykMark({ size = 56 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
+      <rect width="64" height="64" rx="16" fill="#050505" />
+      <circle cx="30" cy="30" r="16.2" stroke={ACCENT} strokeWidth="6.2" />
+      <path d="M41.2 41.2 L52 52" stroke={ACCENT} strokeWidth="6.2" strokeLinecap="round" />
+      <circle cx="30" cy="30" r="12.4" fill="#050505" />
+      <path d="M25.2 23.8 L39.4 30 L25.2 36.2 Z" fill={ACCENT} />
+    </svg>
+  );
+}
 
 export function createShareImage() {
   const host = site.url.replace(/^https?:\/\//, "");
@@ -25,22 +39,7 @@ export function createShareImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 56,
-              height: 56,
-              borderRadius: 18,
-              background: brand.colors.cyan,
-              color: "#050505",
-              fontSize: 30,
-              fontWeight: 800,
-            }}
-          >
-            Q
-          </div>
+          <QlykMark size={56} />
           <div
             style={{
               display: "flex",
@@ -55,9 +54,12 @@ export function createShareImage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <div style={{ display: "flex", alignItems: "baseline", fontSize: 112, fontWeight: 800, lineHeight: 0.95 }}>
-            <span style={{ color: brand.colors.cyan }}>Q</span>
-            <span style={{ color: "#FFFFFF" }}>lyk</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <QlykMark size={88} />
+            <div style={{ display: "flex", alignItems: "baseline", fontSize: 112, fontWeight: 800, lineHeight: 0.95 }}>
+              <span style={{ color: ACCENT }}>Q</span>
+              <span style={{ color: "#FFFFFF" }}>lyk</span>
+            </div>
           </div>
           <div
             style={{
@@ -71,7 +73,7 @@ export function createShareImage() {
             }}
           >
             <span>Del video al pago.</span>
-            <span style={{ color: brand.colors.green }}>Sin salir del feed.</span>
+            <span style={{ color: ACCENT }}>Sin salir del feed.</span>
           </div>
           <div
             style={{

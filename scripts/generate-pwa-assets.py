@@ -40,8 +40,8 @@ def font(size: int, bold: bool = True) -> ImageFont.FreeTypeFont:
 def splash(w: int, h: int) -> Image.Image:
     img = Image.new("RGB", (w, h), "#050505")
     draw = ImageDraw.Draw(img)
-    draw.ellipse((w * 0.55, -h * 0.08, w * 1.05, h * 0.42), fill=(0, 240, 255, 18))
-    draw.ellipse((-w * 0.15, h * 0.62, w * 0.35, h * 1.02), fill=(0, 255, 65, 12))
+    draw.ellipse((w * 0.55, -h * 0.08, w * 1.05, h * 0.42), fill=(0, 113, 227, 22))
+    draw.ellipse((-w * 0.15, h * 0.62, w * 0.35, h * 1.02), fill=(0, 113, 227, 10))
 
     mark_size = min(w, h) // 5
     mark = render_mark(mark_size)
@@ -58,7 +58,7 @@ def splash(w: int, h: int) -> Image.Image:
     tw = (bbox_q[2] - bbox_q[0]) + (bbox_r[2] - bbox_r[0])
     tx = (w - tw) // 2
     ty = my + mark_size + int(h * 0.04)
-    draw.text((tx, ty), q, font=title, fill=(0, 240, 255))
+    draw.text((tx, ty), q, font=title, fill=(0, 113, 227))
     draw.text((tx + bbox_q[2] - bbox_q[0], ty), rest, font=word, fill=(255, 255, 255))
 
     tag = font(max(18, w // 42), bold=False)
@@ -99,6 +99,19 @@ def main() -> None:
         print("splash", name, w, h)
 
     (ICONS / "_generated.json").write_text(json.dumps({"icons": manifest_icons, "splash": splash_manifest}, indent=2))
+
+    brand = ROOT / "public/brand"
+    cairosvg.svg2png(bytestring=svg_bytes, write_to=str(brand / "qlyk-mark.png"), output_width=1024, output_height=1024)
+    cairosvg.svg2png(bytestring=svg_bytes, write_to=str(brand / "klikhubb-mark.png"), output_width=1024, output_height=1024)
+
+    lockup = Image.new("RGB", (1600, 640), "#050505")
+    mark = render_mark(280)
+    lockup.paste(mark, (120, 180), mark)
+    draw = ImageDraw.Draw(lockup)
+    word = font(160)
+    draw.text((460, 230), "Qlyk", font=word, fill=(255, 255, 255))
+    lockup.save(brand / "klikhubb-lockup.png", "PNG", optimize=True)
+    lockup.save(brand / "qlyk-lockup.png", "PNG", optimize=True)
     print("done")
 
 

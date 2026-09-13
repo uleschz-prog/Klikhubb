@@ -212,7 +212,7 @@ def screenshot_clip(src: Path, seconds: float, name: str) -> Path:
 
 
 def main() -> None:
-    logo = ROOT / "public/brand/klikhubb-mark.png"
+    logo = ROOT / "public/brand/qlyk-mark.png"
     shots = ROOT / "marketing-screenshots"
 
     slides = [

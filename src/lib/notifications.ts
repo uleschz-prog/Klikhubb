@@ -85,11 +85,14 @@ export async function notifyAndEmail(input: {
       subject: input.emailSubject ?? input.title,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;color:#111">
-          <p style="font-size:14px;color:#666">Qlyk</p>
+          <p style="font-size:14px;color:#666;display:flex;align-items:center;gap:8px">
+            <img src="${siteUrl()}/brand/qlyk-mark.svg" width="28" height="28" alt="Qlyk" style="border-radius:8px" />
+            Qlyk
+          </p>
           <h1 style="font-size:22px;margin:8px 0 12px">${input.title}</h1>
           <p style="font-size:15px;line-height:1.5">${input.body}</p>
           <p style="margin-top:24px">
-            <a href="${link}" style="display:inline-block;background:#00FF41;color:#050505;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">
+            <a href="${link}" style="display:inline-block;background:#0071e3;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;font-weight:700">
               Abrir en Qlyk
             </a>
           </p>
