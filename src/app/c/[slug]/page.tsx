@@ -49,9 +49,9 @@ export default async function PublicCoursePage({
   if (!course) notFound();
 
   const previewLessons = course.lessons.filter((lesson) => lesson.isFreePreview);
-  const selected =
-    previewLessons.find((lesson) => lesson.id === searchParams.l) ?? previewLessons[0] ?? null;
-  const lockedSelected = course.lessons.find((lesson) => lesson.id === searchParams.l && !lesson.isFreePreview);
+  const requested = course.lessons.find((lesson) => lesson.id === searchParams.l) ?? null;
+  const selected = requested?.isFreePreview ? requested : requested ? null : previewLessons[0] ?? null;
+  const lockedSelected = requested && !requested.isFreePreview ? requested : null;
   const modules = groupLessonsByModule(course.lessons);
   const checkoutHref = `/checkout/${course.slug}`;
   const academyHref = `/academy/${course.slug}`;
