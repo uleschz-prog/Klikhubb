@@ -141,6 +141,10 @@ Tras cada venta, tu parte queda **14 días en hold** para cubrir:
 
 Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 
+### Devolución en 24 horas
+
+Quien compra un curso tiene **24 horas** desde el pago confirmado para pedir la devolución en `/orders`. Qlyk revoca el acceso y descuenta el importe del monedero. Si pagó con tarjeta, Stripe reembolsa.
+
 ### Retirar dinero
 
 - **Mínimo:** 10 USD

@@ -50,6 +50,8 @@ Reglas en `src/lib/commerce/split.ts` y `src/config/compensation-plan.ts`.
 
 Motivo: margen para reembolsos antes de liberar retiro.
 
+El comprador tiene **24 horas** desde el pago confirmado para pedir la devolución en `/orders`. Se revoca el acceso y, con tarjeta, Stripe reembolsa el cargo.
+
 ### 5. Retiro
 
 - El usuario pide retiro en `/wallet`.
@@ -72,7 +74,7 @@ BLOB_READ_WRITE_TOKEN="..."
 PLATFORM_ADMIN_PASSWORD="..."
 ```
 
-Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed` y `checkout.session.async_payment_succeeded`).
+Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded` y `charge.refunded`).
 
 Basta con **un** método activo (Stripe completo o SPEI). Pueden convivir los dos.
 
