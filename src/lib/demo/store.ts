@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import bcrypt from "bcryptjs";
-import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { COMPENSATION_PLAN_V1, creatorHoldLabel, creatorHoldMs } from "@/config/compensation-plan";
 import { splitSaleCommissions } from "@/lib/commerce/split";
 import { fromCents, toCents } from "@/lib/money/cents";
 import type { SettledOrder } from "@/lib/commerce/settle-order";
@@ -422,7 +422,7 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
     } else {
       wallet.pending += amount;
       const availableAt = new Date(
-        Date.now() + COMPENSATION_PLAN_V1.holdDays * 86_400_000,
+        Date.now() + creatorHoldMs(),
       ).toISOString();
       db.commissions.push({
         id: `com_${Math.random().toString(36).slice(2, 10)}`,
@@ -523,7 +523,7 @@ export async function demoReleaseMature(userId?: string): Promise<{ released: nu
     wallet.pending -= move;
     wallet.available += move;
     db.wallets[row.beneficiaryId] = wallet;
-    pushLedger(db, row.beneficiaryId, move, "ADJUSTMENT", `Hold de ${COMPENSATION_PLAN_V1.holdDays} días terminado`);
+    pushLedger(db, row.beneficiaryId, move, "ADJUSTMENT", `Hold de ${creatorHoldLabel()} terminado`);
     released += 1;
     amount += move;
   }
@@ -573,6 +573,7 @@ export async function demoLoadWalletView(userId: string) {
     lifetimeEarned: wallet.lifetimeEarned,
     currency: "USD",
     holdDays: COMPENSATION_PLAN_V1.holdDays,
+    holdLabel: creatorHoldLabel(),
     minPayout: fromCents(DEMO_MIN_PAYOUT_CENTS),
     nextReleaseAt: holds[0]?.availableAt ?? null,
     holds,

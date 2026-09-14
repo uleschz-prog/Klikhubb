@@ -1,3 +1,5 @@
+import { BUYER_REFUND_WINDOW_HOURS } from "@/config/refund-policy";
+
 /**
  * Planes de monetización del creador.
  *
@@ -41,14 +43,32 @@ export type CreatorPlanRates = {
   platformFeeRate: number;
   creatorRate: number;
   holdDays: number;
+  holdHours: number;
 };
+
+/** El hold de retiro coincide con la ventana de reembolso del comprador. */
+export const CREATOR_HOLD_HOURS = BUYER_REFUND_WINDOW_HOURS;
+
+export function creatorHoldMs() {
+  return CREATOR_HOLD_HOURS * 60 * 60 * 1000;
+}
+
+export function creatorHoldLabel() {
+  if (CREATOR_HOLD_HOURS === 24) return "24 horas";
+  if (CREATOR_HOLD_HOURS % 24 === 0) {
+    const days = CREATOR_HOLD_HOURS / 24;
+    return days === 1 ? "1 día" : `${days} días`;
+  }
+  return `${CREATOR_HOLD_HOURS} horas`;
+}
 
 /** Compat: plan por defecto = PAYG. */
 export const COMPENSATION_PLAN_V1 = {
   code: "klikhubb-v3-payg",
   platformFeeRate: CREATOR_PLAN_PAYG.platformFeeRate,
   creatorRate: CREATOR_PLAN_PAYG.creatorRate,
-  holdDays: 14,
+  holdDays: CREATOR_HOLD_HOURS / 24,
+  holdHours: CREATOR_HOLD_HOURS,
 } as const;
 
 export function ratesForCreatorPlan(plan: CreatorPlanCode): CreatorPlanRates {
@@ -58,6 +78,7 @@ export function ratesForCreatorPlan(plan: CreatorPlanCode): CreatorPlanRates {
       platformFeeRate: CREATOR_PLAN_FLAT.platformFeeRate,
       creatorRate: CREATOR_PLAN_FLAT.creatorRate,
       holdDays: COMPENSATION_PLAN_V1.holdDays,
+      holdHours: COMPENSATION_PLAN_V1.holdHours,
     };
   }
   return {
@@ -65,6 +86,7 @@ export function ratesForCreatorPlan(plan: CreatorPlanCode): CreatorPlanRates {
     platformFeeRate: CREATOR_PLAN_PAYG.platformFeeRate,
     creatorRate: CREATOR_PLAN_PAYG.creatorRate,
     holdDays: COMPENSATION_PLAN_V1.holdDays,
+    holdHours: COMPENSATION_PLAN_V1.holdHours,
   };
 }
 

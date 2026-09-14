@@ -2,38 +2,64 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { ConnectStatus } from "@/lib/commerce/stripe-connect";
 
-type ConnectState = {
-  enabled: boolean;
-  connected: boolean;
-  payoutsEnabled: boolean;
-  requirementsDue: string[];
-  disabledReason: string | null;
-};
+function requirementLabel(code: string) {
+  if (code.includes("external_account")) return "cuenta bancaria";
+  if (code.includes("verification.document")) return "identificación";
+  if (code.includes("tos_acceptance")) return "aceptar términos de Stripe";
+  if (code.includes("individual")) return "datos personales";
+  if (code.includes("company")) return "datos de negocio";
+  return code.replaceAll("_", " ");
+}
 
 export function WalletConnectCard({
+  initial,
   connectNotice,
 }: {
+  initial: ConnectStatus | null;
   connectNotice?: "return" | "refresh" | null;
 }) {
   const router = useRouter();
-  const [state, setState] = useState<ConnectState | null>(null);
-  const [busy, setBusy] = useState<"connect" | "dashboard" | null>(null);
+  const [state, setState] = useState<ConnectStatus | null>(initial);
+  const [busy, setBusy] = useState<"connect" | "dashboard" | "refresh" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/connect")
-      .then((response) => response.json())
-      .then((payload) => setState(payload as ConnectState))
-      .catch(() => setState(null));
-  }, []);
+    if (connectNotice !== "return") return;
+    void refreshStatus();
+    // Solo al volver de Stripe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectNotice]);
+
+  async function refreshStatus() {
+    setBusy("refresh");
+    setError(null);
+    try {
+      const response = await fetch("/api/connect");
+      const payload = (await response.json()) as ConnectStatus & { error?: string };
+      if (!response.ok) {
+        setError(payload.error ?? "No pudimos leer el estado de Stripe.");
+        return;
+      }
+      setState(payload);
+      router.refresh();
+    } catch {
+      setError("No pudimos leer el estado de Stripe.");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   if (state === null) {
     return (
       <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
-        <div className="h-4 w-24 animate-pulse rounded bg-white/10" />
-        <div className="mt-4 h-6 w-40 animate-pulse rounded bg-white/10" />
-        <div className="mt-4 h-16 animate-pulse rounded bg-white/5" />
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Depósito</p>
+        <h2 className="mt-1 font-display text-xl font-bold">Retiros manuales</h2>
+        <p className="mt-3 text-sm leading-6 text-white/60">
+          El comprador paga a Qlyk. Cuando pides retiro, el equipo te deposita a mano. Cuando Stripe esté
+          configurado, podrás vincular tu cuenta aquí para recibir el dinero en automático.
+        </p>
       </div>
     );
   }
@@ -114,7 +140,7 @@ export function WalletConnectCard({
 
       {pendingRequirements ? (
         <p className="mt-2 text-xs text-white/45">
-          Pendiente: {state.requirementsDue.slice(0, 3).join(", ")}
+          Pendiente: {state.requirementsDue.slice(0, 3).map(requirementLabel).join(", ")}
           {state.requirementsDue.length > 3 ? "…" : ""}
         </p>
       ) : null}
@@ -126,7 +152,7 @@ export function WalletConnectCard({
         {!state.payoutsEnabled ? (
           <button
             type="button"
-            onClick={connect}
+            onClick={() => void connect()}
             disabled={busy !== null}
             className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black disabled:opacity-60"
           >
@@ -140,7 +166,7 @@ export function WalletConnectCard({
         {state.connected ? (
           <button
             type="button"
-            onClick={openDashboard}
+            onClick={() => void openDashboard()}
             disabled={busy !== null}
             className="inline-flex min-h-11 items-center rounded-full border border-white/15 px-5 text-sm font-semibold text-white/80 disabled:opacity-60"
           >
@@ -149,10 +175,11 @@ export function WalletConnectCard({
         ) : null}
         <button
           type="button"
-          onClick={() => router.refresh()}
-          className="inline-flex min-h-11 items-center rounded-full border border-white/10 px-5 text-sm font-semibold text-white/50"
+          onClick={() => void refreshStatus()}
+          disabled={busy !== null}
+          className="inline-flex min-h-11 items-center rounded-full border border-white/10 px-5 text-sm font-semibold text-white/50 disabled:opacity-60"
         >
-          Actualizar estado
+          {busy === "refresh" ? "Actualizando…" : "Actualizar estado"}
         </button>
       </div>
 

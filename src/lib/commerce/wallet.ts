@@ -1,5 +1,5 @@
 import { LedgerType, Prisma } from "@prisma/client";
-import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { COMPENSATION_PLAN_V1, creatorHoldLabel, creatorHoldMs } from "@/config/compensation-plan";
 import { prisma } from "@/lib/prisma";
 import { fromCents, toCents } from "@/lib/money/cents";
 import {
@@ -65,6 +65,7 @@ export type WalletView = {
   lifetimeEarned: number;
   currency: string;
   holdDays: number;
+  holdLabel: string;
   minPayout: number;
   nextReleaseAt: string | null;
   holds: WalletHold[];
@@ -156,6 +157,26 @@ function toWalletError(error: unknown): WalletError {
 
 async function releaseInDb(userId?: string): Promise<ReleaseResult> {
   const now = new Date();
+  const holdMs = creatorHoldMs();
+
+  const locked = await prisma.commission.findMany({
+    where: {
+      status: "LOCKED",
+      ...(userId ? { beneficiaryId: userId } : {}),
+    },
+    select: { id: true, createdAt: true, availableAt: true },
+    take: 400,
+  });
+  for (const row of locked) {
+    const dueAt = new Date(row.createdAt.getTime() + holdMs);
+    if (row.availableAt && row.availableAt.getTime() > dueAt.getTime()) {
+      await prisma.commission.update({
+        where: { id: row.id },
+        data: { availableAt: dueAt },
+      });
+    }
+  }
+
   const due = await prisma.commission.findMany({
     where: {
       status: "LOCKED",
@@ -199,7 +220,7 @@ async function releaseInDb(userId?: string): Promise<ReleaseResult> {
           type: LedgerType.ADJUSTMENT,
           commissionId: row.id,
           orderId: row.orderId,
-          note: `Hold de ${COMPENSATION_PLAN_V1.holdDays} días terminado`,
+          note: `Hold de ${creatorHoldLabel()} terminado`,
         },
       });
 
@@ -311,6 +332,7 @@ async function readWalletView(userId: string): Promise<WalletView> {
     lifetimeEarned: Number(wallet?.lifetimeEarned ?? 0),
     currency: wallet?.currency.trim() || "USD",
     holdDays: COMPENSATION_PLAN_V1.holdDays,
+    holdLabel: creatorHoldLabel(),
     minPayout: fromCents(MIN_PAYOUT_CENTS),
     nextReleaseAt: mappedHolds[0]?.availableAt ?? null,
     holds: mappedHolds,

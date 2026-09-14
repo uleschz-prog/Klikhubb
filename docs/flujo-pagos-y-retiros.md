@@ -4,7 +4,7 @@ Este documento explica qué pasa cuando alguien compra un curso, quién cobra qu
 
 ## Resumen en una frase
 
-**Hoy:** el comprador elige **tarjeta (Stripe)** o **SPEI**. Con Stripe, el webhook (o la página de éxito) asienta la venta. Con SPEI, sube comprobante → **Qlykadmin confirma** → la app reparte **en la base de datos** → después de 14 días el creador puede **pedir retiro manual**.
+**Hoy:** el comprador elige **tarjeta (Stripe)** o **SPEI**. La venta se asienta, el creador ve el 93% en el monedero y **a las 24 horas** (misma ventana de reembolso) puede retirar a su Stripe Connect.
 
 ---
 
@@ -35,20 +35,17 @@ Hay dos métodos en checkout:
 
 | Parte | Porcentaje | Ejemplo $100 | Dónde queda |
 |-------|-----------|--------------|-------------|
-| **Creador del curso** | 85% | $85 | Monedero `pending` (14 días) |
-| **Quien invitó al comprador** | 5% | $5 | Monedero `pending` (14 días) |
-| **Plataforma (Qlykadmin)** | 10% | $10 | Monedero `available` de inmediato |
+| **Creador del curso** | 93% | $93 | Monedero `pending` (24 horas) |
+| **Plataforma (Qlyk)** | 7% | $7 | Monedero `available` de inmediato |
 
-**Si nadie invitó al comprador:** el 5% se suma al creador → **90% creador + 10% plataforma**.
+Si el creador tiene el plan mensual de $25, se queda el 100% mientras el periodo esté activo.
 
 Reglas en `src/lib/commerce/split.ts` y `src/config/compensation-plan.ts`.
 
-### 4. Hold de 14 días
+### 4. Hold de 24 horas
 
-- Las comisiones del creador y referidor quedan en estado `LOCKED`.
-- Tras 14 días, un cron (`/api/cron/release-wallets`) las pasa a `APPROVED` y mueve el saldo de **pendiente → disponible** en el monedero.
-
-Motivo: margen para reembolsos antes de liberar retiro.
+- Las comisiones del creador quedan en estado `LOCKED`.
+- A las 24 horas (la misma ventana de reembolso), al abrir el monedero o con el cron (`/api/cron/release-wallets`) pasan a `APPROVED` y el saldo va de **pendiente → disponible**.
 
 El comprador tiene **24 horas** desde el pago confirmado para pedir la devolución en `/orders`. Se revoca el acceso y, con tarjeta, Stripe reembolsa el cargo.
 

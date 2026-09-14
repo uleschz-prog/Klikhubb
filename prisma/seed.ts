@@ -20,7 +20,7 @@ async function main() {
       binaryEnabled: false,
       platformFeeRate: 0.07,
       creatorRate: 0.93,
-      holdDays: 14,
+      holdDays: 1,
       isActive: true,
       levels: {
         create: [{ level: 0, type: CommissionType.CREATOR_SALE, rate: 0.93 }],
@@ -35,7 +35,7 @@ async function main() {
   });
   await prisma.compensationPlan.update({
     where: { id: plan.id },
-    data: { holdDays: 14, isActive: true, platformFeeRate: 0.07, creatorRate: 0.93 },
+    data: { holdDays: 1, isActive: true, platformFeeRate: 0.07, creatorRate: 0.93 },
   });
 
   const ranks = [

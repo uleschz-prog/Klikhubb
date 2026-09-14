@@ -8,7 +8,7 @@ import {
   loadCreatorLaunchProgress,
 } from "@/components/dashboard/CreatorLaunchChecklist";
 import { CreatorPlanCard } from "@/components/dashboard/CreatorPlanCard";
-import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { creatorHoldLabel } from "@/config/compensation-plan";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCreatorPlanSnapshot } from "@/lib/commerce/creator-plan-billing";
 import { loadHub } from "@/lib/commerce/catalog";
@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   const planSnapshot = userId ? await getCreatorPlanSnapshot(userId).catch(() => null) : null;
 
   const wallet = hub?.wallet ?? { available: 0, pending: 0, lifetimeEarned: 0 };
-  const holdDays = COMPENSATION_PLAN_V1.holdDays;
+  const holdLabel = creatorHoldLabel();
 
   return (
     <PlatformShell title="Cuenta">
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
           <p className="mt-3 font-display text-4xl font-extrabold text-klik-green">{formatMoney(wallet.available)}</p>
           <p className="mt-1 text-sm text-white/50">Disponible para retirar</p>
           <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3 text-sm">
-            <span className="text-white/55">En espera ({holdDays} días)</span>
+            <span className="text-white/55">En espera ({holdLabel})</span>
             <span className="font-semibold text-klik-cyan">{formatMoney(wallet.pending)}</span>
           </div>
           <Link

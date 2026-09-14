@@ -48,7 +48,7 @@ export default async function WalletPage({
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Tu dinero</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Monedero</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Cada venta espera {wallet.holdDays} días por si hay un reembolso. Después pasa a disponible.
+        Cada venta espera {wallet.holdLabel} por si hay un reembolso. Después pasa a disponible.
         Vincula tu Stripe para que te transfiramos el retiro a tu banco.
         {wallet.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
       </p>
@@ -62,7 +62,7 @@ export default async function WalletPage({
         </div>
         <div className="rounded-2xl border border-klik-line bg-klik-card p-4">
           <p className="text-[11px] uppercase tracking-wider text-white/40">
-            Pendiente ({wallet.holdDays} días)
+            Pendiente ({wallet.holdLabel})
           </p>
           <p className="mt-2 font-display text-2xl font-extrabold text-klik-cyan">
             {formatMoney(wallet.pending, wallet.currency)}
@@ -88,7 +88,7 @@ export default async function WalletPage({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <WalletConnectCard connectNotice={connectNotice} />
+        <WalletConnectCard initial={connect} connectNotice={connectNotice} />
 
         <WalletPayoutForm
           available={wallet.available}
@@ -100,7 +100,7 @@ export default async function WalletPage({
 
         <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Hold</p>
-          <h2 className="mt-1 font-display text-xl font-bold">Se libera en {wallet.holdDays} días</h2>
+          <h2 className="mt-1 font-display text-xl font-bold">Se libera en {wallet.holdLabel}</h2>
           {wallet.holds.length === 0 ? (
             <p className="mt-3 text-sm text-white/55">No hay ventas esperando. Cuando cobres, aparecen aquí.</p>
           ) : (

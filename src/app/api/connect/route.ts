@@ -15,6 +15,17 @@ export async function GET() {
   return NextResponse.json(status);
 }
 
+function connectFailureMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  if (/signed up for Connect|not signed up for Connect|Connect is not enabled/i.test(message)) {
+    return "Stripe Connect no está activo en el Dashboard. En Stripe: Settings → Connect → Get started.";
+  }
+  if (/country/i.test(message) && /invalid/i.test(message)) {
+    return "El país de Connect no coincide. Revisa STRIPE_CONNECT_COUNTRY.";
+  }
+  return "No pudimos abrir Stripe para vincular tu cuenta.";
+}
+
 export async function POST() {
   const userId = await getDbUserId();
   if (!userId) {
@@ -36,6 +47,6 @@ export async function POST() {
       return NextResponse.json({ error: "Necesitas un email en tu cuenta." }, { status: 400 });
     }
     console.error(error);
-    return NextResponse.json({ error: "No pudimos abrir Stripe para vincular tu cuenta." }, { status: 500 });
+    return NextResponse.json({ error: connectFailureMessage(error) }, { status: 500 });
   }
 }

@@ -26,7 +26,7 @@ export const termsSections: LegalSection[] = [
           '«Producto»: bien o servicio digital (curso, membresía, contenido descargable u otro activo digital) ofrecido por un Creador.',
           '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (Stripe Checkout con tarjeta y/o transferencia bancaria SPEI con confirmación manual).',
           '«Monedero»: saldo interno que refleja importes pendientes o disponibles derivados de ventas o ajustes, sujeto a retenciones y verificaciones.',
-          '«Hold» o «retención»: periodo de 14 días naturales durante el cual ciertos importes permanecen bloqueados antes de poder retirarse, para gestionar devoluciones, contracargos o incidencias.',
+          '«Hold» o «retención»: periodo de 24 horas durante el cual ciertos importes permanecen bloqueados antes de poder retirarse, alineado con la ventana de reembolso del comprador, para gestionar devoluciones o incidencias.',
         ],
       },
     ],
@@ -124,7 +124,7 @@ export const termsSections: LegalSection[] = [
       {
         paragraphs: [
           "No existe sistema de referidos ni comisión por invitación. No hay compensación multinivel, matching, binario ni estructuras piramidales.",
-          "Los importes derivados de ventas pueden quedar en estado pendiente durante un hold de 14 días naturales antes de pasar a saldo disponible para retiro. Este plazo permite gestionar devoluciones, disputas de pago y revisiones antifraude.",
+          "Los importes derivados de ventas pueden quedar en estado pendiente durante un hold de 24 horas antes de pasar a saldo disponible para retiro. Este plazo coincide con la ventana de reembolso del comprador y permite gestionar devoluciones y revisiones antifraude.",
           "El Operador puede retener, anular o ajustar importes en casos de fraude, contracargo, incumplimiento grave, error manifiesto o requerimiento legal.",
           "Mostrar ejemplos, simulaciones o testimonios no constituye promesa de rentabilidad. Cada Usuario es responsable de sus obligaciones fiscales y de declarar los ingresos obtenidos conforme a la ley de su país.",
         ],

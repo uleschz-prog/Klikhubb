@@ -1,5 +1,5 @@
 import { CommissionType, LedgerType, Prisma } from "@prisma/client";
-import { COMPENSATION_PLAN_V1 } from "@/config/compensation-plan";
+import { creatorHoldMs } from "@/config/compensation-plan";
 import { PLATFORM_ADMIN } from "@/config/platform-admin";
 import { joinMembershipCommunity } from "@/lib/community";
 import { prisma } from "@/lib/prisma";
@@ -145,7 +145,7 @@ export async function settlePaidOrder(input: {
     });
 
     const now = new Date();
-    const availableAt = new Date(now.getTime() + COMPENSATION_PLAN_V1.holdDays * 86_400_000);
+    const availableAt = new Date(now.getTime() + creatorHoldMs());
     const platformFeeCents = lines.find((line) => line.type === "PLATFORM_FEE")?.amountCents ?? 0;
 
     const order = await tx.order.create({

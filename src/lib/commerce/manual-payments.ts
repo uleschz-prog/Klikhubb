@@ -221,7 +221,7 @@ export async function approveManualPayment(input: {
     userId: row.product.creatorId,
     type: "NEW_SALE",
     title: "Nueva venta",
-    body: `Vendiste «${row.product.title}». El dinero entra a tu monedero con hold de 14 días.`,
+    body: `Vendiste «${row.product.title}». El dinero entra a tu monedero y se libera en 24 horas.`,
     href: "/wallet",
     emailSubject: `Qlyk · Vendiste ${row.product.title}`,
   });
