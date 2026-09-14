@@ -25,7 +25,8 @@ function formatAverage(value: number) {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const course = await loadPublicCourse(params.slug, null);
+  const userId = await getDbUserId();
+  const course = await loadPublicCourse(params.slug, userId);
   if (!course) return { title: "Curso no encontrado" };
   const title = `${course.title} · Qlyk`;
   const description = course.description || `Curso de ${course.creatorName} en Qlyk.`;
