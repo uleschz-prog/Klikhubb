@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { youtubeLessonEmbedSrc, youtubeVideoId } from "@/lib/video/source";
 
 export function AcademyPlayer({
@@ -9,6 +10,7 @@ export function AcademyPlayer({
   content,
   resourceUrl,
   resourceName,
+  nextLessonHref,
 }: {
   title: string;
   videoUrl: string | null;
@@ -16,7 +18,9 @@ export function AcademyPlayer({
   content?: string | null;
   resourceUrl?: string | null;
   resourceName?: string | null;
+  nextLessonHref?: string | null;
 }) {
+  const router = useRouter();
   const embed = videoUrl ? youtubeLessonEmbedSrc(videoUrl) : null;
   const file = Boolean(videoUrl && !youtubeVideoId(videoUrl));
   const hasMedia = Boolean(embed || (file && videoUrl));
@@ -45,6 +49,9 @@ export function AcademyPlayer({
             controls
             playsInline
             preload="metadata"
+            onEnded={() => {
+              if (nextLessonHref) router.push(nextLessonHref);
+            }}
           />
         </div>
       ) : null}

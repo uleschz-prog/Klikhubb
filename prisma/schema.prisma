@@ -603,6 +603,7 @@ model Enrollment {
   orderId     String?
   status      EnrollmentStatus @default(ACTIVE)
   progressPct Decimal          @default(0) @db.Decimal(5, 2)
+  lastLessonId String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 

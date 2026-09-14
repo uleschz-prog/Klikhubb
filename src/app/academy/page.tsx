@@ -12,6 +12,11 @@ const TYPE_LABEL: Record<string, string> = {
 
 export const dynamic = "force-dynamic";
 
+function courseHref(course: { slug: string; resumeLessonId: string | null }) {
+  if (course.resumeLessonId) return `/academy/${course.slug}?l=${encodeURIComponent(course.resumeLessonId)}`;
+  return `/academy/${course.slug}`;
+}
+
 export default async function AcademyPage() {
   const userId = await getDbUserId();
   const enrollments = userId ? await listMyAcademy(userId) : [];
@@ -65,31 +70,59 @@ export default async function AcademyPage() {
         </div>
       ) : (
         <div className="mt-8 space-y-3">
-          {enrollments.map((course) => (
-            <Link
-              key={course.slug}
-              href={`/academy/${course.slug}`}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4 transition hover:border-klik-cyan/40"
-            >
-              <div>
-                <p className="font-display text-xs text-klik-green">
-                  {TYPE_LABEL[course.type] ?? course.type}
-                  {course.role === "creator" ? " · Tu curso" : " · Acceso activo"}
-                </p>
-                <h2 className="mt-1 font-display text-lg font-bold">{course.title}</h2>
-                {course.description ? <p className="mt-1 text-sm text-white/50">{course.description}</p> : null}
-                <p className="mt-2 text-xs text-white/40">
-                  {course.lessonCount === 0
-                    ? "Sin lecciones todavía"
-                    : `${course.lessonCount} ${course.lessonCount === 1 ? "lección" : "lecciones"}`}
-                  {course.role === "student" && course.progressPct > 0
-                    ? ` · ${Math.round(course.progressPct)}% visto`
-                    : ""}
-                </p>
-              </div>
-              <span className="shrink-0 text-sm font-semibold text-klik-cyan">Ver</span>
-            </Link>
-          ))}
+          {enrollments.map((course) => {
+            const href = courseHref(course);
+            const cta =
+              course.role === "creator"
+                ? "Ver curso"
+                : course.resumeLessonId || course.progressPct > 0
+                  ? "Continuar"
+                  : "Empezar";
+            return (
+              <article
+                key={`${course.role}-${course.slug}`}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-display text-xs text-klik-green">
+                    {TYPE_LABEL[course.type] ?? course.type}
+                    {course.role === "creator" ? " · Tu curso" : " · Acceso activo"}
+                  </p>
+                  <h2 className="mt-1 font-display text-lg font-bold">
+                    <Link href={href} className="hover:text-klik-cyan">
+                      {course.title}
+                    </Link>
+                  </h2>
+                  {course.description ? <p className="mt-1 text-sm text-white/50">{course.description}</p> : null}
+                  <p className="mt-2 text-xs text-white/40">
+                    {course.lessonCount === 0
+                      ? "Sin lecciones todavía"
+                      : `${course.lessonCount} ${course.lessonCount === 1 ? "lección" : "lecciones"}`}
+                    {course.role === "student" && course.progressPct > 0
+                      ? ` · ${Math.round(course.progressPct)}% visto`
+                      : ""}
+                    {course.role === "student" && course.resumeLessonTitle
+                      ? ` · Sigues en ${course.resumeLessonTitle}`
+                      : ""}
+                  </p>
+                  {course.role === "student" && course.lessonCount > 0 ? (
+                    <div className="mt-3 h-1.5 max-w-xs overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-klik-cyan"
+                        style={{ width: `${Math.min(100, Math.max(0, course.progressPct))}%` }}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+                <Link
+                  href={href}
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                >
+                  {cta}
+                </Link>
+              </article>
+            );
+          })}
         </div>
       )}
     </PlatformShell>

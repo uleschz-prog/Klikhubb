@@ -138,6 +138,8 @@ export type AcademyEnrollment = {
   role: "student" | "creator";
   lessonCount: number;
   progressPct: number;
+  resumeLessonId: string | null;
+  resumeLessonTitle: string | null;
 };
 
 export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]> {
@@ -170,6 +172,21 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
       }),
     ]);
 
+    const resumeIds = rows
+      .map((row) => row.lastLessonId)
+      .filter((id): id is string => Boolean(id));
+    const [resumeLessons, resumeVideos] = resumeIds.length
+      ? await Promise.all([
+          prisma.lesson.findMany({ where: { id: { in: resumeIds } }, select: { id: true, title: true } }),
+          prisma.video.findMany({ where: { id: { in: resumeIds } }, select: { id: true, title: true } }),
+        ])
+      : [[], []];
+    const resumeTitles = new Map<string, string>();
+    for (const lesson of resumeLessons) resumeTitles.set(lesson.id, lesson.title);
+    for (const video of resumeVideos) {
+      if (!resumeTitles.has(video.id)) resumeTitles.set(video.id, video.title);
+    }
+
     const enrolled: AcademyEnrollment[] = rows.map((row) => ({
       slug: row.product.slug,
       title: row.product.title,
@@ -179,6 +196,8 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
       role: "student" as const,
       lessonCount: row.product.course?.lessonCount || row.product._count.videos,
       progressPct: Number(row.progressPct),
+      resumeLessonId: row.lastLessonId,
+      resumeLessonTitle: row.lastLessonId ? resumeTitles.get(row.lastLessonId) ?? null : null,
     }));
 
     const enrolledSlugs = new Set(enrolled.map((row) => row.slug));
@@ -193,6 +212,8 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
         role: "creator",
         lessonCount: product.course?.lessonCount || product._count.videos,
         progressPct: 0,
+        resumeLessonId: null,
+        resumeLessonTitle: null,
       });
     }
 

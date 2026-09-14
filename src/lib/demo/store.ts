@@ -332,6 +332,8 @@ export async function demoListEnrollments(userId: string) {
         role: "student" as const,
         lessonCount: 0,
         progressPct: 0,
+        resumeLessonId: null,
+        resumeLessonTitle: null,
       };
     });
 }

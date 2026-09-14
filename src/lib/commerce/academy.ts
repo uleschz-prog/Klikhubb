@@ -22,8 +22,27 @@ export type AcademyCourse = {
   type: string;
   role: "student" | "creator";
   progressPct: number;
+  lastLessonId: string | null;
   lessons: AcademyLesson[];
 };
+
+export type AcademyLessonGroup = {
+  title: string;
+  lessons: AcademyLesson[];
+};
+
+export function groupLessonsByModule(lessons: AcademyLesson[]): AcademyLessonGroup[] {
+  const groups: AcademyLessonGroup[] = [];
+  for (const lesson of lessons) {
+    const last = groups[groups.length - 1];
+    if (!last || last.title !== lesson.moduleTitle) {
+      groups.push({ title: lesson.moduleTitle, lessons: [lesson] });
+    } else {
+      last.lessons.push(lesson);
+    }
+  }
+  return groups;
+}
 
 export async function loadAcademyCourse(
   userId: string,
@@ -119,6 +138,7 @@ export async function loadAcademyCourse(
       type: product.type,
       role: isCreator ? "creator" : "student",
       progressPct: Number(enrollment?.progressPct ?? 0),
+      lastLessonId: enrollment?.lastLessonId ?? null,
       lessons,
     };
   } catch (error) {
@@ -127,17 +147,23 @@ export async function loadAcademyCourse(
   }
 }
 
-export async function markLessonProgress(userId: string, productId: string, index: number, total: number) {
+export async function markLessonProgress(
+  userId: string,
+  productId: string,
+  lessonId: string,
+  index: number,
+  total: number,
+) {
   if (total <= 0) return;
   const pct = Math.min(100, Math.round(((index + 1) / total) * 10000) / 100);
   const enrollment = await prisma.enrollment.findUnique({
     where: { userId_productId: { userId, productId } },
   });
   if (!enrollment || enrollment.status !== "ACTIVE") return;
-  if (Number(enrollment.progressPct) >= pct) return;
+  const nextPct = Number(enrollment.progressPct) >= pct ? enrollment.progressPct : pct;
   await prisma.enrollment.update({
     where: { id: enrollment.id },
-    data: { progressPct: pct },
+    data: { progressPct: nextPct, lastLessonId: lessonId },
   });
 }
 
