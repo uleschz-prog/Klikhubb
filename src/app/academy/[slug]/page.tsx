@@ -41,8 +41,8 @@ export default async function AcademyCoursePage({
   const nextLesson = selectedIndex >= 0 ? course.lessons[selectedIndex + 1] ?? null : null;
   const nextLessonHref = nextLesson ? `/academy/${course.slug}?l=${encodeURIComponent(nextLesson.id)}` : null;
   const reachedCount = Math.max(
-    0,
     Math.round((course.progressPct / 100) * course.lessons.length),
+    selectedIndex + 1,
   );
   const modules = groupLessonsByModule(course.lessons);
 
