@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import type { FeedVideo } from "@/lib/video/types";
 import { BuyButton } from "@/components/commerce/BuyButton";
 import { YouTubeStage } from "@/components/video/YouTubeStage";
@@ -85,12 +86,21 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
         </p>
         {video.product ? (
           <div className={preview ? "mt-3" : "mt-4 max-w-sm"}>
-            <BuyButton
-              price={video.product.price}
-              currency={video.product.currency}
-              label={preview ? "Comprar" : `Llevar ${video.product.title}`}
-              href={`/checkout/${video.product.slug}`}
-            />
+            {video.product.owned ? (
+              <Link
+                href={`/academy/${video.product.slug}`}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-klik-cyan px-5 py-3 text-sm font-bold text-klik-black"
+              >
+                Continuar
+              </Link>
+            ) : (
+              <BuyButton
+                price={video.product.price}
+                currency={video.product.currency}
+                label={preview ? "Comprar" : `Llevar ${video.product.title}`}
+                href={`/checkout/${video.product.slug}`}
+              />
+            )}
           </div>
         ) : null}
       </div>

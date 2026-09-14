@@ -224,6 +224,28 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
   }
 }
 
+export async function viewerOwnsProduct(userId: string, slug: string): Promise<boolean> {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { slug },
+      select: { id: true, creatorId: true },
+    });
+    if (!product) return false;
+    if (product.creatorId === userId) return true;
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_productId: { userId, productId: product.id } },
+      select: { status: true },
+    });
+    return enrollment?.status === "ACTIVE";
+  } catch (error) {
+    if (!shouldUseDemoFallback(error)) throw error;
+    const product = await demoFindProductBySlug(slug);
+    if (!product) return false;
+    if (product.creatorId === userId) return true;
+    return await demoHasEnrollment(userId, product.id);
+  }
+}
+
 export async function getCheckoutPreview(slug: string, buyerId: string) {
   void buyerId;
   try {

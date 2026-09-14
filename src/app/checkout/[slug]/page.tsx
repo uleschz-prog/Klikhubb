@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { CheckoutStage } from "@/components/commerce/CheckoutStage";
 import { getDbUserId, getSession } from "@/lib/auth/session";
-import { getCheckoutPreview } from "@/lib/commerce/catalog";
+import { getCheckoutPreview, viewerOwnsProduct } from "@/lib/commerce/catalog";
 import { getCheckoutMethods } from "@/config/checkout-methods";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,10 @@ export default async function CheckoutPage({
   const buyerId = await getDbUserId();
   if (!buyerId) {
     redirect(`/login?callbackUrl=${encodeURIComponent(`/checkout/${params.slug}`)}`);
+  }
+
+  if (await viewerOwnsProduct(buyerId, params.slug)) {
+    redirect(`/academy/${params.slug}`);
   }
 
   const preview = await getCheckoutPreview(params.slug, buyerId);

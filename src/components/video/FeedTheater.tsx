@@ -96,7 +96,10 @@ export function FeedTheater({
   const [commentCount, setCommentCount] = useState(video.comments);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
   const [draft, setDraft] = useState("");
-  const [shopOpen, setShopOpen] = useState(Boolean(buySlug));
+  const buyAlreadyOwned = Boolean(
+    buySlug && videos.some((item) => item.product?.slug === buySlug && item.product.owned),
+  );
+  const [shopOpen, setShopOpen] = useState(Boolean(buySlug) && !buyAlreadyOwned);
 
   const tags = useMemo(() => {
     const fromCaption = video.caption.match(/#([A-Za-z0-9_]+)/g)?.map((tag) => tag.slice(1)) ?? [];
@@ -124,8 +127,17 @@ export function FeedTheater({
     router.replace(clipHref(video.id), { scroll: false });
   }, [clipHref, router, video.id]);
 
+  useEffect(() => {
+    if (!buyAlreadyOwned || !buySlug) return;
+    router.replace(`/academy/${encodeURIComponent(buySlug)}`);
+  }, [buyAlreadyOwned, buySlug, router]);
+
   function openShop() {
     if (!video.product) return;
+    if (video.product.owned) {
+      router.push(`/academy/${encodeURIComponent(video.product.slug)}`);
+      return;
+    }
     setPanel("none");
     setShopOpen(true);
     router.replace(clipHref(video.id, { buy: video.product.slug }), { scroll: false });
@@ -557,7 +569,7 @@ export function FeedTheater({
               {muted || volume === 0 ? <RailMuteIcon /> : <RailVolumeIcon />}
             </RailAction>
             {video.product ? (
-              <RailAction label="Comprar" onClick={openShop}>
+              <RailAction label={video.product.owned ? "Continuar" : "Comprar"} onClick={openShop}>
                 <BagIcon />
               </RailAction>
             ) : null}
@@ -580,12 +592,22 @@ export function FeedTheater({
               <button
                 type="button"
                 onClick={openShop}
-                className="mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full bg-klik-green px-4 py-2.5 text-sm font-bold text-klik-black"
+                className={`mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full px-4 py-2.5 text-sm font-bold ${
+                  video.product.owned
+                    ? "bg-klik-cyan text-klik-black"
+                    : "bg-klik-green text-klik-black"
+                }`}
               >
-                <span>Comprar · {video.product.title}</span>
-                <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
-                  {formatProductPrice(video.product.price, video.product.currency)}
-                </span>
+                {video.product.owned ? (
+                  <span>Continuar · {video.product.title}</span>
+                ) : (
+                  <>
+                    <span>Comprar · {video.product.title}</span>
+                    <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
+                      {formatProductPrice(video.product.price, video.product.currency)}
+                    </span>
+                  </>
+                )}
               </button>
             ) : null}
           </div>

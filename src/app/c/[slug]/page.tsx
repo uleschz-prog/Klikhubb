@@ -90,7 +90,7 @@ export default async function PublicCoursePage({
             href={academyHref}
             className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
           >
-            Ir a la academia
+            Continuar
           </Link>
         ) : course.access === "creator" ? (
           <Link

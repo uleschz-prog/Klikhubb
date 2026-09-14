@@ -60,7 +60,7 @@ type FeedRow = Awaited<ReturnType<typeof prisma.video.findMany<{ include: typeof
 
 function toFeedVideo(
   row: FeedRow,
-  flags: { liked: boolean; saved: boolean; followed: boolean },
+  flags: { liked: boolean; saved: boolean; followed: boolean; ownsProduct: boolean },
 ): FeedVideo {
   const productRow = row.products[0]?.product;
   const playback = row.playbackId ? muxPlaybackUrl(row.playbackId) : null;
@@ -103,6 +103,7 @@ function toFeedVideo(
             description: productRow.description,
             type: productRow.type,
             billing: productRow.billing,
+            owned: flags.ownsProduct,
           }
         : null,
   };
@@ -114,9 +115,18 @@ async function withViewerFlags(rows: FeedRow[], viewerId?: string) {
   const likedIds = new Set<string>();
   const savedIds = new Set<string>();
   const followedIds = new Set<string>();
+  const ownedProductIds = new Set<string>();
 
   if (viewerId && videoIds.length) {
-    const [likes, saves, follows] = await Promise.all([
+    const productIds = Array.from(
+      new Set(
+        rows
+          .map((row) => row.products[0]?.product)
+          .filter((product): product is NonNullable<typeof product> => Boolean(product && product.status === "ACTIVE"))
+          .map((product) => product.id),
+      ),
+    );
+    const [likes, saves, follows, enrollments] = await Promise.all([
       prisma.videoLike.findMany({
         where: { userId: viewerId, videoId: { in: videoIds } },
         select: { videoId: true },
@@ -129,10 +139,17 @@ async function withViewerFlags(rows: FeedRow[], viewerId?: string) {
         where: { followerId: viewerId, followingId: { in: creatorIds } },
         select: { followingId: true },
       }),
+      productIds.length
+        ? prisma.enrollment.findMany({
+            where: { userId: viewerId, productId: { in: productIds }, status: "ACTIVE" },
+            select: { productId: true },
+          })
+        : Promise.resolve([]),
     ]);
     likes.forEach((row) => likedIds.add(row.videoId));
     saves.forEach((row) => savedIds.add(row.videoId));
     follows.forEach((row) => followedIds.add(row.followingId));
+    enrollments.forEach((row) => ownedProductIds.add(row.productId));
   }
 
   return rows.map((row) =>
@@ -140,6 +157,9 @@ async function withViewerFlags(rows: FeedRow[], viewerId?: string) {
       liked: likedIds.has(row.id),
       saved: savedIds.has(row.id),
       followed: followedIds.has(row.creator.id),
+      ownsProduct:
+        row.creator.id === viewerId ||
+        Boolean(row.products[0]?.product && ownedProductIds.has(row.products[0].product.id)),
     }),
   );
 }

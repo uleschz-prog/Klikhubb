@@ -8,6 +8,7 @@ export type FeedProduct = {
   description: string | null;
   type: string | null;
   billing: "ONE_TIME";
+  owned?: boolean;
 };
 
 export type FeedVideo = {

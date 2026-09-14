@@ -67,6 +67,7 @@ export function CheckoutForm({
     });
     const payload = (await response.json()) as {
       error?: string;
+      code?: string;
       orderId?: string;
       mode?: string;
       url?: string;
@@ -79,6 +80,10 @@ export function CheckoutForm({
 
     if (!response.ok) {
       setLoadingMethod(null);
+      if (payload.code === "ALREADY_OWNED") {
+        router.push(`/academy/${encodeURIComponent(slug)}`);
+        return;
+      }
       setError(payload.error ?? "No se pudo iniciar el pago.");
       return;
     }
