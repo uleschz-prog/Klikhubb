@@ -1,19 +1,41 @@
 import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { getDbUserId } from "@/lib/auth/session";
 import { fulfillCheckoutSession, isStripeEnabled } from "@/lib/commerce/stripe";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+async function slugFromOrder(orderId: string, buyerId: string | null) {
+  if (!buyerId) return null;
+  try {
+    const order = await prisma.order.findFirst({
+      where: { id: orderId, buyerId },
+      select: { items: { take: 1, select: { product: { select: { slug: true, title: true } } } } },
+    });
+    return {
+      slug: order?.items[0]?.product.slug ?? null,
+      title: order?.items[0]?.product.title ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: { order?: string; session_id?: string; pending?: string };
+  searchParams: { order?: string; session_id?: string; pending?: string; slug?: string };
 }) {
   let orderRef = searchParams.order ?? null;
   let unpaid = false;
   let alreadyOwned = false;
   let settleFailed = false;
   const pending = searchParams.pending === "1";
+  let productSlug = searchParams.slug?.trim() || null;
+  let productTitle: string | null = null;
+
+  const userId = await getDbUserId();
 
   if (searchParams.session_id && isStripeEnabled()) {
     try {
@@ -23,10 +45,22 @@ export default async function CheckoutSuccessPage({
       if (result.settled?.orderId) {
         orderRef = result.settled.orderId;
       }
+      productSlug = result.productSlug ?? result.settled?.productSlug ?? productSlug;
+      productTitle = result.settled?.productTitle ?? productTitle;
     } catch {
       settleFailed = true;
     }
   }
+
+  if (productSlug == null && orderRef && !pending) {
+    const fromOrder = await slugFromOrder(orderRef, userId);
+    productSlug = fromOrder?.slug ?? productSlug;
+    productTitle = fromOrder?.title ?? productTitle;
+  }
+
+  const courseHref = productSlug ? `/academy/${productSlug}` : "/academy";
+  const fichaHref = productSlug ? `/c/${productSlug}` : "/academy";
+  const startLabel = alreadyOwned ? "Ir al curso" : "Empezar el curso";
 
   const headline = pending
     ? "Comprobante recibido"
@@ -43,7 +77,9 @@ export default async function CheckoutSuccessPage({
         ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
         : alreadyOwned
           ? "Este producto ya estaba en tu academy. No se cobró de nuevo."
-          : "Ya pagaste. El curso quedó en Mis cursos. Tienes 24 horas para pedir la devolución desde Mis pedidos. El creador ve el dinero en el monedero, pendiente 14 días.";
+          : productTitle
+            ? `Ya pagaste ${productTitle}. Entra a la primera lección. Tienes 24 horas para pedir la devolución desde Mis pedidos.`
+            : "Ya pagaste. Entra al curso. Tienes 24 horas para pedir la devolución desde Mis pedidos.";
 
   return (
     <PlatformShell title="Pago">
@@ -56,12 +92,28 @@ export default async function CheckoutSuccessPage({
         {orderRef ? ` Ref ${orderRef}.` : ""}
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href="/academy"
-          className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
-        >
-          Ver mis cursos
-        </Link>
+        {pending ? (
+          <Link
+            href={fichaHref}
+            className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
+          >
+            Ver la ficha
+          </Link>
+        ) : settleFailed || unpaid ? (
+          <Link
+            href="/academy"
+            className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
+          >
+            Ver mis cursos
+          </Link>
+        ) : (
+          <Link
+            href={courseHref}
+            className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
+          >
+            {startLabel}
+          </Link>
+        )}
         <Link href="/orders" className="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold">
           Ver mis pedidos
         </Link>

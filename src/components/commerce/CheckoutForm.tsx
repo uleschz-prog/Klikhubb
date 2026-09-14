@@ -111,7 +111,7 @@ export function CheckoutForm({
       onPaid(payload.orderId);
       return;
     }
-    router.push(`/checkout/success?order=${payload.orderId}`);
+    router.push(`/checkout/success?order=${payload.orderId}&slug=${encodeURIComponent(slug)}`);
     router.refresh();
   }
 
@@ -152,13 +152,13 @@ export function CheckoutForm({
           onPaid(payload.orderId);
           return;
         }
-        router.push(`/checkout/success?order=${payload.orderId}`);
+        router.push(`/checkout/success?order=${payload.orderId}&slug=${encodeURIComponent(slug)}`);
         router.refresh();
         return;
       }
 
       setSubmitted(true);
-      router.push(`/checkout/success?pending=1&order=${manual.reference}`);
+      router.push(`/checkout/success?pending=1&order=${manual.reference}&slug=${encodeURIComponent(slug)}`);
       router.refresh();
     } catch {
       setError("No se pudo enviar el comprobante.");

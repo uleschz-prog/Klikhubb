@@ -23,6 +23,7 @@ function money(cents: number): Prisma.Decimal {
 export type SettledOrder = {
   orderId: string;
   productTitle: string;
+  productSlug: string | null;
   total: number;
   currency: string;
   lines: {
@@ -43,7 +44,7 @@ async function settledFromProviderRef(
     include: {
       order: {
         include: {
-          items: { include: { product: { select: { title: true } } }, take: 1 },
+          items: { include: { product: { select: { title: true, slug: true } } }, take: 1 },
           commissions: true,
         },
       },
@@ -54,6 +55,7 @@ async function settledFromProviderRef(
   return {
     orderId: order.id,
     productTitle: order.items[0]?.product.title ?? "Producto",
+    productSlug: order.items[0]?.product.slug ?? null,
     total: Number(order.total),
     currency: order.currency.trim(),
     lines: order.commissions.map((line) => ({
@@ -304,6 +306,7 @@ export async function settlePaidOrder(input: {
     return {
       orderId: order.id,
       productTitle: product.title,
+      productSlug: product.slug,
       total: saleAmount,
       currency,
       lines: lines.map((line) => ({
