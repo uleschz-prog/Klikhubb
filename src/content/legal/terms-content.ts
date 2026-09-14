@@ -138,6 +138,7 @@ export const termsSections: LegalSection[] = [
       {
         paragraphs: [
           "Los pagos de los compradores se procesan por Stripe Checkout (tarjeta) y/o transferencia bancaria SPEI, según los métodos habilitados en el checkout. El Operador no almacena números completos de tarjeta en sus servidores; el cargo con tarjeta lo procesa Stripe.",
+          "Los Creadores pueden vincular una cuenta de Stripe Connect (Express) para recibir transferencias de sus retiros. Stripe recaba los datos de identidad y bancarios en su flujo hospedado. El Operador no almacena números de cuenta completos.",
           "El Monedero muestra saldos pendientes y disponibles con carácter informativo. Un saldo disponible no implica necesariamente que el retiro sea inmediato si faltan verificaciones de identidad (KYC), datos bancarios o revisiones de riesgo.",
           "Las solicitudes de retiro pueden estar sujetas a importes mínimos, comisiones de terceros, plazos de procesamiento y comprobaciones antilavado. Nos reservamos el derecho de rechazar retiros si existen indicios de fraude o incumplimiento.",
           "El Operador no es entidad de crédito ni custodio de depósitos bancarios regulados. Los saldos reflejan derechos económicos internos derivados de la actividad en la Plataforma, convertibles según las reglas vigentes.",

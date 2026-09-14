@@ -27,7 +27,7 @@ export const privacySections: LegalSection[] = [
           "Contenido multimedia: videos, miniaturas, materiales de cursos y archivos subidos a la Plataforma.",
           "Datos comerciales: historial de pedidos, productos adquiridos o vendidos, importes, moneda, estado de pago, movimientos de monedero, solicitudes de retiro.",
           "Datos técnicos: dirección IP, identificadores de dispositivo/navegador, logs de servidor, cookies esenciales (ver Política de Cookies).",
-          "Datos de verificación: información KYC o bancaria si solicitas retiros o superas umbrales de riesgo (cuando se active).",
+          "Datos de verificación: información KYC o bancaria si solicitas retiros o superas umbrales de riesgo. Si vinculas Stripe Connect, Stripe trata esos datos como responsable independiente de su plataforma de pagos.",
           "Comunicaciones: mensajes que nos envíes a soporte o por email.",
         ],
       },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { fulfillCheckoutSession, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
+import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,6 +39,14 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error(error);
       return NextResponse.json({ error: "No se pudo asentar la venta." }, { status: 500 });
+    }
+  }
+
+  if (event.type === "account.updated") {
+    try {
+      await handleConnectAccountUpdated(event.data.object.id);
+    } catch (error) {
+      console.error(error);
     }
   }
 
