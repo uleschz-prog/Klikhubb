@@ -1,15 +1,21 @@
 import Link from "next/link";
 import { BootstrapContentPanel } from "@/components/admin/BootstrapContentPanel";
+import { LaunchCoursePanel } from "@/components/admin/LaunchCoursePanel";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 import { requireAdminPage } from "@/lib/auth/require-admin";
 import { getFirstContentStatus } from "@/lib/platform/first-content";
+import { getLaunchCourseStatus } from "@/lib/platform/launch-course";
 import { getPlatformReadiness } from "@/lib/platform/readiness";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSetupPage() {
   await requireAdminPage();
-  const [readiness, firstContent] = await Promise.all([Promise.resolve(getPlatformReadiness()), getFirstContentStatus()]);
+  const [readiness, firstContent, launchCourse] = await Promise.all([
+    Promise.resolve(getPlatformReadiness()),
+    getFirstContentStatus(),
+    getLaunchCourseStatus(),
+  ]);
 
   return (
     <PlatformShell title="Admin">
@@ -73,6 +79,8 @@ export default async function AdminSetupPage() {
           </li>
         ))}
       </ul>
+
+      <LaunchCoursePanel initial={launchCourse} />
 
       <BootstrapContentPanel initial={firstContent} />
 

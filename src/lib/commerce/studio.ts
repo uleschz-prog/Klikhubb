@@ -357,11 +357,15 @@ export async function addStudioLesson(
         select: { productId: true },
       });
       if (product) {
+        const primary = await prisma.videoProduct.findFirst({
+          where: { productId: product.productId, isPrimary: true },
+          select: { videoId: true },
+        });
         await prisma.videoProduct.create({
           data: {
             videoId: video.id,
             productId: product.productId,
-            isPrimary: false,
+            isPrimary: !primary,
             ctaLabel: "Comprar",
           },
         });

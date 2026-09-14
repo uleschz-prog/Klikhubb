@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/require-admin";
 import { bootstrapFirstContent, getFirstContentStatus } from "@/lib/platform/first-content";
+import { getLaunchCourseStatus, publishLaunchCourse } from "@/lib/platform/launch-course";
 import { purgePlaceholderFeedContent } from "@/lib/platform/purge-placeholders";
 
 export const runtime = "nodejs";
@@ -11,14 +12,15 @@ export async function GET() {
   const auth = await requireAdminApi();
   if ("error" in auth) return auth.error;
 
-  const status = await getFirstContentStatus();
-  return NextResponse.json(status);
+  const [status, launch] = await Promise.all([getFirstContentStatus(), getLaunchCourseStatus()]);
+  return NextResponse.json({ ...status, launch });
 }
 
 /**
  * POST body opcional:
  * - { action: "purge" } → elimina videos/cursos placeholder del feed
- * - sin body / action bootstrap → crea curso borrador (sin clips al feed)
+ * - { action: "publish-launch" } → lecciones + preview + clip Shop de Cierre Qlyk
+ * - sin body / action bootstrap → crea curso borrador Empieza en Qlyk (sin clips al feed)
  */
 export async function POST(request: Request) {
   const auth = await requireAdminApi();
@@ -29,12 +31,19 @@ export async function POST(request: Request) {
   try {
     if (body?.action === "purge") {
       const result = await purgePlaceholderFeedContent();
+      const [status, launch] = await Promise.all([getFirstContentStatus(), getLaunchCourseStatus()]);
+      return NextResponse.json({ ok: true, purge: result, ...status, launch });
+    }
+
+    if (body?.action === "publish-launch") {
+      const launch = await publishLaunchCourse();
       const status = await getFirstContentStatus();
-      return NextResponse.json({ ok: true, purge: result, ...status });
+      return NextResponse.json({ ok: true, ...status, launch });
     }
 
     const result = await bootstrapFirstContent();
-    return NextResponse.json(result);
+    const launch = await getLaunchCourseStatus();
+    return NextResponse.json({ ...result, launch });
   } catch (error) {
     console.error(error);
     const message =
