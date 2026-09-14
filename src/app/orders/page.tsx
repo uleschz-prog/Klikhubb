@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BuyerRefundButton } from "@/components/commerce/BuyerRefundButton";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { BUYER_REFUND_WINDOW_HOURS } from "@/config/refund-policy";
 import { getDbUserId } from "@/lib/auth/session";
 import { listBuyerPurchases } from "@/lib/commerce/buyer-orders";
 import { formatMoney } from "@/lib/commerce/split";
@@ -19,7 +21,8 @@ export default async function OrdersPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Compras</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Mis pedidos</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Aquí ves tus pagos con tarjeta (Stripe) y tus transferencias SPEI, y el acceso a cada curso.
+        Aquí ves tus pagos con tarjeta (Stripe) y tus transferencias SPEI. Tienes{" "}
+        {BUYER_REFUND_WINDOW_HOURS} horas desde la compra para pedir la devolución a Qlyk.
       </p>
 
       {purchases.length === 0 ? (
@@ -50,7 +53,7 @@ export default async function OrdersPage() {
                     {formatWalletDate(row.createdAt)}
                     {row.reference ? ` · Ref ${row.reference}` : ""}
                   </p>
-                  {row.reviewerNote ? (
+                  {row.reviewerNote && row.status !== "REFUNDED" ? (
                     <p className="mt-2 text-sm text-white/55">Nota: {row.reviewerNote}</p>
                   ) : null}
                 </div>
@@ -58,14 +61,17 @@ export default async function OrdersPage() {
                   <p className="font-display text-xl font-extrabold text-klik-green">
                     {formatMoney(row.amount, row.currency)}
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
-                    {row.status === "APPROVED" && row.productSlug ? (
+                  <div className="mt-3 flex flex-wrap items-start gap-2 sm:justify-end">
+                    {row.accessActive && row.productSlug ? (
                       <Link
                         href={`/academy/${row.productSlug}`}
                         className="rounded-full bg-klik-green px-4 py-2 text-xs font-bold text-klik-black"
                       >
                         Ver curso
                       </Link>
+                    ) : null}
+                    {row.canRequestRefund && row.orderId && row.refundUntil ? (
+                      <BuyerRefundButton orderId={row.orderId} refundUntil={row.refundUntil} />
                     ) : null}
                     {row.status === "PENDING" || row.status === "PROOF_SUBMITTED" ? (
                       <Link

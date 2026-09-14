@@ -100,7 +100,7 @@ export const termsSections: LegalSection[] = [
         paragraphs: [
           "Los precios de los Productos los fija cada Creador. El importe final puede incluir impuestos según la legislación aplicable y la configuración del checkout.",
           "Al realizar una Compra, celebras un contrato directo con el Creador vendedor. La Plataforma facilita el pago, el acceso digital y el reparto económico descrito en estos Términos.",
-          "Los Productos digitales, salvo error técnico imputable al Operador o disposición legal imperativa, pueden no ser reembolsables una vez entregado el acceso. Las solicitudes de devolución se gestionarán conforme a la normativa de consumo aplicable y a la política del Creador, sin perjuicio de los derechos legales irrenunciables del comprador.",
+          "Si adquieres un curso u otro Producto digital a través de la Plataforma, tienes 24 horas desde el momento en que el pago queda confirmado para solicitar la devolución del dinero a Qlyk (desde Mis pedidos). Tras aceptar la solicitud, se revoca el acceso al contenido. Si pagaste con tarjeta, Stripe reembolsa el cargo; si pagaste por SPEI, el Operador procesa la devolución a tu cuenta. Pasadas las 24 horas, las solicitudes se gestionarán conforme a la normativa de consumo aplicable y a la política del Creador, sin perjuicio de los derechos legales irrenunciables del comprador.",
           "Los contracargos, devoluciones o impagos pueden generar ajustes negativos en el Monedero del Creador o del Operador, incluida la recuperación de importes ya acreditados.",
         ],
       },

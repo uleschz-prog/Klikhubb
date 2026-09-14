@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { handleStripeChargeRefunded } from "@/lib/commerce/refunds";
 import { fulfillCheckoutSession, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
 
@@ -47,6 +48,18 @@ export async function POST(request: Request) {
       await handleConnectAccountUpdated(event.data.object.id);
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object;
+    const paymentIntentId =
+      typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id ?? null;
+    try {
+      await handleStripeChargeRefunded(paymentIntentId);
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo revocar el acceso del reembolso." }, { status: 500 });
     }
   }
 

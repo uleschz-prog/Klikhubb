@@ -50,6 +50,8 @@ Reglas en `src/lib/commerce/split.ts` y `src/config/compensation-plan.ts`.
 
 Motivo: margen para reembolsos antes de liberar retiro.
 
+El comprador tiene **24 horas** desde el pago confirmado para pedir la devolución en `/orders`. Se revoca el acceso y, con tarjeta, Stripe reembolsa el cargo.
+
 ### 5. Retiro
 
 - El creador vincula su cuenta de Stripe (Express) en `/wallet`.
@@ -71,7 +73,7 @@ BLOB_READ_WRITE_TOKEN="..."
 PLATFORM_ADMIN_PASSWORD="..."
 ```
 
-Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded` y `account.updated`).
+Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `account.updated` y `charge.refunded`).
 
 En Stripe Dashboard activa **Connect**. Los creadores vinculan su cuenta en `/wallet`. País por defecto: `STRIPE_CONNECT_COUNTRY=MX`. Para apagar Connect: `STRIPE_CONNECT_ENABLED=false`.
 
