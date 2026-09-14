@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import type { StudioCourse, StudioLesson, StudioModule } from "@/lib/commerce/studio";
+import { CopyCourseLink } from "@/components/studio/CopyCourseLink";
 
 type Props = {
   initial: StudioCourse;
@@ -31,6 +32,10 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
 
   const lessonTotal = useMemo(
     () => course.modules.reduce((sum, mod) => sum + mod.lessons.length, 0),
+    [course.modules],
+  );
+  const hasPreview = useMemo(
+    () => course.modules.some((mod) => mod.lessons.some((lesson) => lesson.isFreePreview)),
     [course.modules],
   );
 
@@ -188,6 +193,13 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
+            href={`/c/${course.slug}`}
+            className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+          >
+            Ver ficha
+          </Link>
+          <CopyCourseLink slug={course.slug} />
+          <Link
             href={`/academy/${course.slug}`}
             className="inline-flex min-h-11 items-center rounded-full border border-white/15 px-5 text-sm font-semibold text-white"
           >
@@ -201,6 +213,21 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
           </Link>
         </div>
       </div>
+
+      {lessonTotal === 0 ? (
+        <div className="rounded-2xl border border-klik-cyan/30 bg-klik-cyan/10 px-5 py-4 text-sm text-white/80">
+          <p className="font-semibold text-white">La ficha pública está vacía</p>
+          <p className="mt-1 text-white/60">
+            Agrega un módulo, sube la primera lección y márcala Preview gratis. Así quien reciba el
+            enlace puede probarla antes de comprar.
+          </p>
+        </div>
+      ) : !hasPreview ? (
+        <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white/70">
+          Tienes lecciones, pero ninguna es preview. En el temario toca <span className="text-klik-green">Preview</span>{" "}
+          en la primera para que se vea en la ficha pública.
+        </div>
+      ) : null}
 
       <form onSubmit={saveMeta} className="rounded-2xl border border-klik-line bg-klik-card p-5 space-y-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">Ficha del curso</p>

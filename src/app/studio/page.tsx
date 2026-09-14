@@ -54,12 +54,11 @@ export default async function StudioPage() {
       ) : (
         <div className="mt-8 space-y-3">
           {courses.map((course) => (
-            <Link
+            <article
               key={course.slug}
-              href={`/studio/${course.slug}`}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4 transition hover:border-klik-cyan/40"
+              className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4"
             >
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="font-display text-xs text-klik-green">
                   {STATUS_LABEL[course.status] ?? course.status} · {formatProductPrice(course.price, course.currency)}
                 </p>
@@ -67,10 +66,24 @@ export default async function StudioPage() {
                 <p className="mt-1 text-xs text-white/40">
                   {course.moduleCount} {course.moduleCount === 1 ? "módulo" : "módulos"} ·{" "}
                   {course.lessonCount} {course.lessonCount === 1 ? "lección" : "lecciones"}
+                  {course.lessonCount === 0 ? " · Falta la primera lección" : ""}
                 </p>
               </div>
-              <span className="shrink-0 text-sm font-semibold text-klik-cyan">Editar</span>
-            </Link>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/c/${course.slug}`}
+                  className="inline-flex min-h-11 items-center rounded-full border border-white/15 px-4 text-sm font-semibold"
+                >
+                  Ficha
+                </Link>
+                <Link
+                  href={`/studio/${course.slug}`}
+                  className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                >
+                  Editar
+                </Link>
+              </div>
+            </article>
           ))}
         </div>
       )}
