@@ -37,7 +37,7 @@ export async function createStripeCheckoutSession(input: {
     locale: "es",
     customer_email: input.buyerEmail ?? undefined,
     client_reference_id: input.buyerId,
-    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}&slug=${encodeURIComponent(input.product.slug)}`,
     cancel_url: `${origin}${cancelPath}${cancelPath.includes("?") ? "&" : "?"}canceled=1`,
     line_items: [
       {
@@ -74,15 +74,17 @@ export type FulfillResult = {
   unpaid: boolean;
   alreadyOwned: boolean;
   settled: SettledOrder | null;
+  productSlug: string | null;
 };
 
 /** Idempotente: webhook y /checkout/success pueden llamarlo los dos. */
 export async function fulfillCheckoutSession(sessionId: string): Promise<FulfillResult> {
   const stripe = getStripe();
   const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const slug = session.metadata?.slug || null;
 
   if (session.payment_status !== "paid") {
-    return { unpaid: true, alreadyOwned: false, settled: null };
+    return { unpaid: true, alreadyOwned: false, settled: null, productSlug: slug };
   }
 
   const buyerId = await resolveLiveUserId(
@@ -90,7 +92,6 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
     session.metadata?.buyerEmail || session.customer_email,
   );
   const productId = session.metadata?.productId;
-  const slug = session.metadata?.slug;
   const catalog = session.metadata?.catalog === "demo" ? "demo" : "postgres";
 
   if (!buyerId || !slug) {
@@ -103,7 +104,7 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
         throw new Error("STRIPE_DEMO_SETTLE_FORBIDDEN");
       }
       const settled = await demoSettleOrder({ buyerId, slug });
-      return { unpaid: false, alreadyOwned: false, settled };
+      return { unpaid: false, alreadyOwned: false, settled, productSlug: slug };
     }
     if (!productId) {
       throw new Error("STRIPE_SESSION_MISSING_METADATA");
@@ -114,10 +115,10 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
       provider: "stripe",
       providerRef: session.id,
     });
-    return { unpaid: false, alreadyOwned: false, settled };
+    return { unpaid: false, alreadyOwned: false, settled, productSlug: settled.productSlug ?? slug };
   } catch (error) {
     if (error instanceof CommerceError && error.code === "ALREADY_OWNED") {
-      return { unpaid: false, alreadyOwned: true, settled: null };
+      return { unpaid: false, alreadyOwned: true, settled: null, productSlug: slug };
     }
     const code = error instanceof Error ? error.message : "";
     if (code === "ALREADY_OWNED") {
@@ -126,13 +127,14 @@ export async function fulfillCheckoutSession(sessionId: string): Promise<Fulfill
         unpaid: false,
         alreadyOwned: true,
         settled: orderId
-          ? { orderId, productTitle: slug, total: 0, currency: "USD", lines: [] }
+          ? { orderId, productTitle: slug, productSlug: slug, total: 0, currency: "USD", lines: [] }
           : null,
+        productSlug: slug,
       };
     }
     if (catalog !== "demo" && shouldUseDemoFallback(error)) {
       const settled = await demoSettleOrder({ buyerId, slug });
-      return { unpaid: false, alreadyOwned: false, settled };
+      return { unpaid: false, alreadyOwned: false, settled, productSlug: slug };
     }
     throw error;
   }

@@ -453,6 +453,7 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
   return {
     orderId,
     productTitle: product.title,
+    productSlug: product.slug,
     total: product.price,
     currency: product.currency,
     lines: lines.map((line) => ({
