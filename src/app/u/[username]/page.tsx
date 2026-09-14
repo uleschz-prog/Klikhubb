@@ -85,8 +85,8 @@ export default async function PublicCreatorPage({ params }: { params: { username
                   <BuyButton
                     price={product.price}
                     currency={product.currency}
-                    href={`/checkout/${product.slug}`}
-                    label="Comprar"
+                    href={`/c/${product.slug}`}
+                    label="Ver curso"
                   />
                 </div>
               </article>

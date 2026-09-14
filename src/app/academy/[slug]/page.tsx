@@ -23,13 +23,13 @@ export default async function AcademyCoursePage({
 }) {
   const userId = await getDbUserId();
   if (!userId) {
-    redirect(`/login?callbackUrl=${encodeURIComponent(`/academy/${params.slug}`)}`);
+    redirect(`/c/${params.slug}`);
   }
 
   const course = await loadAcademyCourse(userId, params.slug);
   if (course === "not_found") notFound();
   if (course === "forbidden") {
-    redirect(`/checkout/${params.slug}`);
+    redirect(`/c/${params.slug}`);
   }
 
   const selected =

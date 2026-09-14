@@ -32,7 +32,7 @@ export function CheckoutStage({
         stripeEnabled={stripeEnabled}
         speiEnabled={speiEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent(`/checkout/${item.slug}`)}`}
-        cancelPath={`/checkout/${item.slug}`}
+        cancelPath={`/c/${item.slug}`}
         canceled={canceled}
       />
     </div>
