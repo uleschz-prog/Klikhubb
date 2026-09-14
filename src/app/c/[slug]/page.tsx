@@ -162,7 +162,7 @@ export default async function PublicCoursePage({
                   </p>
                   <ol className="mt-2 space-y-1">
                     {module.lessons.map((lesson) => {
-                      const active = selected?.id === lesson.id;
+                      const active = selected?.id === lesson.id || lockedSelected?.id === lesson.id;
                       const href = `/c/${course.slug}?l=${encodeURIComponent(lesson.id)}`;
                       return (
                         <li key={lesson.id}>
