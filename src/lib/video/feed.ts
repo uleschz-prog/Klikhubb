@@ -49,7 +49,17 @@ const videoInclude = {
     take: 1,
     include: {
       product: {
-        select: { slug: true, title: true, description: true, type: true, price: true, currency: true, status: true, billing: true },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          type: true,
+          price: true,
+          currency: true,
+          status: true,
+          billing: true,
+        },
       },
     },
   },
