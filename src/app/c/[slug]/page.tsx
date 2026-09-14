@@ -25,15 +25,21 @@ function formatAverage(value: number) {
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const course = await loadPublicCourse(params.slug, null);
+  const userId = await getDbUserId();
+  const course = await loadPublicCourse(params.slug, userId);
   if (!course) return { title: "Curso no encontrado" };
   const title = `${course.title} · Qlyk`;
   const description = course.description || `Curso de ${course.creatorName} en Qlyk.`;
   return {
     title,
     description,
-    openGraph: { title, description, url: `${site.url}/c/${course.slug}` },
-    twitter: { title, description },
+    openGraph: {
+      title,
+      description,
+      url: `${site.url}/c/${course.slug}`,
+      images: [{ url: `${site.url}/c/${course.slug}/opengraph-image`, width: 1200, height: 630, alt: title }],
+    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -143,8 +149,46 @@ export default async function PublicCoursePage({
               )}
             </div>
           ) : (
-            <div className="flex aspect-video items-center justify-center rounded-2xl border border-klik-line bg-klik-card px-6 text-center text-sm text-white/50">
-              Este curso todavía no tiene preview. El temario de la derecha te dice qué incluye.
+            <div className="flex aspect-video flex-col items-center justify-center rounded-2xl border border-klik-line bg-klik-card px-6 text-center">
+              {course.lessonCount === 0 ? (
+                <>
+                  <p className="font-display text-xl font-bold">
+                    {course.access === "creator" ? "Sube la primera lección" : "Todavía no hay lecciones"}
+                  </p>
+                  <p className="mt-2 max-w-md text-sm text-white/50">
+                    {course.access === "creator"
+                      ? "En Studio agrega un módulo, sube un video y márcalo Preview gratis. Así se ve esta ficha cuando la compartes."
+                      : "El creador todavía no subió el contenido. En cuanto lo haga, el preview aparece aquí."}
+                  </p>
+                  {course.access === "creator" ? (
+                    <Link
+                      href={`/studio/${course.slug}`}
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                    >
+                      Ir a Studio
+                    </Link>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <p className="font-display text-xl font-bold">
+                    {course.access === "creator" ? "Marca un preview gratis" : "Este curso aún no tiene preview"}
+                  </p>
+                  <p className="mt-2 max-w-md text-sm text-white/50">
+                    {course.access === "creator"
+                      ? "El temario ya está. En Studio, en la primera lección toca Preview para que la gente la pruebe sin pagar."
+                      : "El temario de la derecha te dice qué incluye. Compra para verlo completo en Academy."}
+                  </p>
+                  {course.access === "creator" ? (
+                    <Link
+                      href={`/studio/${course.slug}`}
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                    >
+                      Ir a Studio
+                    </Link>
+                  ) : null}
+                </>
+              )}
             </div>
           )}
         </div>
@@ -152,7 +196,11 @@ export default async function PublicCoursePage({
         <aside className="rounded-2xl border border-klik-line bg-klik-card p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Temario</p>
           {course.lessons.length === 0 ? (
-            <p className="mt-3 text-sm text-white/50">Aún no hay lecciones.</p>
+            <p className="mt-3 text-sm text-white/50">
+              {course.access === "creator"
+                ? "Nadie ve lecciones aquí hasta que subas la primera en Studio."
+                : "Aún no hay lecciones."}
+            </p>
           ) : (
             <div className="mt-3 space-y-4">
               {modules.map((module, moduleIndex) => (

@@ -22,6 +22,93 @@ function QlykMark({ size = 56 }: { size?: number }) {
   );
 }
 
+export function createCourseShareImage(input: {
+  title: string;
+  creatorName: string;
+  priceLabel: string;
+}) {
+  const host = site.url.replace(/^https?:\/\//, "");
+  const title = input.title.length > 72 ? `${input.title.slice(0, 70).trim()}…` : input.title;
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "64px 72px",
+          background: "linear-gradient(145deg, #050505 0%, #081018 52%, #050505 100%)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <QlykMark size={56} />
+          <div
+            style={{
+              display: "flex",
+              fontSize: 26,
+              fontWeight: 700,
+              color: "rgba(255,255,255,0.55)",
+              letterSpacing: 4,
+            }}
+          >
+            CURSO EN QLYK
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 1040 }}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 64,
+              fontWeight: 800,
+              lineHeight: 1.08,
+              color: "#FFFFFF",
+            }}
+          >
+            {title}
+          </div>
+          <div style={{ display: "flex", fontSize: 32, color: "rgba(255,255,255,0.7)" }}>
+            {`Por ${input.creatorName}`}
+          </div>
+          <div style={{ display: "flex" }}>
+            <div
+              style={{
+                display: "flex",
+                marginTop: 8,
+                padding: "12px 22px",
+                borderRadius: 999,
+                background: ACCENT,
+                color: "#050505",
+                fontSize: 28,
+                fontWeight: 800,
+              }}
+            >
+              {input.priceLabel}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: 24,
+            color: "rgba(255,255,255,0.45)",
+          }}
+        >
+          <span>{host}/c</span>
+          <span>Mira el preview · Compra en un clic</span>
+        </div>
+      </div>
+    ),
+    ogImageSize,
+  );
+}
+
 export function createShareImage() {
   const host = site.url.replace(/^https?:\/\//, "");
 
