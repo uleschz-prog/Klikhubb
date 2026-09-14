@@ -22,8 +22,90 @@ export type AcademyCourse = {
   type: string;
   role: "student" | "creator";
   progressPct: number;
+  lastLessonId: string | null;
   lessons: AcademyLesson[];
 };
+
+export type AcademyLessonGroup<T extends { moduleTitle: string } = AcademyLesson> = {
+  title: string;
+  lessons: T[];
+};
+
+export function groupLessonsByModule<T extends { moduleTitle: string }>(lessons: T[]): AcademyLessonGroup<T>[] {
+  const groups: AcademyLessonGroup<T>[] = [];
+  for (const lesson of lessons) {
+    const last = groups[groups.length - 1];
+    if (!last || last.title !== lesson.moduleTitle) {
+      groups.push({ title: lesson.moduleTitle, lessons: [lesson] });
+    } else {
+      last.lessons.push(lesson);
+    }
+  }
+  return groups;
+}
+
+export async function listCourseLessons(productId: string): Promise<AcademyLesson[]> {
+  await ensureLessonsFromVideos(productId);
+
+  const course = await prisma.course.findUnique({
+    where: { productId },
+    include: {
+      modules: {
+        orderBy: { sortOrder: "asc" },
+        include: {
+          lessons: {
+            orderBy: { sortOrder: "asc" },
+            include: {
+              video: { select: { videoUrl: true, thumbnailUrl: true, title: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const lessons: AcademyLesson[] = [];
+  for (const courseModule of course?.modules ?? []) {
+    for (const lesson of courseModule.lessons) {
+      lessons.push({
+        id: lesson.id,
+        title: lesson.title || lesson.video?.title || "Lección",
+        videoUrl: lesson.video?.videoUrl ?? null,
+        thumbnailUrl: lesson.video?.thumbnailUrl ?? null,
+        content: lesson.content,
+        resourceUrl: lesson.resourceUrl,
+        resourceName: lesson.resourceName,
+        isFreePreview: lesson.isFreePreview,
+        moduleTitle: courseModule.title,
+        sortOrder: lesson.sortOrder,
+      });
+    }
+  }
+
+  if (lessons.length === 0) {
+    const attached = await prisma.videoProduct.findMany({
+      where: { productId, video: { status: "PUBLISHED" } },
+      orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
+      include: { video: { select: { id: true, title: true, videoUrl: true, thumbnailUrl: true } } },
+    });
+    for (const row of attached) {
+      lessons.push({
+        id: row.video.id,
+        title: row.video.title,
+        videoUrl: row.video.videoUrl,
+        thumbnailUrl: row.video.thumbnailUrl,
+        content: null,
+        resourceUrl: null,
+        resourceName: null,
+        isFreePreview: false,
+        moduleTitle: "Contenido",
+        sortOrder: row.sortOrder,
+      });
+    }
+  }
+
+  return lessons;
+}
 
 export async function loadAcademyCourse(
   userId: string,
@@ -52,64 +134,7 @@ export async function loadAcademyCourse(
     const isStudent = enrollment?.status === "ACTIVE";
     if (!isCreator && !isStudent) return "forbidden";
 
-    await ensureLessonsFromVideos(product.id);
-
-    const course = await prisma.course.findUnique({
-      where: { productId: product.id },
-      include: {
-        modules: {
-          orderBy: { sortOrder: "asc" },
-          include: {
-            lessons: {
-              orderBy: { sortOrder: "asc" },
-              include: {
-                video: { select: { videoUrl: true, thumbnailUrl: true, title: true } },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const lessons: AcademyLesson[] = [];
-    for (const courseModule of course?.modules ?? []) {
-      for (const lesson of courseModule.lessons) {
-        lessons.push({
-          id: lesson.id,
-          title: lesson.title || lesson.video?.title || "Lección",
-          videoUrl: lesson.video?.videoUrl ?? null,
-          thumbnailUrl: lesson.video?.thumbnailUrl ?? null,
-          content: lesson.content,
-          resourceUrl: lesson.resourceUrl,
-          resourceName: lesson.resourceName,
-          isFreePreview: lesson.isFreePreview,
-          moduleTitle: courseModule.title,
-          sortOrder: lesson.sortOrder,
-        });
-      }
-    }
-
-    if (lessons.length === 0) {
-      const attached = await prisma.videoProduct.findMany({
-        where: { productId: product.id, video: { status: "PUBLISHED" } },
-        orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }],
-        include: { video: { select: { id: true, title: true, videoUrl: true, thumbnailUrl: true } } },
-      });
-      for (const row of attached) {
-        lessons.push({
-          id: row.video.id,
-          title: row.video.title,
-          videoUrl: row.video.videoUrl,
-          thumbnailUrl: row.video.thumbnailUrl,
-          content: null,
-          resourceUrl: null,
-          resourceName: null,
-          isFreePreview: false,
-          moduleTitle: "Contenido",
-          sortOrder: row.sortOrder,
-        });
-      }
-    }
+    const lessons = await listCourseLessons(product.id);
 
     return {
       productId: product.id,
@@ -119,6 +144,7 @@ export async function loadAcademyCourse(
       type: product.type,
       role: isCreator ? "creator" : "student",
       progressPct: Number(enrollment?.progressPct ?? 0),
+      lastLessonId: enrollment?.lastLessonId ?? null,
       lessons,
     };
   } catch (error) {
@@ -127,17 +153,23 @@ export async function loadAcademyCourse(
   }
 }
 
-export async function markLessonProgress(userId: string, productId: string, index: number, total: number) {
+export async function markLessonProgress(
+  userId: string,
+  productId: string,
+  lessonId: string,
+  index: number,
+  total: number,
+) {
   if (total <= 0) return;
   const pct = Math.min(100, Math.round(((index + 1) / total) * 10000) / 100);
   const enrollment = await prisma.enrollment.findUnique({
     where: { userId_productId: { userId, productId } },
   });
   if (!enrollment || enrollment.status !== "ACTIVE") return;
-  if (Number(enrollment.progressPct) >= pct) return;
+  const nextPct = Number(enrollment.progressPct) >= pct ? enrollment.progressPct : pct;
   await prisma.enrollment.update({
     where: { id: enrollment.id },
-    data: { progressPct: pct },
+    data: { progressPct: nextPct, lastLessonId: lessonId },
   });
 }
 
