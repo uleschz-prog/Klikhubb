@@ -5,16 +5,18 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { requireAdminPage } from "@/lib/auth/require-admin";
 import { getFirstContentStatus } from "@/lib/platform/first-content";
 import { getLaunchCourseStatus } from "@/lib/platform/launch-course";
+import { probeStripeConnect } from "@/lib/commerce/stripe-connect";
 import { getPlatformReadiness } from "@/lib/platform/readiness";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSetupPage() {
   await requireAdminPage();
-  const [readiness, firstContent, launchCourse] = await Promise.all([
+  const [readiness, firstContent, launchCourse, connectLive] = await Promise.all([
     Promise.resolve(getPlatformReadiness()),
     getFirstContentStatus(),
     getLaunchCourseStatus(),
+    probeStripeConnect(),
   ]);
 
   return (
@@ -56,6 +58,33 @@ export default async function AdminSetupPage() {
       </div>
 
       <ul className="mt-8 space-y-3">
+        <li
+          className={`rounded-2xl border px-5 py-4 ${
+            connectLive.ok ? "border-klik-green/25 bg-klik-green/5" : "border-amber-400/30 bg-amber-400/5"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <span
+              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                connectLive.ok ? "bg-klik-green text-klik-black" : "border border-amber-400/40 text-amber-200"
+              }`}
+            >
+              {connectLive.ok ? "✓" : "!"}
+            </span>
+            <div>
+              <p className={`font-semibold ${connectLive.ok ? "text-klik-green" : "text-white"}`}>
+                Stripe Connect (API en vivo)
+              </p>
+              <p className="mt-1 text-sm text-white/50">
+                {connectLive.ok
+                  ? "Stripe acepta cuentas Connect. Los creadores pueden vincular en /wallet."
+                  : connectLive.error === "CONNECT_NOT_ENABLED"
+                    ? "Connect está apagado en env (falta STRIPE_SECRET_KEY o STRIPE_CONNECT_ENABLED=false)."
+                    : connectLive.error}
+              </p>
+            </div>
+          </div>
+        </li>
         {readiness.checks.map((check) => (
           <li
             key={check.id}

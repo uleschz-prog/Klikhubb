@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth/require-admin";
+import { probeStripeConnect } from "@/lib/commerce/stripe-connect";
 import { getPlatformReadiness } from "@/lib/platform/readiness";
 
 export const runtime = "nodejs";
@@ -10,5 +11,9 @@ export async function GET() {
   const auth = await requireAdminApi();
   if ("error" in auth) return auth.error;
 
-  return NextResponse.json(getPlatformReadiness());
+  const [readiness, connectLive] = await Promise.all([
+    Promise.resolve(getPlatformReadiness()),
+    probeStripeConnect(),
+  ]);
+  return NextResponse.json({ ...readiness, connectLive });
 }
