@@ -72,7 +72,7 @@ PLATFORM_ADMIN_PASSWORD="..."
 
 Webhook Stripe: `https://qlyk.vercel.app/api/webhooks/stripe` (eventos `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `account.updated` y `charge.refunded`).
 
-En Stripe Dashboard activa **Connect**. Los creadores vinculan su cuenta en `/wallet`. País por defecto: `STRIPE_CONNECT_COUNTRY=MX`. Para apagar Connect: `STRIPE_CONNECT_ENABLED=false`.
+En Stripe Dashboard activa **Connect** (marketplace + cuentas Express). Qlyk cobra a la plataforma y transfiere al creador al retirar (no destination charges). El onboarding usa Express v1 y, si Stripe lo exige, Accounts v2 (`recipient` + `stripe_transfers`). País por defecto: `STRIPE_CONNECT_COUNTRY=MX`. Para apagar Connect: `STRIPE_CONNECT_ENABLED=false`. Verificación en vivo: `/admin/setup` → «Stripe Connect (API en vivo)».
 
 Basta con **un** método activo (Stripe completo o SPEI). Pueden convivir los dos.
 

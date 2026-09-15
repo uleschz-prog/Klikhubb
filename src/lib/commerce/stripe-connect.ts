@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { appBaseUrl, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
 
@@ -20,6 +21,25 @@ export function isConnectPayoutsEnabled() {
 
 function connectCountry() {
   return process.env.STRIPE_CONNECT_COUNTRY?.trim().toUpperCase() || "MX";
+}
+
+export function stripeErrorMessage(error: unknown) {
+  if (error instanceof Stripe.errors.StripeError) return error.message;
+  if (error instanceof Error) return error.message;
+  return "CONNECT_ERROR";
+}
+
+/** Comprueba si la API de Connect responde (no solo si hay STRIPE_SECRET_KEY). */
+export async function probeStripeConnect() {
+  if (!isConnectPayoutsEnabled()) {
+    return { ok: false as const, error: "CONNECT_NOT_ENABLED" };
+  }
+  try {
+    await getStripe().accounts.list({ limit: 1 });
+    return { ok: true as const, error: null };
+  } catch (error) {
+    return { ok: false as const, error: stripeErrorMessage(error) };
+  }
 }
 
 function readAccountRequirements(account: {
@@ -84,8 +104,7 @@ export async function createConnectDashboardLink(userId: string) {
     throw new Error("CONNECT_NOT_CONNECTED");
   }
 
-  const link = await getStripe().accounts.createLoginLink(user.stripeAccountId);
-  return link.url;
+  return createExpressDashboardUrl(user.stripeAccountId);
 }
 
 export async function createConnectOnboardingLink(userId: string) {
@@ -105,6 +124,23 @@ export async function createConnectOnboardingLink(userId: string) {
   let accountId = user.stripeAccountId;
 
   if (!accountId) {
+    accountId = await createRecipientAccount(stripe, { id: user.id, email: user.email });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { stripeAccountId: accountId },
+    });
+  }
+
+  const origin = appBaseUrl();
+  const url = await createOnboardingUrl(stripe, accountId, origin);
+  return { url, accountId };
+}
+
+async function createRecipientAccount(
+  stripe: Stripe,
+  user: { id: string; email: string },
+) {
+  try {
     const account = await stripe.accounts.create(
       {
         type: "express",
@@ -120,22 +156,94 @@ export async function createConnectOnboardingLink(userId: string) {
       },
       { idempotencyKey: `qlyk_connect_${user.id}` },
     );
-    accountId = account.id;
-    await prisma.user.update({
-      where: { id: userId },
-      data: { stripeAccountId: accountId },
-    });
+    return account.id;
+  } catch (error) {
+    console.warn("Connect v1 accounts.create falló, intentando Accounts v2", stripeErrorMessage(error));
+    const account = await stripe.v2.core.accounts.create(
+      {
+        display_name: user.email,
+        contact_email: user.email,
+        dashboard: "express",
+        metadata: { userId: user.id, platform: "qlyk" },
+        defaults: {
+          responsibilities: {
+            fees_collector: "application",
+            losses_collector: "application",
+          },
+          profile: {
+            product_description: "Ventas de cursos y videos en Qlyk",
+          },
+        },
+        identity: {
+          country: connectCountry(),
+          entity_type: "individual",
+        },
+        configuration: {
+          recipient: {
+            capabilities: {
+              stripe_balance: {
+                stripe_transfers: { requested: true },
+              },
+            },
+          },
+        },
+        include: ["configuration.recipient", "identity", "requirements"],
+      },
+      { idempotencyKey: `qlyk_connect_v2_${user.id}` },
+    );
+    return account.id;
   }
+}
 
-  const origin = appBaseUrl();
-  const link = await stripe.accountLinks.create({
-    account: accountId,
-    refresh_url: `${origin}/wallet?connect=refresh`,
-    return_url: `${origin}/wallet?connect=return`,
-    type: "account_onboarding",
-  });
+async function createOnboardingUrl(stripe: Stripe, accountId: string, origin: string) {
+  const refreshUrl = `${origin}/wallet?connect=refresh`;
+  const returnUrl = `${origin}/wallet?connect=return`;
+  try {
+    const link = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
+      type: "account_onboarding",
+    });
+    return link.url;
+  } catch (error) {
+    console.warn("Connect v1 accountLinks falló, intentando v2", stripeErrorMessage(error));
+    const link = await stripe.v2.core.accountLinks.create({
+      account: accountId,
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          refresh_url: refreshUrl,
+          return_url: returnUrl,
+        },
+      },
+    });
+    return link.url;
+  }
+}
 
-  return { url: link.url, accountId };
+async function createExpressDashboardUrl(accountId: string) {
+  const stripe = getStripe();
+  try {
+    const link = await stripe.accounts.createLoginLink(accountId);
+    return link.url;
+  } catch (error) {
+    console.warn("Connect login link v1 falló, intentando v2 update", stripeErrorMessage(error));
+    const origin = appBaseUrl();
+    const link = await stripe.v2.core.accountLinks.create({
+      account: accountId,
+      use_case: {
+        type: "account_update",
+        account_update: {
+          configurations: ["recipient"],
+          refresh_url: `${origin}/wallet?connect=refresh`,
+          return_url: `${origin}/wallet?connect=return`,
+        },
+      },
+    });
+    return link.url;
+  }
 }
 
 export async function syncConnectAccount(userId: string, accountId?: string | null) {
@@ -153,8 +261,7 @@ export async function syncConnectAccount(userId: string, accountId?: string | nu
     };
   }
 
-  const account = await getStripe().accounts.retrieve(id);
-  const { payoutsEnabled, requirementsDue, disabledReason } = readAccountRequirements(account);
+  const { payoutsEnabled, requirementsDue, disabledReason } = await retrieveConnectRequirements(id);
 
   await prisma.user.update({
     where: { id: userId },
@@ -207,4 +314,29 @@ export async function handleConnectAccountUpdated(accountId: string) {
   });
   if (!user) return;
   await syncConnectAccount(user.id, accountId);
+}
+
+async function retrieveConnectRequirements(accountId: string) {
+  const stripe = getStripe();
+  try {
+    const account = await stripe.accounts.retrieve(accountId);
+    return readAccountRequirements(account);
+  } catch (error) {
+    console.warn("Connect v1 retrieve falló, intentando v2", stripeErrorMessage(error));
+    const account = await stripe.v2.core.accounts.retrieve(accountId, {
+      include: ["configuration.recipient", "requirements"],
+    });
+    const transfers =
+      account.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status;
+    const payouts = account.configuration?.recipient?.capabilities?.stripe_balance?.payouts?.status;
+    const due =
+      account.requirements?.entries
+        ?.filter((entry) => entry.awaiting_action_from === "user")
+        .map((entry) => entry.description) ?? [];
+    return {
+      requirementsDue: due,
+      disabledReason: transfers === "restricted" || payouts === "restricted" ? "restricted" : null,
+      payoutsEnabled: transfers === "active" && (payouts === "active" || payouts === undefined),
+    };
+  }
 }

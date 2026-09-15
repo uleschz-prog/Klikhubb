@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import { getAdminSession } from "@/lib/auth/require-admin";
 import { getDbUserId } from "@/lib/auth/session";
-import { createConnectOnboardingLink, loadConnectStatus } from "@/lib/commerce/stripe-connect";
+import {
+  createConnectOnboardingLink,
+  loadConnectStatus,
+  stripeErrorMessage,
+} from "@/lib/commerce/stripe-connect";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,13 +20,15 @@ export async function GET() {
   return NextResponse.json(status);
 }
 
-function connectFailureMessage(error: unknown) {
-  const message = error instanceof Error ? error.message : "";
+function connectFailureMessage(message: string) {
   if (/signed up for Connect|not signed up for Connect|Connect is not enabled/i.test(message)) {
     return "Stripe Connect no está activo en el Dashboard. En Stripe: Settings → Connect → Get started.";
   }
-  if (/country/i.test(message) && /invalid/i.test(message)) {
+  if (/country/i.test(message) && /invalid|unsupported/i.test(message)) {
     return "El país de Connect no coincide. Revisa STRIPE_CONNECT_COUNTRY.";
+  }
+  if (/v2\/core\/accounts|Accounts v2|use the Accounts v2/i.test(message)) {
+    return "Stripe pide Accounts v2. Recarga e intenta vincular de nuevo.";
   }
   return "No pudimos abrir Stripe para vincular tu cuenta.";
 }
@@ -47,6 +54,14 @@ export async function POST() {
       return NextResponse.json({ error: "Necesitas un email en tu cuenta." }, { status: 400 });
     }
     console.error(error);
-    return NextResponse.json({ error: connectFailureMessage(error) }, { status: 500 });
+    const stripeMessage = stripeErrorMessage(error);
+    const admin = await getAdminSession();
+    return NextResponse.json(
+      {
+        error: connectFailureMessage(stripeMessage),
+        ...(admin ? { stripe: stripeMessage } : {}),
+      },
+      { status: 500 },
+    );
   }
 }
