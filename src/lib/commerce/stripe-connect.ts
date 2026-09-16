@@ -139,7 +139,6 @@ export async function createConnectOnboardingLink(userId: string) {
 async function createRecipientAccountV1(
   stripe: Stripe,
   user: { id: string; email: string },
-  losses: "stripe" | "application",
 ) {
   const account = await stripe.accounts.create(
     {
@@ -154,12 +153,12 @@ async function createRecipientAccountV1(
       },
       controller: {
         fees: { payer: "application" },
-        losses: { payments: losses },
+        losses: { payments: "application" },
         requirement_collection: "stripe",
         stripe_dashboard: { type: "express" },
       },
     },
-    { idempotencyKey: `qlyk_connect_ctrl_${losses}_${user.id}` },
+    { idempotencyKey: `qlyk_connect_ctrl_application_${user.id}` },
   );
   return account.id;
 }
@@ -178,7 +177,7 @@ async function createRecipientAccountV2(
       defaults: {
         responsibilities: {
           fees_collector: "application",
-          losses_collector: "stripe",
+          losses_collector: "application",
         },
         profile: {
           product_description: "Ventas de cursos y videos en Qlyk",
@@ -199,7 +198,7 @@ async function createRecipientAccountV2(
       },
       include: ["configuration.recipient", "identity", "requirements"],
     },
-    { idempotencyKey: `qlyk_connect_v2_${entityType}_stripe_${user.id}` },
+    { idempotencyKey: `qlyk_connect_v2_${entityType}_${user.id}` },
   );
   return account.id;
 }
@@ -210,14 +209,12 @@ async function createRecipientAccount(
 ) {
   const errors: string[] = [];
 
-  for (const losses of ["stripe", "application"] as const) {
-    try {
-      return await createRecipientAccountV1(stripe, user, losses);
-    } catch (error) {
-      const message = stripeErrorMessage(error);
-      errors.push(`v1/${losses}: ${message}`);
-      console.warn("Connect v1 controller falló", losses, message);
-    }
+  try {
+    return await createRecipientAccountV1(stripe, user);
+  } catch (error) {
+    const message = stripeErrorMessage(error);
+    errors.push(`v1/express: ${message}`);
+    console.warn("Connect v1 controller falló", message);
   }
 
   for (const entityType of ["individual", "company"] as const) {
