@@ -136,6 +136,34 @@ export async function createConnectOnboardingLink(userId: string) {
   return { url, accountId };
 }
 
+async function createRecipientAccountV1(
+  stripe: Stripe,
+  user: { id: string; email: string },
+  losses: "stripe" | "application",
+) {
+  const account = await stripe.accounts.create(
+    {
+      country: connectCountry(),
+      email: user.email,
+      metadata: { userId: user.id, platform: "qlyk" },
+      capabilities: {
+        transfers: { requested: true },
+      },
+      business_profile: {
+        product_description: "Ventas de cursos y videos en Qlyk",
+      },
+      controller: {
+        fees: { payer: "application" },
+        losses: { payments: losses },
+        requirement_collection: "stripe",
+        stripe_dashboard: { type: "express" },
+      },
+    },
+    { idempotencyKey: `qlyk_connect_ctrl_${losses}_${user.id}` },
+  );
+  return account.id;
+}
+
 async function createRecipientAccountV2(
   stripe: Stripe,
   user: { id: string; email: string },
@@ -150,7 +178,7 @@ async function createRecipientAccountV2(
       defaults: {
         responsibilities: {
           fees_collector: "application",
-          losses_collector: "application",
+          losses_collector: "stripe",
         },
         profile: {
           product_description: "Ventas de cursos y videos en Qlyk",
@@ -171,7 +199,7 @@ async function createRecipientAccountV2(
       },
       include: ["configuration.recipient", "identity", "requirements"],
     },
-    { idempotencyKey: `qlyk_connect_v2_${entityType}_${user.id}` },
+    { idempotencyKey: `qlyk_connect_v2_${entityType}_stripe_${user.id}` },
   );
   return account.id;
 }
@@ -181,6 +209,16 @@ async function createRecipientAccount(
   user: { id: string; email: string },
 ) {
   const errors: string[] = [];
+
+  for (const losses of ["stripe", "application"] as const) {
+    try {
+      return await createRecipientAccountV1(stripe, user, losses);
+    } catch (error) {
+      const message = stripeErrorMessage(error);
+      errors.push(`v1/${losses}: ${message}`);
+      console.warn("Connect v1 controller falló", losses, message);
+    }
+  }
 
   for (const entityType of ["individual", "company"] as const) {
     try {
@@ -192,28 +230,7 @@ async function createRecipientAccount(
     }
   }
 
-  try {
-    const account = await stripe.accounts.create(
-      {
-        type: "express",
-        country: connectCountry(),
-        email: user.email,
-        metadata: { userId: user.id, platform: "qlyk" },
-        capabilities: {
-          transfers: { requested: true },
-        },
-        business_profile: {
-          product_description: "Ventas de cursos y videos en Qlyk",
-        },
-      },
-      { idempotencyKey: `qlyk_connect_v1_${user.id}` },
-    );
-    return account.id;
-  } catch (error) {
-    const message = stripeErrorMessage(error);
-    errors.push(`v1/express: ${message}`);
-    throw new Error(errors.join(" | "));
-  }
+  throw new Error(errors.join(" | "));
 }
 
 async function createOnboardingUrl(stripe: Stripe, accountId: string, origin: string) {

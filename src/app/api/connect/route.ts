@@ -20,6 +20,12 @@ export async function GET() {
 }
 
 function connectFailureMessage(message: string) {
+  if (/account has been rejected/i.test(message)) {
+    return "Stripe rechazó o tiene en revisión tu plataforma Connect. En el Dashboard abre Connect y revisa el estado (a veces tarda 2–3 días).";
+  }
+  if (/managing losses|platform-profile/i.test(message)) {
+    return "Falta aceptar responsabilidades de Connect. En Stripe abre Settings → Connect → Platform profile: https://dashboard.stripe.com/settings/connect/platform-profile";
+  }
   if (/signed up for Connect|not signed up for Connect|Connect is not enabled/i.test(message)) {
     return "Stripe Connect no está activo en el Dashboard. En Stripe: Settings → Connect → Get started.";
   }
