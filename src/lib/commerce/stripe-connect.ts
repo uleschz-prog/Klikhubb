@@ -136,10 +136,62 @@ export async function createConnectOnboardingLink(userId: string) {
   return { url, accountId };
 }
 
+async function createRecipientAccountV2(
+  stripe: Stripe,
+  user: { id: string; email: string },
+  entityType: "individual" | "company",
+) {
+  const account = await stripe.v2.core.accounts.create(
+    {
+      display_name: user.email,
+      contact_email: user.email,
+      dashboard: "express",
+      metadata: { userId: user.id, platform: "qlyk" },
+      defaults: {
+        responsibilities: {
+          fees_collector: "application",
+          losses_collector: "application",
+        },
+        profile: {
+          product_description: "Ventas de cursos y videos en Qlyk",
+        },
+      },
+      identity: {
+        country: connectCountry(),
+        entity_type: entityType,
+      },
+      configuration: {
+        recipient: {
+          capabilities: {
+            stripe_balance: {
+              stripe_transfers: { requested: true },
+            },
+          },
+        },
+      },
+      include: ["configuration.recipient", "identity", "requirements"],
+    },
+    { idempotencyKey: `qlyk_connect_v2_${entityType}_${user.id}` },
+  );
+  return account.id;
+}
+
 async function createRecipientAccount(
   stripe: Stripe,
   user: { id: string; email: string },
 ) {
+  const errors: string[] = [];
+
+  for (const entityType of ["individual", "company"] as const) {
+    try {
+      return await createRecipientAccountV2(stripe, user, entityType);
+    } catch (error) {
+      const message = stripeErrorMessage(error);
+      errors.push(`v2/${entityType}: ${message}`);
+      console.warn("Connect Accounts v2 falló", entityType, message);
+    }
+  }
+
   try {
     const account = await stripe.accounts.create(
       {
@@ -154,44 +206,13 @@ async function createRecipientAccount(
           product_description: "Ventas de cursos y videos en Qlyk",
         },
       },
-      { idempotencyKey: `qlyk_connect_${user.id}` },
+      { idempotencyKey: `qlyk_connect_v1_${user.id}` },
     );
     return account.id;
   } catch (error) {
-    console.warn("Connect v1 accounts.create falló, intentando Accounts v2", stripeErrorMessage(error));
-    const account = await stripe.v2.core.accounts.create(
-      {
-        display_name: user.email,
-        contact_email: user.email,
-        dashboard: "express",
-        metadata: { userId: user.id, platform: "qlyk" },
-        defaults: {
-          responsibilities: {
-            fees_collector: "application",
-            losses_collector: "application",
-          },
-          profile: {
-            product_description: "Ventas de cursos y videos en Qlyk",
-          },
-        },
-        identity: {
-          country: connectCountry(),
-          entity_type: "individual",
-        },
-        configuration: {
-          recipient: {
-            capabilities: {
-              stripe_balance: {
-                stripe_transfers: { requested: true },
-              },
-            },
-          },
-        },
-        include: ["configuration.recipient", "identity", "requirements"],
-      },
-      { idempotencyKey: `qlyk_connect_v2_${user.id}` },
-    );
-    return account.id;
+    const message = stripeErrorMessage(error);
+    errors.push(`v1/express: ${message}`);
+    throw new Error(errors.join(" | "));
   }
 }
 

@@ -82,9 +82,13 @@ export function WalletConnectCard({
     setError(null);
     try {
       const response = await fetch("/api/connect", { method: "POST" });
-      const payload = (await response.json()) as { url?: string; error?: string };
+      const payload = (await response.json()) as { url?: string; error?: string; detail?: string };
       if (!response.ok || !payload.url) {
-        setError(payload.error ?? "No pudimos abrir Stripe.");
+        setError(
+          payload.detail && payload.detail !== payload.error
+            ? `${payload.error ?? "No pudimos abrir Stripe."} (${payload.detail})`
+            : (payload.error ?? "No pudimos abrir Stripe."),
+        );
         return;
       }
       window.location.href = payload.url;

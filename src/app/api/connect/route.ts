@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth/require-admin";
 import { getDbUserId } from "@/lib/auth/session";
 import {
   createConnectOnboardingLink,
@@ -55,11 +54,10 @@ export async function POST() {
     }
     console.error(error);
     const stripeMessage = stripeErrorMessage(error);
-    const admin = await getAdminSession();
     return NextResponse.json(
       {
         error: connectFailureMessage(stripeMessage),
-        ...(admin ? { stripe: stripeMessage } : {}),
+        detail: stripeMessage,
       },
       { status: 500 },
     );
