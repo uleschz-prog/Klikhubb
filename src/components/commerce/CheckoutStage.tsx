@@ -10,29 +10,33 @@ export function CheckoutStage({
   stripeEnabled,
   speiEnabled,
   canceled,
+  cancelPath,
 }: {
   item: BuyItem;
   signedIn: boolean;
   stripeEnabled: boolean;
   speiEnabled: boolean;
   canceled?: boolean;
+  cancelPath?: string;
 }) {
   const router = useRouter();
+  const closeTo = item.slug === "qlyk-academy" ? "/academy" : "/feed";
+  const stripeCancel = cancelPath ?? (item.slug === "qlyk-academy" ? "/academy" : `/c/${item.slug}`);
 
   return (
     <div className="relative min-h-[100dvh] bg-background">
       <header className="absolute left-4 top-4 z-10">
-        <Logo href="/feed" className="text-foreground" />
+        <Logo href={closeTo} className="text-foreground" />
       </header>
       <BuyDrawer
         open
-        onClose={() => router.push("/feed")}
+        onClose={() => router.push(closeTo)}
         item={item}
         signedIn={signedIn}
         stripeEnabled={stripeEnabled}
         speiEnabled={speiEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent(`/checkout/${item.slug}`)}`}
-        cancelPath={`/c/${item.slug}`}
+        cancelPath={stripeCancel}
         canceled={canceled}
       />
     </div>

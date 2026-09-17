@@ -13,6 +13,7 @@ export async function registerUser(input: {
   displayName: string;
   locale?: string;
   timezone?: string;
+  referralCode?: string | null;
 }) {
   const email = input.email.toLowerCase();
   const username = input.username.toLowerCase();
@@ -33,6 +34,8 @@ export async function registerUser(input: {
   const hashedPassword = await bcrypt.hash(input.password, 12);
   const locale = input.locale?.trim().slice(0, 10) || "es";
   const timezone = input.timezone?.trim().slice(0, 64) || "UTC";
+  const { resolveSponsorId } = await import("@/lib/academy/network");
+  const invitedById = await resolveSponsorId(prisma, input.referralCode);
 
   const user = await prisma.user.create({
     data: {
@@ -44,9 +47,8 @@ export async function registerUser(input: {
       locale,
       timezone,
       status: "ACTIVE",
-      // Columna legacy única; ya no se usa como referido.
       referralCode: randomBytes(4).toString("hex").toUpperCase(),
-      invitedById: null,
+      invitedById,
       roles: { create: DEFAULT_ROLES.map((role) => ({ role })) },
       wallet: { create: {} },
       stats: { create: {} },

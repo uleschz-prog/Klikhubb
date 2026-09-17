@@ -13,6 +13,9 @@ import {
   loadDemo,
 } from "@/lib/demo/store";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
+import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
+import { splitAcademyMembership } from "@/lib/academy/split";
+import { isAcademyMemberActive, walkAcademyUpline } from "@/lib/academy/network";
 
 export type CatalogProduct = {
   id: string;
@@ -23,7 +26,7 @@ export type CatalogProduct = {
   currency: string;
   creatorId: string;
   type: string;
-  billing: "ONE_TIME";
+  billing: "ONE_TIME" | "MONTHLY";
 };
 
 export type ResolvedProduct = CatalogProduct & { source: "postgres" | "demo" };
@@ -41,7 +44,7 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
         currency: row.currency.trim(),
         creatorId: row.creatorId,
         type: row.type,
-        billing: "ONE_TIME",
+        billing: row.billing === "MONTHLY" ? "MONTHLY" : "ONE_TIME",
         source: "postgres",
       };
     }
@@ -62,14 +65,36 @@ export async function resolveProduct(slug: string): Promise<ResolvedProduct | nu
     currency: demo.currency,
     creatorId: demo.creatorId,
     type: demo.type,
-    billing: "ONE_TIME",
+    billing: demo.slug === QLYK_ACADEMY_SLUG ? "MONTHLY" : "ONE_TIME",
     source: "demo",
   };
 }
 
 export async function assertCanPurchase(buyerId: string, product: ResolvedProduct) {
-  if (product.creatorId === buyerId) {
+  if (product.slug !== QLYK_ACADEMY_SLUG && product.creatorId === buyerId) {
     throw new CommerceError("No puedes comprar tu propio producto.", "SELF_PURCHASE");
+  }
+
+  if (product.slug === QLYK_ACADEMY_SLUG) {
+    if (product.source === "demo") {
+      if (await demoHasEnrollment(buyerId, product.id)) {
+        throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+      }
+      return;
+    }
+    try {
+      if (await isAcademyMemberActive(prisma, buyerId)) {
+        throw new CommerceError("Ya tienes Qlyk Academy activa.", "ALREADY_OWNED");
+      }
+      return;
+    } catch (error) {
+      if (error instanceof CommerceError) throw error;
+      if (!shouldUseDemoFallback(error)) throw error;
+      if (await demoHasEnrollment(buyerId, product.id)) {
+        throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
+      }
+      return;
+    }
   }
 
   if (product.source === "demo") {
@@ -98,7 +123,7 @@ export async function assertCanPurchase(buyerId: string, product: ResolvedProduc
 export async function listCatalogProducts(): Promise<CatalogProduct[]> {
   try {
     const rows = await prisma.product.findMany({
-      where: { status: "ACTIVE" },
+      where: { status: "ACTIVE", slug: { not: QLYK_ACADEMY_SLUG } },
       orderBy: { price: "desc" },
     });
     return rows.map((row) => ({
@@ -110,22 +135,24 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
       currency: row.currency.trim(),
       creatorId: row.creatorId,
       type: row.type,
-      billing: "ONE_TIME" as const,
+      billing: row.billing === "MONTHLY" ? ("MONTHLY" as const) : ("ONE_TIME" as const),
     }));
   } catch (error) {
     if (!shouldUseDemoFallback(error)) throw error;
     const demo = await demoListProducts();
-    return demo.map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      title: row.title,
-      description: null,
-      price: row.price,
-      currency: row.currency,
-      creatorId: row.creatorId,
-      type: row.type,
-      billing: "ONE_TIME" as const,
-    }));
+    return demo
+      .filter((row) => row.slug !== QLYK_ACADEMY_SLUG)
+      .map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        title: row.title,
+        description: null,
+        price: row.price,
+        currency: row.currency,
+        creatorId: row.creatorId,
+        type: row.type,
+        billing: "ONE_TIME" as const,
+      }));
   }
 }
 
@@ -146,7 +173,7 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
   try {
     const [rows, owned] = await Promise.all([
       prisma.enrollment.findMany({
-        where: { userId, status: "ACTIVE" },
+        where: { userId, status: "ACTIVE", product: { slug: { not: QLYK_ACADEMY_SLUG } } },
         orderBy: { createdAt: "desc" },
         include: {
           product: {
@@ -165,6 +192,7 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
         where: {
           creatorId: userId,
           status: "ACTIVE",
+          slug: { not: QLYK_ACADEMY_SLUG },
           type: { in: ["COURSE", "MEMBERSHIP", "DIGITAL"] },
         },
         orderBy: { createdAt: "desc" },
@@ -220,7 +248,7 @@ export async function listMyAcademy(userId: string): Promise<AcademyEnrollment[]
     return enrolled;
   } catch (error) {
     if (!shouldUseDemoFallback(error)) throw error;
-    return demoListEnrollments(userId);
+    return (await demoListEnrollments(userId)).filter((row) => row.slug !== QLYK_ACADEMY_SLUG);
   }
 }
 
@@ -228,9 +256,12 @@ export async function viewerOwnsProduct(userId: string, slug: string): Promise<b
   try {
     const product = await prisma.product.findUnique({
       where: { slug },
-      select: { id: true, creatorId: true },
+      select: { id: true, creatorId: true, slug: true },
     });
     if (!product) return false;
+    if (product.slug === QLYK_ACADEMY_SLUG) {
+      return isAcademyMemberActive(prisma, userId);
+    }
     if (product.creatorId === userId) return true;
     const enrollment = await prisma.enrollment.findUnique({
       where: { userId_productId: { userId, productId: product.id } },
@@ -247,17 +278,24 @@ export async function viewerOwnsProduct(userId: string, slug: string): Promise<b
 }
 
 export async function getCheckoutPreview(slug: string, buyerId: string) {
-  void buyerId;
   try {
     const product = await prisma.product.findUnique({
       where: { slug },
       include: { creator: { select: { displayName: true, username: true } } },
     });
     if (!product || product.status !== "ACTIVE") return null;
-    const lines = splitSaleCommissions({
-      saleAmount: Number(product.price),
-      creatorId: product.creatorId,
-    });
+    const isAcademy = product.slug === QLYK_ACADEMY_SLUG;
+    const lines = isAcademy
+      ? splitAcademyMembership({
+          saleAmount: Number(product.price),
+          buyerId,
+          upline: await walkAcademyUpline(prisma, buyerId),
+          platformUserId: product.creatorId,
+        })
+      : splitSaleCommissions({
+          saleAmount: Number(product.price),
+          creatorId: product.creatorId,
+        });
     return {
       product: {
         id: product.id,
@@ -265,10 +303,10 @@ export async function getCheckoutPreview(slug: string, buyerId: string) {
         title: product.title,
         price: Number(product.price),
         currency: product.currency.trim(),
-        creatorName: product.creator.displayName ?? product.creator.username ?? "Creador",
+        creatorName: isAcademy ? "Qlyk" : product.creator.displayName ?? product.creator.username ?? "Creador",
         description: product.description,
         type: product.type,
-        billing: "ONE_TIME" as const,
+        billing: product.billing === "MONTHLY" ? ("MONTHLY" as const) : ("ONE_TIME" as const),
       },
       lines,
       mode: "postgres" as const,

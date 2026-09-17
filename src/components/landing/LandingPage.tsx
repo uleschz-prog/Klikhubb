@@ -40,6 +40,28 @@ export function LandingPage({ videos }: { videos: FeedVideo[] }) {
         )}
 
         <section
+          className="mt-14 rounded-3xl border px-5 py-8 sm:mt-16 sm:px-8"
+          style={{ borderColor: "var(--l-border)", background: "var(--l-surface)" }}
+        >
+          <h2 className="text-xl font-semibold tracking-tight sm:text-2xl" style={{ color: "var(--l-fg)" }}>
+            Qlyk Academy
+          </h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6" style={{ color: "var(--l-muted)" }}>
+            Video e imagen con IA, Notebook LM y agentes autónomos. USD 50 al mes con acceso ilimitado, y 60% de comisión
+            en 8 niveles para quien invite.
+          </p>
+          <div className="mt-5 flex justify-center">
+            <Link
+              href="/academy"
+              className="on-accent inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-white"
+              style={{ background: "var(--l-accent)" }}
+            >
+              Ver Qlyk Academy
+            </Link>
+          </div>
+        </section>
+
+        <section
           className="mt-14 rounded-3xl border px-5 py-8 text-center sm:mt-16 sm:px-8"
           style={{ borderColor: "var(--l-border)", background: "var(--l-surface)" }}
         >
@@ -80,6 +102,9 @@ export function LandingPage({ videos }: { videos: FeedVideo[] }) {
             </Link>
             <Link href="/legal/privacy" className="hover:opacity-80">
               Privacidad
+            </Link>
+            <Link href="/academy" className="hover:opacity-80">
+              Academy
             </Link>
             <Link href="/play" className="hover:opacity-80">
               Videos

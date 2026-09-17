@@ -81,7 +81,7 @@ export function CheckoutForm({
     if (!response.ok) {
       setLoadingMethod(null);
       if (payload.code === "ALREADY_OWNED") {
-        router.push(`/academy/${encodeURIComponent(slug)}`);
+        router.push(slug === "qlyk-academy" ? "/academy/studio" : `/academy/${encodeURIComponent(slug)}`);
         return;
       }
       setError(payload.error ?? "No se pudo iniciar el pago.");

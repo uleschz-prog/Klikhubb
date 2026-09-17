@@ -104,7 +104,7 @@ function toFeedVideo(
     gradient: videoGradient(row.id),
     lane: row.lane,
     product:
-      productRow && productRow.status === "ACTIVE"
+      productRow && productRow.status === "ACTIVE" && productRow.slug !== "qlyk-academy"
         ? {
             slug: productRow.slug,
             title: productRow.title,

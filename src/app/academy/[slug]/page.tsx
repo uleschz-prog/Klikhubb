@@ -4,6 +4,7 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { AcademyPlayer } from "@/components/academy/AcademyPlayer";
 import { getDbUserId } from "@/lib/auth/session";
 import { groupLessonsByModule, loadAcademyCourse, markLessonProgress } from "@/lib/commerce/academy";
+import { ACADEMY_RESERVED_SLUGS, QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,11 @@ export default async function AcademyCoursePage({
   params: { slug: string };
   searchParams: { l?: string };
 }) {
+  const reserved = (ACADEMY_RESERVED_SLUGS as readonly string[]).includes(params.slug);
+  if (reserved || params.slug === QLYK_ACADEMY_SLUG) {
+    redirect(params.slug === "cursos" ? "/academy/cursos" : params.slug === "red" ? "/academy/red" : params.slug === "studio" ? "/academy/studio" : "/academy");
+  }
+
   const userId = await getDbUserId();
   if (!userId) {
     redirect(`/c/${params.slug}`);
@@ -58,8 +64,8 @@ export default async function AcademyCoursePage({
 
   return (
     <PlatformShell title={course.title}>
-      <Link href="/academy" className="text-sm font-semibold text-klik-cyan hover:underline">
-        Volver a Academy
+      <Link href="/academy/cursos" className="text-sm font-semibold text-klik-cyan hover:underline">
+        Volver a mis cursos
       </Link>
       <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
         {TYPE_LABEL[course.type] ?? course.type}

@@ -4,7 +4,7 @@ import { allocateByRates, fromCents, toCents } from "@/lib/money/cents";
 export type CommissionLine = {
   beneficiaryId: string;
   sourceUserId: string;
-  type: "CREATOR_SALE" | "PLATFORM_FEE";
+  type: "CREATOR_SALE" | "PLATFORM_FEE" | "UNILEVEL";
   level: number;
   rate: number;
   amountCents: number;

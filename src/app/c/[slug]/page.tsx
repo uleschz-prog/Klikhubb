@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 import { AcademyPlayer } from "@/components/academy/AcademyPlayer";
 import { BuyButton } from "@/components/commerce/BuyButton";
@@ -9,6 +9,7 @@ import { getDbUserId } from "@/lib/auth/session";
 import { groupLessonsByModule, loadPublicCourse } from "@/lib/commerce/public-course";
 import { formatProductPrice } from "@/lib/commerce/billing";
 import { site } from "@/config/site";
+import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export default async function PublicCoursePage({
   params: { slug: string };
   searchParams: { l?: string };
 }) {
+  if (params.slug === QLYK_ACADEMY_SLUG) redirect("/academy");
   const userId = await getDbUserId();
   const course = await loadPublicCourse(params.slug, userId);
   if (!course) notFound();

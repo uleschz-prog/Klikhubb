@@ -82,8 +82,10 @@ async function main() {
   }
 
   await ensurePlatformAdmin(prisma);
+  const { ensureAcademyProduct } = await import("../src/lib/academy/product");
+  await ensureAcademyProduct();
 
-  console.log(`Seed OK — plan ${plan.code}. Solo configuración de plataforma (sin usuarios ni contenido ficticio).`);
+  console.log(`Seed OK — plan ${plan.code}. Qlyk Academy lista. Solo configuración de plataforma (sin usuarios ni contenido ficticio).`);
 }
 
 main()

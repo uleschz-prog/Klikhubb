@@ -58,9 +58,17 @@ export default async function CheckoutSuccessPage({
     productTitle = fromOrder?.title ?? productTitle;
   }
 
-  const courseHref = productSlug ? `/academy/${productSlug}` : "/academy";
-  const fichaHref = productSlug ? `/c/${productSlug}` : "/academy";
-  const startLabel = alreadyOwned ? "Ir al curso" : "Empezar el curso";
+  const courseHref =
+    productSlug === "qlyk-academy" ? "/academy/studio" : productSlug ? `/academy/${productSlug}` : "/academy";
+  const fichaHref = productSlug === "qlyk-academy" ? "/academy" : productSlug ? `/c/${productSlug}` : "/academy";
+  const startLabel =
+    productSlug === "qlyk-academy"
+      ? alreadyOwned
+        ? "Ir al estudio"
+        : "Abrir el estudio"
+      : alreadyOwned
+        ? "Ir al curso"
+        : "Empezar el curso";
 
   const headline = pending
     ? "Comprobante recibido"
@@ -76,8 +84,12 @@ export default async function CheckoutSuccessPage({
       : unpaid
         ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
         : alreadyOwned
-          ? "Este producto ya estaba en tu academy. No se cobró de nuevo."
-          : productTitle
+          ? productSlug === "qlyk-academy"
+            ? "Qlyk Academy ya estaba activa. Entra al estudio."
+            : "Este producto ya estaba en tu academy. No se cobró de nuevo."
+          : productSlug === "qlyk-academy"
+            ? "Ya pagaste Qlyk Academy. El estudio de IA queda ilimitado este periodo. Invita alumnos y gana el 60% en 8 niveles."
+            : productTitle
             ? `Ya pagaste ${productTitle}. Entra a la primera lección. Tienes 24 horas para pedir la devolución desde Mis pedidos.`
             : "Ya pagaste. Entra al curso. Tienes 24 horas para pedir la devolución desde Mis pedidos.";
 

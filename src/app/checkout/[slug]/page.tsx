@@ -3,6 +3,7 @@ import { CheckoutStage } from "@/components/commerce/CheckoutStage";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutPreview, viewerOwnsProduct } from "@/lib/commerce/catalog";
 import { getCheckoutMethods } from "@/config/checkout-methods";
+import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function CheckoutPage({
   }
 
   if (await viewerOwnsProduct(buyerId, params.slug)) {
-    redirect(`/academy/${params.slug}`);
+    redirect(params.slug === QLYK_ACADEMY_SLUG ? "/academy/studio" : `/academy/${params.slug}`);
   }
 
   const preview = await getCheckoutPreview(params.slug, buyerId);
@@ -47,6 +48,7 @@ export default async function CheckoutPage({
       stripeEnabled={methods.stripe}
       speiEnabled={methods.spei}
       canceled={searchParams.canceled === "1"}
+      cancelPath={params.slug === QLYK_ACADEMY_SLUG ? "/academy" : `/c/${params.slug}`}
     />
   );
 }

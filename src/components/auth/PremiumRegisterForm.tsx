@@ -3,7 +3,8 @@
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ACADEMY_REF_COOKIE, normalizeReferralCode } from "@/lib/academy/referral";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/auth/PasswordInput";
@@ -27,8 +28,20 @@ function detectTimezone() {
   }
 }
 
+function cookieReferralCode() {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${ACADEMY_REF_COOKIE}=([^;]*)`));
+  return match ? normalizeReferralCode(decodeURIComponent(match[1])) : null;
+}
+
+function safeNextPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("://")) return "/dashboard";
+  return value;
+}
+
 export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const termsId = useId();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,6 +53,8 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const referralCode = normalizeReferralCode(searchParams.get("ref")) ?? cookieReferralCode();
+  const nextPath = safeNextPath(searchParams.get("next"));
 
   useEffect(() => {
     setLocale(detectLocale());
@@ -67,6 +82,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
         locale,
         timezone,
         acceptTerms: true,
+        referralCode: referralCode ?? undefined,
       }),
     });
     const payload = (await response.json()) as { error?: string };
@@ -84,7 +100,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
       return;
     }
     setDone(true);
-    router.push("/dashboard");
+    router.push(nextPath);
     router.refresh();
   }
 
@@ -232,6 +248,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
           <h1 className="mt-6 font-display text-3xl font-extrabold text-white">Cuenta gratis</h1>
           <p className="mt-2 text-sm leading-6 text-white/55">
             Tu perfil, tu feed y tu monedero. Registro directo, sin lista de espera.
+            {referralCode ? ` Código de invitación ${referralCode}.` : ""}
           </p>
           {form}
           <p className="mt-6 text-center text-sm text-white/45">

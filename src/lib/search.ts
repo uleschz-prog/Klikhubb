@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 
 export type SearchResult = {
   creators: {
@@ -46,6 +47,7 @@ export async function searchPlatform(query: string): Promise<SearchResult> {
     prisma.product.findMany({
       where: {
         status: "ACTIVE",
+        slug: { not: QLYK_ACADEMY_SLUG },
         OR: [
           { title: { contains: q, mode: "insensitive" } },
           { description: { contains: q, mode: "insensitive" } },

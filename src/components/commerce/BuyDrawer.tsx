@@ -153,10 +153,10 @@ export function BuyDrawer({
               </p>
               <div className="mt-4 flex flex-col gap-2">
                 <Link
-                  href={`/academy/${item.slug}`}
+                  href={item.slug === "qlyk-academy" ? "/academy/studio" : `/academy/${item.slug}`}
                   className="flex min-h-11 items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black"
                 >
-                  Ir a Academy
+                  {item.slug === "qlyk-academy" ? "Abrir Qlyk Academy" : "Ir a Academy"}
                 </Link>
                 <button
                   type="button"

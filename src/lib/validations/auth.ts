@@ -15,6 +15,8 @@ export const registerSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
   locale: z.string().trim().min(2).max(10).default("es"),
   timezone: z.string().trim().min(2).max(64).optional(),
+  referralCode: z.string().trim().max(32).optional(),
+  next: z.string().trim().max(300).optional(),
   acceptTerms: z.literal(true, {
     message: "Debes aceptar los términos para crear tu cuenta.",
   }),

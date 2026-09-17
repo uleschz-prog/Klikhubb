@@ -7,7 +7,7 @@ export type FeedProduct = {
   currency: string;
   description: string | null;
   type: string | null;
-  billing: "ONE_TIME";
+  billing: "ONE_TIME" | "MONTHLY";
   owned?: boolean;
 };
 

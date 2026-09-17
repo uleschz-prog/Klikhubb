@@ -1,130 +1,99 @@
-import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { AcademyHubNav } from "@/components/academy/AcademyHubNav";
+import { AcademySubscribeButton } from "@/components/academy/AcademySubscribeButton";
 import { getDbUserId } from "@/lib/auth/session";
-import { listMyAcademy } from "@/lib/commerce/catalog";
-
-const TYPE_LABEL: Record<string, string> = {
-  COURSE: "Academia",
-  MEMBERSHIP: "Membresía",
-  DIGITAL: "Digital",
-  PHYSICAL: "Físico",
-};
+import { ensureAcademyProduct } from "@/lib/academy/product";
+import { loadAcademySnapshot } from "@/lib/academy/membership";
+import { QLYK_ACADEMY_PRICE_USD } from "@/config/qlyk-academy";
+import { formatMoney } from "@/lib/commerce/split";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-function courseHref(course: { slug: string; resumeLessonId: string | null }) {
-  if (course.resumeLessonId) return `/academy/${course.slug}?l=${encodeURIComponent(course.resumeLessonId)}`;
-  return `/academy/${course.slug}`;
-}
-
-export default async function AcademyPage() {
+export default async function AcademyHubPage() {
   const userId = await getDbUserId();
-  const enrollments = userId ? await listMyAcademy(userId) : [];
+  await ensureAcademyProduct().catch(() => undefined);
+  const snapshot = await loadAcademySnapshot(userId);
 
   return (
-    <PlatformShell title="Mis cursos">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Educación</p>
-          <h1 className="mt-2 font-display text-3xl font-extrabold">Mis cursos</h1>
-          <p className="mt-2 max-w-xl text-sm text-white/55">
-            El video te descubre. La academia te queda. Entra y ves las lecciones de lo que ya pagaste o de lo
-            que tú publicaste.
-          </p>
-        </div>
-        {userId ? (
-          <Link
-            href="/studio"
-            className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
-          >
-            Crear curso
-          </Link>
-        ) : null}
-      </div>
+    <PlatformShell title="Qlyk Academy">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Nuevo modelo de negocio</p>
+      <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight">Qlyk Academy</h1>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60">
+        Estudio de IA para crear video, imagen, Notebook LM y agentes autónomos. Cuota de{" "}
+        {formatMoney(QLYK_ACADEMY_PRICE_USD)} al mes con acceso ilimitado mientras estés activo. Invita alumnos y ganas
+        el 60% de sus mensualidades en 8 niveles.
+      </p>
+      <AcademyHubNav />
 
-      {!userId ? (
-        <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
-          <h2 className="font-display text-2xl font-extrabold">Entra para ver tus cursos</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            El acceso se guarda en tu cuenta, no en el teléfono.
-          </p>
-          <Link
-            href="/login?callbackUrl=/academy"
-            className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
-          >
-            Entrar
-          </Link>
-        </div>
-      ) : enrollments.length === 0 ? (
-        <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
-          <h2 className="font-display text-2xl font-extrabold">Todavía no tienes cursos</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            En Tienda toca Comprar. Cuando confirmemos el pago (tarjeta o SPEI), el curso aparece aquí.
-          </p>
-          <Link
-            href="/feed"
-            className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
-          >
-            Ir a Tienda
-          </Link>
-        </div>
-      ) : (
-        <div className="mt-8 space-y-3">
-          {enrollments.map((course) => {
-            const href = courseHref(course);
-            const cta =
-              course.role === "creator"
-                ? "Ver curso"
-                : course.resumeLessonId || course.progressPct > 0
-                  ? "Continuar"
-                  : "Empezar";
-            return (
-              <article
-                key={`${course.role}-${course.slug}`}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-klik-line bg-klik-card px-5 py-4"
+      {snapshot?.active ? (
+        <section className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-3xl border border-klik-line bg-klik-card p-5 sm:col-span-2">
+            <p className="text-[11px] uppercase tracking-wider text-klik-green">Membresía activa</p>
+            <p className="mt-2 font-display text-3xl font-extrabold">Acceso ilimitado</p>
+            <p className="mt-1 text-sm text-white/50">
+              {snapshot.periodEnd
+                ? `Vigente hasta ${new Date(snapshot.periodEnd).toLocaleDateString("es-MX")}`
+                : "Usa el estudio sin límite mientras sigas activo"}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                href="/academy/studio"
+                className="inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="font-display text-xs text-klik-green">
-                    {TYPE_LABEL[course.type] ?? course.type}
-                    {course.role === "creator" ? " · Tu curso" : " · Acceso activo"}
-                  </p>
-                  <h2 className="mt-1 font-display text-lg font-bold">
-                    <Link href={href} className="hover:text-klik-cyan">
-                      {course.title}
-                    </Link>
-                  </h2>
-                  {course.description ? <p className="mt-1 text-sm text-white/50">{course.description}</p> : null}
-                  <p className="mt-2 text-xs text-white/40">
-                    {course.lessonCount === 0
-                      ? "Sin lecciones todavía"
-                      : `${course.lessonCount} ${course.lessonCount === 1 ? "lección" : "lecciones"}`}
-                    {course.role === "student" && course.progressPct > 0
-                      ? ` · ${Math.round(course.progressPct)}% visto`
-                      : ""}
-                    {course.role === "student" && course.resumeLessonTitle
-                      ? ` · Sigues en ${course.resumeLessonTitle}`
-                      : ""}
-                  </p>
-                  {course.role === "student" && course.lessonCount > 0 ? (
-                    <div className="mt-3 h-1.5 max-w-xs overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className="h-full rounded-full bg-klik-cyan"
-                        style={{ width: `${Math.min(100, Math.max(0, course.progressPct))}%` }}
-                      />
-                    </div>
-                  ) : null}
-                </div>
-                <Link
-                  href={href}
-                  className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
-                >
-                  {cta}
-                </Link>
-              </article>
-            );
-          })}
-        </div>
+                Abrir estudio
+              </Link>
+              <Link
+                href="/academy/red"
+                className="inline-flex min-h-11 items-center rounded-full border border-white/15 px-5 text-sm font-semibold"
+              >
+                Ver mi red
+              </Link>
+            </div>
+          </div>
+          <div className="rounded-3xl border border-klik-line bg-klik-card p-5">
+            <p className="text-[11px] uppercase tracking-wider text-white/40">Invitación</p>
+            <p className="mt-2 font-display text-2xl font-extrabold">{snapshot.referralCode}</p>
+            <p className="mt-2 text-xs text-white/45">Nivel 1 cobra 20% de cada alumno que invites.</p>
+          </div>
+        </section>
+      ) : (
+        <section className="mt-8 rounded-3xl border border-klik-line bg-gradient-to-br from-klik-card to-klik-black p-6">
+          <p className="font-display text-2xl font-extrabold">USD 50 / mes</p>
+          <p className="mt-2 max-w-xl text-sm text-white/60">
+            Entras al estudio con acceso ilimitado y puedes construir una red de 8 niveles. Qlyk se queda el 40%. El 60%
+            restante se reparte en tu upline activo.
+          </p>
+          <div className="mt-6">
+            {userId ? (
+              <AcademySubscribeButton />
+            ) : (
+              <Link
+                href="/register?next=/academy"
+                className="inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black"
+              >
+                Crear cuenta y unirme
+              </Link>
+            )}
+          </div>
+        </section>
       )}
+
+      <section className="mt-10 grid gap-4 md:grid-cols-2">
+        <ToolCard title="Imagen IA" detail="Incluida en tu mensualidad" />
+        <ToolCard title="Video IA" detail="Incluida en tu mensualidad" />
+        <ToolCard title="Notebook LM" detail="Incluida en tu mensualidad" />
+        <ToolCard title="Agentes autónomos" detail="Incluidos en tu mensualidad" />
+      </section>
     </PlatformShell>
+  );
+}
+
+function ToolCard({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="rounded-2xl border border-klik-line bg-klik-card p-5">
+      <p className="font-display text-xl font-bold">{title}</p>
+      <p className="mt-1 text-sm text-white/50">{detail}</p>
+    </div>
   );
 }

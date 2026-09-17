@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleStripeChargeRefunded } from "@/lib/commerce/refunds";
-import { fulfillCheckoutSession, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
+import { fulfillCheckoutSession, fulfillStripeInvoice, expireStripeAcademySubscription, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
 
 export const runtime = "nodejs";
@@ -46,6 +46,23 @@ export async function POST(request: Request) {
   if (event.type === "account.updated") {
     try {
       await handleConnectAccountUpdated(event.data.object.id);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (event.type === "invoice.paid" || event.type === "invoice.payment_succeeded") {
+    try {
+      await fulfillStripeInvoice(event.data.object);
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo asentar la renovación." }, { status: 500 });
+    }
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    try {
+      await expireStripeAcademySubscription(event.data.object);
     } catch (error) {
       console.error(error);
     }

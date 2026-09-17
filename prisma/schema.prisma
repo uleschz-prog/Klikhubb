@@ -64,6 +64,7 @@ enum VideoLane {
 
 enum ProductBilling {
   ONE_TIME
+  MONTHLY
 }
 
 enum CreatorBillingPlan {
@@ -263,6 +264,11 @@ model User {
 
   enrollments   Enrollment[]
   productReviews ProductReview[]
+  productSubscriptions ProductSubscription[]
+  academyCredits     AcademyCreditLedger[]
+  academyArtifacts   AcademyArtifact[]
+  academyNotebooks   AcademyNotebook[]
+  academyAgentRuns   AcademyAgentRun[]
   manualPayments ManualPaymentRequest[] @relation("ManualPaymentBuyer")
   manualPaymentsReviewed ManualPaymentRequest[] @relation("ManualPaymentReviewer")
   creatorPlanInvoices CreatorPlanInvoice[] @relation("CreatorPlanInvoiceUser")
@@ -549,6 +555,7 @@ model Product {
   enrollments Enrollment[]
   reviews     ProductReview[]
   manualPayments ManualPaymentRequest[]
+  subscriptions ProductSubscription[]
 
   @@index([creatorId, status])
   @@index([status, type])
@@ -612,10 +619,139 @@ model Enrollment {
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
   order   Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  subscriptions ProductSubscription[]
 
   @@unique([userId, productId])
   @@index([productId, status])
   @@map("enrollments")
+}
+
+/// Suscripción Stripe (cursos MONTHLY o Qlyk Academy).
+model ProductSubscription {
+  id                   String    @id @default(cuid())
+  userId               String
+  productId            String
+  enrollmentId         String?   @unique
+  stripeSubscriptionId String    @unique
+  stripeCustomerId     String?
+  status               String
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  enrollment  Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, productId])
+  @@index([productId, status])
+  @@map("product_subscriptions")
+}
+
+enum AcademyCreditReason {
+  GRANT
+  SPEND
+  REFUND
+  ADJUSTMENT
+}
+
+enum AcademyArtifactKind {
+  IMAGE
+  VIDEO
+  NOTEBOOK
+  AGENT
+}
+
+model AcademyCreditLedger {
+  id           String               @id @default(cuid())
+  userId       String
+  delta        Int
+  balanceAfter Int
+  reason       AcademyCreditReason
+  note         String?              @db.VarChar(240)
+  refType      String?
+  refId        String?
+  createdAt    DateTime             @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("academy_credit_ledger")
+}
+
+model AcademyArtifact {
+  id        String              @id @default(cuid())
+  userId    String
+  kind      AcademyArtifactKind
+  title     String              @db.VarChar(160)
+  prompt    String              @db.Text
+  output    String              @db.Text
+  creditCost Int                @default(0)
+  createdAt DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind, createdAt(sort: Desc)])
+  @@map("academy_artifacts")
+}
+
+model AcademyNotebook {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String   @db.VarChar(160)
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sources AcademyNotebookSource[]
+  turns   AcademyNotebookTurn[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("academy_notebooks")
+}
+
+model AcademyNotebookSource {
+  id         String @id @default(cuid())
+  notebookId String
+  title      String @db.VarChar(160)
+  content    String @db.Text
+  createdAt  DateTime @default(now())
+
+  notebook AcademyNotebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+
+  @@index([notebookId])
+  @@map("academy_notebook_sources")
+}
+
+model AcademyNotebookTurn {
+  id         String   @id @default(cuid())
+  notebookId String
+  role       String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  notebook AcademyNotebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+
+  @@index([notebookId, createdAt])
+  @@map("academy_notebook_turns")
+}
+
+model AcademyAgentRun {
+  id        String   @id @default(cuid())
+  userId    String
+  goal      String   @db.Text
+  plan      String   @db.Text
+  result    String   @db.Text
+  status    String   @default("DONE")
+  creditCost Int     @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("academy_agent_runs")
 }
 
 model ProductReview {

@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     displayName: parsed.data.displayName,
     locale: parsed.data.locale,
     timezone: parsed.data.timezone,
+    referralCode: parsed.data.referralCode,
   };
 
   try {
