@@ -32,9 +32,11 @@ export default async function AcademyHubPage() {
             <p className="text-[11px] uppercase tracking-wider text-klik-green">Membresía activa</p>
             <p className="mt-2 font-display text-3xl font-extrabold">Acceso ilimitado</p>
             <p className="mt-1 text-sm text-white/50">
-              {snapshot.periodEnd
-                ? `Vigente hasta ${new Date(snapshot.periodEnd).toLocaleDateString("es-MX")}`
-                : "Usa el estudio sin límite mientras sigas activo"}
+              {snapshot.complimentary
+                ? "Cuenta administradora · sin mensualidad"
+                : snapshot.periodEnd
+                  ? `Vigente hasta ${new Date(snapshot.periodEnd).toLocaleDateString("es-MX")}`
+                  : "Usa el estudio sin límite mientras sigas activo"}
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link

@@ -4,7 +4,6 @@ import { AcademyHubNav } from "@/components/academy/AcademyHubNav";
 import { AcademyStudioClient } from "@/components/academy/AcademyStudioClient";
 import { AcademySubscribeButton } from "@/components/academy/AcademySubscribeButton";
 import { getDbUserId } from "@/lib/auth/session";
-import { academyAiProviders } from "@/lib/academy/generate";
 import { loadAcademySnapshot } from "@/lib/academy/membership";
 import { prisma } from "@/lib/prisma";
 import { ensureAcademyProduct } from "@/lib/academy/product";
@@ -67,22 +66,12 @@ export default async function AcademyStudioPage() {
     agents = [];
   }
 
-  const ai = academyAiProviders();
-  const aiHint =
-    ai.openrouter && ai.openai
-      ? "OpenRouter (texto) y OpenAI (imagen) conectados."
-      : ai.openrouter
-        ? "OpenRouter conectado. Falta OpenAI en este entorno para imágenes nativas."
-        : ai.openai
-          ? "OpenAI conectado. Falta OpenRouter en este entorno para Notebook y agentes."
-          : "Sin claves en este entorno: el estudio usa un fallback público.";
-
   return (
     <PlatformShell title="Estudio IA">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Qlyk Academy</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Estudio de IA</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Imagen, video, Notebook LM y agentes autónomos. Ilimitado mientras tu membresía esté activa. {aiHint}
+        Imagen, video, Notebook LM y agentes autónomos. Ilimitado mientras tu membresía esté activa.
       </p>
       <AcademyHubNav />
       <AcademyStudioClient

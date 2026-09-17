@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Artifact = {
@@ -22,9 +22,13 @@ type Notebook = {
 };
 type AgentRun = { id: string; goal: string; plan: string; result: string; createdAt: string };
 
-function parseOutput(raw: string): { url?: string; kind?: string; frames?: string[] } {
+type MediaOutput = { url?: string; kind?: string; frames?: string[]; jobId?: string };
+
+function parseOutput(raw: unknown): MediaOutput {
+  if (raw && typeof raw === "object") return raw as MediaOutput;
+  if (typeof raw !== "string") return {};
   try {
-    return JSON.parse(raw) as { url?: string; kind?: string; frames?: string[] };
+    return JSON.parse(raw) as MediaOutput;
   } catch {
     return { url: raw };
   }
@@ -45,6 +49,7 @@ export function AcademyStudioClient({
   const [prompt, setPrompt] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [notebooks, setNotebooks] = useState(initialNotebooks);
   const [notebookTitle, setNotebookTitle] = useState("");
   const [activeNotebook, setActiveNotebook] = useState<Notebook | null>(null);
@@ -54,6 +59,35 @@ export function AcademyStudioClient({
   const [agents, setAgents] = useState(initialAgents);
   const [goal, setGoal] = useState("");
 
+  useEffect(() => {
+    const pending = artifacts.filter((item) => parseOutput(item.output).kind === "processing");
+    if (!pending.length) return;
+    let cancelled = false;
+    const timer = window.setInterval(() => {
+      void Promise.all(
+        pending.map(async (item) => {
+          const response = await fetch(`/api/academy/artifacts/${item.id}`);
+          const payload = (await response.json().catch(() => null)) as {
+            artifact?: Artifact;
+            pending?: boolean;
+            error?: string;
+          } | null;
+          if (cancelled || !payload?.artifact) return;
+          const nextKind = parseOutput(payload.artifact.output).kind;
+          setArtifacts((current) =>
+            current.map((row) => (row.id === payload.artifact!.id ? { ...row, output: JSON.stringify(payload.artifact!.output) } : row)),
+          );
+          if (nextKind && nextKind !== "processing") setNotice("");
+          if (payload.error && !payload.pending) setError(payload.error);
+        }),
+      );
+    }, 5000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [artifacts]);
+
   const gallery = useMemo(
     () => artifacts.filter((item) => (tab === "image" ? item.kind === "IMAGE" : tab === "video" ? item.kind === "VIDEO" : true)),
     [artifacts, tab],
@@ -62,24 +96,41 @@ export function AcademyStudioClient({
   async function generate(kind: "image" | "video") {
     setBusy(true);
     setError("");
-    const response = await fetch("/api/academy/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind, prompt }),
-    });
-    const payload = (await response.json()) as { error?: string; artifact?: Artifact; code?: string };
-    setBusy(false);
-    if (payload.code === "ACADEMY_INACTIVE") {
-      router.push("/academy");
-      return;
+    setNotice("");
+    try {
+      const response = await fetch("/api/academy/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind, prompt }),
+      });
+      const payload = (await response.json()) as {
+        error?: string;
+        artifact?: Artifact & { output?: unknown };
+        code?: string;
+        pending?: boolean;
+      };
+      if (payload.code === "ACADEMY_INACTIVE") {
+        router.push("/academy");
+        return;
+      }
+      if (!response.ok || !payload.artifact) {
+        setError(payload.error ?? "No se pudo generar.");
+        return;
+      }
+      setArtifacts((current) => [
+        { ...payload.artifact!, output: JSON.stringify(payload.artifact!.output) },
+        ...current,
+      ]);
+      setPrompt("");
+      if (payload.pending) {
+        setNotice("El video se está generando. Quédate en esta pantalla, tarda unos segundos.");
+      }
+      router.refresh();
+    } catch {
+      setError("No se pudo contactar el estudio.");
+    } finally {
+      setBusy(false);
     }
-    if (!response.ok || !payload.artifact) {
-      setError(payload.error ?? "No se pudo generar.");
-      return;
-    }
-    setArtifacts((current) => [payload.artifact!, ...current]);
-    setPrompt("");
-    router.refresh();
   }
 
   async function createNotebook() {
@@ -147,20 +198,25 @@ export function AcademyStudioClient({
   async function runAgent() {
     setBusy(true);
     setError("");
-    const response = await fetch("/api/academy/agents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ goal }),
-    });
-    const payload = (await response.json()) as { error?: string; run?: AgentRun };
-    setBusy(false);
-    if (!response.ok || !payload.run) {
-      setError(payload.error ?? "El agente no pudo terminar.");
-      return;
+    try {
+      const response = await fetch("/api/academy/agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal }),
+      });
+      const payload = (await response.json()) as { error?: string; run?: AgentRun };
+      if (!response.ok || !payload.run) {
+        setError(payload.error ?? "El agente no pudo terminar.");
+        return;
+      }
+      setAgents((current) => [payload.run!, ...current]);
+      setGoal("");
+      router.refresh();
+    } catch {
+      setError("No se pudo contactar el agente.");
+    } finally {
+      setBusy(false);
     }
-    setAgents((current) => [payload.run!, ...current]);
-    setGoal("");
-    router.refresh();
   }
 
   const tabs = [
@@ -195,6 +251,7 @@ export function AcademyStudioClient({
       </div>
 
       {error ? <p className="mt-4 text-sm text-red-400">{error}</p> : null}
+      {notice ? <p className="mt-4 text-sm text-klik-cyan">{notice}</p> : null}
 
       {tab === "image" || tab === "video" ? (
         <div className="mt-6 space-y-4">
@@ -214,12 +271,19 @@ export function AcademyStudioClient({
           >
             {busy ? "Generando…" : tab === "image" ? "Crear imagen" : "Crear video"}
           </button>
+          {tab === "video" ? (
+            <p className="text-xs text-white/40">El video puede tardar hasta un minuto. No cierres esta pestaña.</p>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
             {gallery.map((item) => {
               const output = parseOutput(item.output);
               return (
                 <article key={item.id} className="overflow-hidden rounded-2xl border border-klik-line bg-klik-card">
-                  {output.kind === "storyboard" && output.frames?.length ? (
+                  {output.kind === "processing" ? (
+                    <div className="flex aspect-[9/16] items-center justify-center bg-black/50 text-sm text-white/60">
+                      Generando video…
+                    </div>
+                  ) : output.kind === "storyboard" && output.frames?.length ? (
                     <div className="grid grid-cols-2">
                       {output.frames.map((frame) => (
                         // eslint-disable-next-line @next/next/no-img-element

@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import { getDbUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { requireAcademyMember } from "@/lib/academy/membership";
-import { generateAcademyImage, generateAcademyVideo } from "@/lib/academy/generate";
+import {
+  AcademyAiError,
+  generateAcademyImage,
+  startAcademyVideo,
+  type AcademyMedia,
+} from "@/lib/academy/generate";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const schema = z.object({
@@ -13,6 +19,29 @@ const schema = z.object({
   prompt: z.string().trim().min(8).max(2000),
   title: z.string().trim().max(160).optional(),
 });
+
+function fail(error: unknown) {
+  console.error(error);
+  const message =
+    error instanceof AcademyAiError
+      ? error.message
+      : "No se pudo generar ahora. Inténtalo de nuevo.";
+  return NextResponse.json({ error: message }, { status: 502 });
+}
+
+function serializeArtifact(
+  artifact: { id: string; kind: string; title: string; prompt: string; output: string; createdAt: Date },
+  output?: AcademyMedia,
+) {
+  return {
+    id: artifact.id,
+    kind: artifact.kind,
+    title: artifact.title,
+    prompt: artifact.prompt,
+    output: output ?? JSON.parse(artifact.output),
+    createdAt: artifact.createdAt.toISOString(),
+  };
+}
 
 export async function POST(request: Request) {
   const userId = await getDbUserId();
@@ -37,7 +66,7 @@ export async function POST(request: Request) {
     const output =
       parsed.data.kind === "image"
         ? await generateAcademyImage(parsed.data.prompt)
-        : await generateAcademyVideo(parsed.data.prompt);
+        : await startAcademyVideo(parsed.data.prompt);
 
     const artifact = await prisma.academyArtifact.create({
       data: {
@@ -52,17 +81,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      artifact: {
-        id: artifact.id,
-        kind: artifact.kind,
-        title: artifact.title,
-        prompt: artifact.prompt,
-        output,
-        createdAt: artifact.createdAt.toISOString(),
-      },
+      pending: output.kind === "processing",
+      artifact: serializeArtifact(artifact, output),
     });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "No se pudo generar ahora. Inténtalo de nuevo." }, { status: 502 });
+    return fail(error);
   }
 }

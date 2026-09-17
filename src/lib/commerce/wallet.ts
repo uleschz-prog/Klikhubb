@@ -116,6 +116,35 @@ export async function releaseMatureCommissions(userId?: string): Promise<Release
   }
 }
 
+export async function forceReleaseCommissions(input?: {
+  userId?: string;
+  unilevelOnly?: boolean;
+}): Promise<ReleaseResult> {
+  try {
+    await prisma.commission.updateMany({
+      where: {
+        status: "LOCKED",
+        ...(input?.userId ? { beneficiaryId: input.userId } : {}),
+        ...(input?.unilevelOnly ? { type: "UNILEVEL" } : {}),
+      },
+      data: { availableAt: new Date() },
+    });
+
+    let released = 0;
+    let amount = 0;
+    for (let i = 0; i < 8; i += 1) {
+      const batch = await releaseInDb(input?.userId);
+      released += batch.released;
+      amount += batch.amount;
+      if (batch.released === 0) break;
+    }
+    return { released, amount };
+  } catch (error) {
+    if (!shouldUseDemoFallback(error)) throw error;
+    return demoReleaseMature(input?.userId);
+  }
+}
+
 export async function loadWalletView(userId: string): Promise<WalletView> {
   try {
     await releaseInDb(userId);

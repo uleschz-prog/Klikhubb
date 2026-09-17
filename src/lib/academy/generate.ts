@@ -1,10 +1,27 @@
 import { siteUrl } from "@/config/site";
+import { persistAcademyBytes, persistAcademyDataUrl, persistAcademyRemote } from "@/lib/academy/media";
 
 const OPENAI_URL = "https://api.openai.com/v1";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1";
 const POLLINATIONS_IMAGE = "https://image.pollinations.ai/prompt";
 const POLLINATIONS_TEXT = "https://text.pollinations.ai";
 const POLLINATIONS_VIDEO = "https://gen.pollinations.ai/video";
+
+export type AcademyMedia = {
+  url: string;
+  kind: "image" | "video" | "storyboard" | "processing";
+  frames?: string[];
+  jobId?: string;
+  pollingUrl?: string;
+  provider?: string;
+};
+
+export class AcademyAiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AcademyAiError";
+  }
+}
 
 function env(name: string) {
   return process.env[name]?.trim() || "";
@@ -30,12 +47,41 @@ function openrouterChatModel() {
   return env("OPENROUTER_MODEL") || "google/gemini-2.5-flash";
 }
 
-function openrouterImageModel() {
-  return env("OPENROUTER_IMAGE_MODEL") || "google/gemini-2.5-flash-image-preview";
+function imageModels() {
+  const preferred = env("OPENROUTER_IMAGE_MODEL");
+  return [
+    preferred,
+    "google/gemini-2.5-flash-image",
+    "openai/gpt-image-1",
+    "black-forest-labs/flux.2-flex",
+  ].filter((model, index, list) => model && list.indexOf(model) === index);
+}
+
+function videoModels() {
+  const preferred = env("OPENROUTER_VIDEO_MODEL");
+  return [
+    preferred,
+    "bytedance/seedance-2.0",
+    "minimax/hailuo-02",
+    "alibaba/wan-2.5",
+  ].filter((model, index, list) => model && list.indexOf(model) === index);
+}
+
+function openrouterHeaders() {
+  return {
+    Authorization: `Bearer ${openrouterKey()}`,
+    "Content-Type": "application/json",
+    "HTTP-Referer": siteUrl(),
+    "X-Title": "Qlyk Academy",
+  };
 }
 
 async function readText(response: Response) {
   return (await response.text()).trim();
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 type ChatInput = { system: string; user: string; json?: boolean };
@@ -70,15 +116,9 @@ async function chatOpenAI(input: ChatInput): Promise<string | null> {
 async function chatOpenRouter(input: ChatInput): Promise<string | null> {
   const key = openrouterKey();
   if (!key) return null;
-  const origin = siteUrl();
   const response = await fetch(`${OPENROUTER_URL}/chat/completions`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": origin,
-      "X-Title": "Qlyk Academy",
-    },
+    headers: openrouterHeaders(),
     body: JSON.stringify({
       model: openrouterChatModel(),
       temperature: 0.7,
@@ -91,9 +131,7 @@ async function chatOpenRouter(input: ChatInput): Promise<string | null> {
   });
   if (!response.ok) {
     console.error("openrouter chat", response.status, await readText(response).catch(() => ""));
-    if (input.json) {
-      return chatOpenRouter({ ...input, json: false });
-    }
+    if (input.json) return chatOpenRouter({ ...input, json: false });
     return null;
   }
   const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] };
@@ -141,138 +179,249 @@ export async function completeAcademyText(input: ChatInput): Promise<string> {
     return null;
   });
   if (pollinations) return pollinations;
-  throw new Error("ACADEMY_AI_UNAVAILABLE");
+  throw new AcademyAiError("No hay un modelo de texto disponible ahora.");
 }
 
-function extractOpenRouterImage(payload: unknown): string | null {
-  const root = payload as {
-    choices?: {
-      message?: {
-        content?: unknown;
-        images?: { image_url?: { url?: string }; url?: string }[];
-      };
-    }[];
-  };
-  const message = root.choices?.[0]?.message;
-  const fromImages = message?.images?.[0]?.image_url?.url || message?.images?.[0]?.url;
-  if (fromImages) return fromImages;
-
-  const content = message?.content;
-  if (typeof content === "string") {
-    const markdown = content.match(/!\[[^\]]*\]\((https?:[^)\s]+|data:image\/[^)\s]+)\)/);
-    if (markdown?.[1]) return markdown[1];
-    const data = content.match(/(data:image\/[a-zA-Z0-9+.-]+;base64,[A-Za-z0-9+/=]+)/);
-    if (data?.[1]) return data[1];
-    const url = content.match(/(https?:\/\/\S+\.(?:png|jpe?g|webp|gif))/i);
-    if (url?.[1]) return url[1];
+function parseJsonObject(raw: string): Record<string, unknown> | null {
+  const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const text = (fence?.[1] ?? raw).trim();
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+  try {
+    return JSON.parse(text.slice(start, end + 1)) as Record<string, unknown>;
+  } catch {
+    return null;
   }
-  if (Array.isArray(content)) {
-    for (const part of content) {
-      const row = part as { type?: string; image_url?: { url?: string }; url?: string };
-      if (row.image_url?.url) return row.image_url.url;
-      if (row.type === "image" && row.url) return row.url;
+}
+
+async function imageFromOpenRouter(prompt: string): Promise<string | null> {
+  if (!openrouterKey()) return null;
+  for (const model of imageModels()) {
+    const response = await fetch(`${OPENROUTER_URL}/images`, {
+      method: "POST",
+      headers: openrouterHeaders(),
+      body: JSON.stringify({
+        model,
+        prompt,
+        aspect_ratio: "1:1",
+      }),
+    });
+    if (!response.ok) {
+      console.error("openrouter image", model, response.status, await readText(response).catch(() => ""));
+      continue;
+    }
+    const payload = (await response.json()) as {
+      data?: { b64_json?: string; url?: string; media_type?: string }[];
+    };
+    const first = payload.data?.[0];
+    if (first?.b64_json) {
+      const media = first.media_type || "image/png";
+      return persistAcademyDataUrl(`data:${media};base64,${first.b64_json}`, "image");
+    }
+    if (first?.url) {
+      return (await persistAcademyRemote({ url: first.url, filename: "image", fallbackExt: "png" })) ?? first.url;
     }
   }
   return null;
 }
 
-async function imageOpenAI(prompt: string): Promise<{ url: string; kind: "image" } | null> {
+async function imageFromOpenAI(prompt: string): Promise<string | null> {
   const key = openaiKey();
   if (!key) return null;
-  const response = await fetch(`${OPENAI_URL}/images/generations`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: openaiImageModel(),
-      prompt,
-      size: "1024x1024",
-      n: 1,
-    }),
-  });
-  if (!response.ok) {
-    console.error("openai image", response.status, await readText(response).catch(() => ""));
-    return null;
+  const models = [openaiImageModel(), "dall-e-3", "gpt-image-1"].filter(
+    (model, index, list) => list.indexOf(model) === index,
+  );
+  for (const model of models) {
+    const response = await fetch(`${OPENAI_URL}/images/generations`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        prompt,
+        size: "1024x1024",
+        n: 1,
+      }),
+    });
+    if (!response.ok) {
+      console.error("openai image", model, response.status, await readText(response).catch(() => ""));
+      continue;
+    }
+    const payload = (await response.json()) as { data?: { url?: string; b64_json?: string }[] };
+    const first = payload.data?.[0];
+    if (first?.b64_json) {
+      return persistAcademyDataUrl(`data:image/png;base64,${first.b64_json}`, "image");
+    }
+    if (first?.url) {
+      return (await persistAcademyRemote({ url: first.url, filename: "image", fallbackExt: "png" })) ?? first.url;
+    }
   }
-  const payload = (await response.json()) as { data?: { url?: string; b64_json?: string }[] };
-  const first = payload.data?.[0];
-  if (first?.url) return { url: first.url, kind: "image" };
-  if (first?.b64_json) return { url: `data:image/png;base64,${first.b64_json}`, kind: "image" };
   return null;
 }
 
-async function imageOpenRouter(prompt: string): Promise<{ url: string; kind: "image" } | null> {
-  const key = openrouterKey();
-  if (!key) return null;
-  const origin = siteUrl();
-  const response = await fetch(`${OPENROUTER_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": origin,
-      "X-Title": "Qlyk Academy",
-    },
-    body: JSON.stringify({
-      model: openrouterImageModel(),
-      modalities: ["image", "text"],
-      messages: [
-        {
-          role: "user",
-          content: `Generate a high-quality image. No captions. Prompt: ${prompt}`,
-        },
-      ],
-    }),
+async function imageFromPollinations(prompt: string): Promise<string | null> {
+  const url = `${POLLINATIONS_IMAGE}/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&model=flux&seed=${Date.now()}`;
+  return persistAcademyRemote({
+    url,
+    filename: "image",
+    fallbackExt: "png",
+    headers: { Accept: "image/*", "User-Agent": "QlykAcademy/1.0" },
   });
-  if (!response.ok) {
-    console.error("openrouter image", response.status, await readText(response).catch(() => ""));
-    return null;
-  }
-  const payload: unknown = await response.json();
-  const url = extractOpenRouterImage(payload);
-  return url ? { url, kind: "image" } : null;
 }
 
-export async function generateAcademyImage(prompt: string) {
-  const openai = await imageOpenAI(prompt).catch((error) => {
-    console.error("openai image", error);
-    return null;
-  });
-  if (openai) return openai;
-
-  const openrouter = await imageOpenRouter(prompt).catch((error) => {
+export async function generateAcademyImage(prompt: string): Promise<AcademyMedia> {
+  const openrouter = await imageFromOpenRouter(prompt).catch((error) => {
     console.error("openrouter image", error);
     return null;
   });
-  if (openrouter) return openrouter;
+  if (openrouter) return { url: openrouter, kind: "image", provider: "openrouter" };
 
-  const url = `${POLLINATIONS_IMAGE}/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-  return { url, kind: "image" as const };
+  const openai = await imageFromOpenAI(prompt).catch((error) => {
+    console.error("openai image", error);
+    return null;
+  });
+  if (openai) return { url: openai, kind: "image", provider: "openai" };
+
+  const pollinations = await imageFromPollinations(prompt).catch((error) => {
+    console.error("pollinations image", error);
+    return null;
+  });
+  if (pollinations) return { url: pollinations, kind: "image", provider: "pollinations" };
+
+  throw new AcademyAiError("No se pudo crear la imagen. Revisa las claves de OpenRouter u OpenAI.");
 }
 
-export async function generateAcademyVideo(prompt: string) {
-  const videoUrl = `${POLLINATIONS_VIDEO}/${encodeURIComponent(prompt)}?aspectRatio=9:16&nologo=true`;
-  try {
-    const head = await fetch(videoUrl, { method: "HEAD", redirect: "follow" });
-    const type = head.headers.get("content-type") ?? "";
-    if (head.ok && type.startsWith("video")) {
-      return { url: videoUrl, kind: "video" as const, frames: [] as string[] };
+type VideoJob = {
+  id: string;
+  polling_url?: string;
+  status?: string;
+  error?: string;
+  unsigned_urls?: string[];
+};
+
+async function submitOpenRouterVideo(prompt: string): Promise<VideoJob | null> {
+  if (!openrouterKey()) return null;
+  for (const model of videoModels()) {
+    for (const body of [
+      {
+        model,
+        prompt,
+        duration: 4,
+        resolution: "720p",
+        aspect_ratio: "9:16",
+        generate_audio: false,
+      },
+      { model, prompt },
+    ]) {
+      const response = await fetch(`${OPENROUTER_URL}/videos`, {
+        method: "POST",
+        headers: openrouterHeaders(),
+        body: JSON.stringify(body),
+      });
+      if (response.ok || response.status === 202) {
+        const job = (await response.json()) as VideoJob;
+        if (job.id) return job;
+      }
+      console.error("openrouter video submit", model, response.status, await readText(response).catch(() => ""));
     }
-  } catch (error) {
-    console.error("pollinations video", error);
+  }
+  return null;
+}
+
+async function pollOpenRouterVideo(job: VideoJob, waitMs: number): Promise<VideoJob> {
+  const pollingUrl = new URL(job.polling_url || `/api/v1/videos/${job.id}`, "https://openrouter.ai").toString();
+  const deadline = Date.now() + waitMs;
+  let current = job;
+  while (Date.now() < deadline) {
+    if (current.status === "completed") return current;
+    if (current.status === "failed" || current.status === "cancelled" || current.status === "expired") {
+      throw new AcademyAiError(current.error || "El video no se pudo generar.");
+    }
+    await sleep(4000);
+    const response = await fetch(pollingUrl, { headers: { Authorization: `Bearer ${openrouterKey()}` } });
+    if (!response.ok) {
+      console.error("openrouter video poll", response.status, await readText(response).catch(() => ""));
+      continue;
+    }
+    current = (await response.json()) as VideoJob;
+  }
+  return current;
+}
+
+async function downloadOpenRouterVideo(job: VideoJob): Promise<string | null> {
+  const downloadUrl =
+    job.unsigned_urls?.[0] ?? `${OPENROUTER_URL}/videos/${job.id}/content?index=0`;
+  const response = await fetch(downloadUrl, {
+    headers: { Authorization: `Bearer ${openrouterKey()}` },
+  });
+  if (!response.ok) {
+    console.error("openrouter video download", response.status, await readText(response).catch(() => ""));
+    return null;
+  }
+  const type = (response.headers.get("content-type") ?? "video/mp4").split(";")[0];
+  const bytes = Buffer.from(await response.arrayBuffer());
+  const stored = await persistAcademyBytes({
+    bytes,
+    contentType: type.startsWith("video/") ? type : "video/mp4",
+    filename: "video.mp4",
+  });
+  return stored;
+}
+
+export async function startAcademyVideo(prompt: string): Promise<AcademyMedia> {
+  const job = await submitOpenRouterVideo(prompt).catch((error) => {
+    console.error("openrouter video", error);
+    return null;
+  });
+  if (job) {
+    const polled = await pollOpenRouterVideo(job, 18_000);
+    if (polled.status === "completed") {
+      const url = await downloadOpenRouterVideo(polled);
+      if (url) return { url, kind: "video", provider: "openrouter" };
+    }
+    return {
+      url: "",
+      kind: "processing",
+      jobId: job.id,
+      pollingUrl: job.polling_url,
+      provider: "openrouter",
+    };
   }
 
-  const frames = await Promise.all(
-    [1, 2, 3, 4].map(async (frame) => {
-      const still = await generateAcademyImage(
-        `Cinematic video keyframe ${frame}/4, photoreal, 9:16, motion still of: ${prompt}`,
-      );
-      return still.url;
-    }),
-  );
-  return { url: frames[0] ?? "", kind: "storyboard" as const, frames };
+  const pollinationsUrl = `${POLLINATIONS_VIDEO}/${encodeURIComponent(prompt)}?aspectRatio=9:16&nologo=true`;
+  const stored = await persistAcademyRemote({
+    url: pollinationsUrl,
+    filename: "video",
+    fallbackExt: "mp4",
+    headers: { Accept: "video/*,*/*", "User-Agent": "QlykAcademy/1.0" },
+  }).catch((error) => {
+    console.error("pollinations video", error);
+    return null;
+  });
+  if (stored && !stored.includes("pollinations.ai/prompt")) {
+    return { url: stored, kind: "video", provider: "pollinations" };
+  }
+
+  throw new AcademyAiError("No se pudo crear el video. Revisa OPENROUTER_API_KEY y el modelo de video.");
+}
+
+export async function settleAcademyVideo(job: { jobId: string; pollingUrl?: string }): Promise<AcademyMedia | null> {
+  const polled = await pollOpenRouterVideo({ id: job.jobId, polling_url: job.pollingUrl, status: "in_progress" }, 22_000);
+  if (polled.status !== "completed") {
+    return {
+      url: "",
+      kind: "processing",
+      jobId: job.jobId,
+      pollingUrl: polled.polling_url || job.pollingUrl,
+      provider: "openrouter",
+    };
+  }
+  const url = await downloadOpenRouterVideo(polled);
+  if (!url) throw new AcademyAiError("El video se generó pero no se pudo guardar.");
+  return { url, kind: "video", provider: "openrouter" };
 }
 
 export async function runAcademyNotebook(input: {
@@ -298,46 +447,52 @@ export async function runAcademyNotebook(input: {
 export async function runAcademyAgent(goal: string) {
   const planRaw = await completeAcademyText({
     system:
-      "Eres un agente autónomo de Qlyk Academy. Devuelve JSON con {\"steps\":[{\"title\":\"...\",\"action\":\"...\"}]} entre 3 y 6 pasos concretos, en español.",
+      'Eres un agente autónomo de Qlyk Academy. Planifica y ejecuta. Devuelve JSON {"steps":[{"title":"...","result":"..."}],"summary":"..."} con 3 a 5 pasos ya resueltos, en español.',
     user: `Objetivo del alumno: ${goal}`,
     json: true,
   });
 
-  let steps: { title: string; action: string }[] = [];
-  try {
-    const parsed = JSON.parse(planRaw) as { steps?: { title?: string; action?: string }[] };
-    steps = (parsed.steps ?? [])
-      .map((step) => ({ title: String(step.title ?? "").trim(), action: String(step.action ?? "").trim() }))
-      .filter((step) => step.title && step.action)
-      .slice(0, 6);
-  } catch {
-    steps = [
-      { title: "Entender el objetivo", action: goal },
-      { title: "Proponer un plan", action: "Desglosar el trabajo en entregables." },
-      { title: "Entregar resultado", action: "Redactar la respuesta final." },
-    ];
-  }
+  const parsed = parseJsonObject(planRaw);
+  const rawSteps = Array.isArray(parsed?.steps) ? (parsed.steps as { title?: string; result?: string; action?: string }[]) : [];
+  let steps = rawSteps
+    .map((step) => ({
+      title: String(step.title ?? "").trim(),
+      result: String(step.result ?? step.action ?? "").trim(),
+    }))
+    .filter((step) => step.title && step.result)
+    .slice(0, 6);
 
-  const executions: { title: string; result: string }[] = [];
-  for (const step of steps) {
-    const result = await completeAcademyText({
-      system: "Ejecutas un paso de un agente autónomo de Qlyk Academy. Español, accionable, sin relleno.",
-      user: `Objetivo: ${goal}\nPaso: ${step.title}\nQué hacer: ${step.action}\nAvance previo:\n${executions
-        .map((item) => `- ${item.title}: ${item.result}`)
-        .join("\n")}`,
+  let summary = typeof parsed?.summary === "string" ? parsed.summary.trim() : "";
+
+  if (!steps.length || !summary) {
+    const follow = await completeAcademyText({
+      system:
+        "Ejecutas un agente de Qlyk Academy. Entrega JSON {\"steps\":[{\"title\":\"...\",\"result\":\"...\"}],\"summary\":\"...\"} en español, accionable.",
+      user: `Objetivo: ${goal}\nBorrador:\n${planRaw}`,
+      json: true,
     });
-    executions.push({ title: step.title, result });
+    const second = parseJsonObject(follow);
+    const more = Array.isArray(second?.steps) ? (second.steps as { title?: string; result?: string }[]) : [];
+    steps = more
+      .map((step) => ({ title: String(step.title ?? "").trim(), result: String(step.result ?? "").trim() }))
+      .filter((step) => step.title && step.result)
+      .slice(0, 6);
+    summary = typeof second?.summary === "string" ? second.summary.trim() : follow;
   }
 
-  const summary = await completeAcademyText({
-    system: "Sintetizas el trabajo de un agente autónomo. Entrega final clara, en español, lista para usar.",
-    user: `Objetivo: ${goal}\nPasos:\n${executions.map((item) => `## ${item.title}\n${item.result}`).join("\n\n")}`,
-  });
+  if (!steps.length) {
+    steps = [{ title: "Entrega", result: summary || planRaw }];
+  }
+  if (!summary) summary = steps.map((step) => `${step.title}: ${step.result}`).join("\n\n");
 
   return {
-    plan: JSON.stringify(steps, null, 2),
+    plan: JSON.stringify(
+      steps.map((step) => ({ title: step.title })),
+      null,
+      2,
+    ),
     result: summary,
-    steps: executions,
+    steps,
   };
 }
 

@@ -123,6 +123,9 @@ export default async function DashboardPage() {
           <section className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4 text-sm">
             <p className="font-semibold text-amber-200">Admin</p>
             <div className="mt-2 flex flex-wrap gap-3">
+              <Link href="/admin/users" className="text-klik-cyan hover:underline">
+                Usuarios y red
+              </Link>
               <Link href="/admin/setup" className="text-klik-cyan hover:underline">
                 Setup
               </Link>

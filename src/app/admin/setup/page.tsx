@@ -32,6 +32,9 @@ export default async function AdminSetupPage() {
         <Link href="/dashboard" className="font-semibold text-klik-cyan hover:underline">
           Dashboard
         </Link>
+        <Link href="/admin/users" className="font-semibold text-klik-cyan hover:underline">
+          Usuarios y red
+        </Link>
         <Link href="/admin/payments" className="font-semibold text-klik-cyan hover:underline">
           Pagos por transferencia
         </Link>

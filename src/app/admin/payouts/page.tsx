@@ -27,6 +27,9 @@ export default async function AdminPayoutsPage() {
         <Link href="/admin/setup" className="font-semibold text-klik-cyan hover:underline">
           Configuración
         </Link>
+        <Link href="/admin/users" className="font-semibold text-klik-cyan hover:underline">
+          Usuarios y red
+        </Link>
       </div>
 
       {payouts.length === 0 ? (

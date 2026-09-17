@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { getDbUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { requireAcademyMember } from "@/lib/academy/membership";
-import { runAcademyAgent } from "@/lib/academy/generate";
+import { AcademyAiError, runAcademyAgent } from "@/lib/academy/generate";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const schema = z.object({
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "El agente no pudo completar la tarea." }, { status: 502 });
+    const message = error instanceof AcademyAiError ? error.message : "El agente no pudo completar la tarea.";
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }

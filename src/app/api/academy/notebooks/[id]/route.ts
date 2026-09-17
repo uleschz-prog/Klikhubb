@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getDbUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { requireAcademyMember } from "@/lib/academy/membership";
-import { runAcademyNotebook } from "@/lib/academy/generate";
+import { AcademyAiError, runAcademyNotebook } from "@/lib/academy/generate";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -93,7 +93,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({ ok: true, notebook: serialize(fresh) });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "No se pudo consultar el notebook." }, { status: 502 });
+    const message = error instanceof AcademyAiError ? error.message : "No se pudo consultar el notebook.";
+    return NextResponse.json({ error: message }, { status: 502 });
   }
 }
 

@@ -42,6 +42,9 @@ export default async function AdminPaymentsPage() {
         <Link href="/admin/payouts" className="font-semibold text-klik-cyan hover:underline">
           Retiros manuales
         </Link>
+        <Link href="/admin/users" className="font-semibold text-klik-cyan hover:underline">
+          Usuarios y red
+        </Link>
       </div>
 
       {payments.length === 0 ? (

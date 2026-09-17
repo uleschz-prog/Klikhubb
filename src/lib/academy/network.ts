@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { QLYK_ACADEMY_DEPTH, QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
+import { isPlatformAdminIdentity } from "@/config/platform-admin";
 import type { AcademyUplineSeat } from "@/lib/academy/split";
 
 type Db = Prisma.TransactionClient | typeof import("@/lib/prisma").prisma;
@@ -52,6 +53,12 @@ export async function walkAcademyUpline(
 }
 
 export async function isAcademyMemberActive(db: Db, userId: string) {
+  const identity = await db.user.findUnique({
+    where: { id: userId },
+    select: { email: true, username: true, referralCode: true },
+  });
+  if (isPlatformAdminIdentity(identity)) return true;
+
   const now = new Date();
   const enrollment = await db.enrollment.findFirst({
     where: {
