@@ -7,6 +7,9 @@ import {
 import { requireApiUser } from "@/lib/supabase/require-api-user";
 import { getAppUrl } from "@/lib/env";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   const auth = await requireApiUser();
   const origin = getAppUrl(request);
