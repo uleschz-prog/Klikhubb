@@ -27,7 +27,7 @@ export default async function CheckoutPage({
     redirect(`/learn/${params.slug}`);
   }
 
-  const preview = await getCheckoutPreview(params.slug, buyerId);
+  const preview = await getCheckoutPreview(params.slug);
   if (!preview) notFound();
 
   const methods = getCheckoutMethods();

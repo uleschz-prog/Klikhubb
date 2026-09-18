@@ -65,7 +65,7 @@ export function FeedTheater({
       if (feedTab === "saved") params.set("tab", "saved");
       return `${basePath}?${params.toString()}`;
     },
-    [basePath, feedTab, home],
+    [basePath, feedTab],
   );
 
   const fromClip = initialId ? videos.findIndex((item) => item.id === initialId) : -1;

@@ -255,7 +255,7 @@ export async function viewerOwnsProduct(userId: string, slug: string): Promise<b
   }
 }
 
-export async function getCheckoutPreview(slug: string, _buyerId: string) {
+export async function getCheckoutPreview(slug: string) {
   try {
     const product = await prisma.product.findUnique({
       where: { slug },
