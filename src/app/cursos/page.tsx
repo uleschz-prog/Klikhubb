@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { AcademyHubNav } from "@/components/academy/AcademyHubNav";
 import { getDbUserId } from "@/lib/auth/session";
-import { listMyAcademy } from "@/lib/commerce/catalog";
+import { listMyCourses } from "@/lib/commerce/catalog";
+import { courseWatchHref } from "@/lib/commerce/course";
 
 const TYPE_LABEL: Record<string, string> = {
-  COURSE: "Academia",
+  COURSE: "Curso",
   MEMBERSHIP: "Membresía",
   DIGITAL: "Digital",
   PHYSICAL: "Físico",
@@ -13,23 +13,17 @@ const TYPE_LABEL: Record<string, string> = {
 
 export const dynamic = "force-dynamic";
 
-function courseHref(course: { slug: string; resumeLessonId: string | null }) {
-  if (course.resumeLessonId) return `/academy/${course.slug}?l=${encodeURIComponent(course.resumeLessonId)}`;
-  return `/academy/${course.slug}`;
-}
-
-export default async function AcademyCoursesPage() {
+export default async function MyCoursesPage() {
   const userId = await getDbUserId();
-  const enrollments = userId ? await listMyAcademy(userId) : [];
+  const enrollments = userId ? await listMyCourses(userId) : [];
 
   return (
     <PlatformShell title="Mis cursos">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Qlyk Academy</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Cursos</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Mis cursos</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Lecciones de lo que ya pagaste o de lo que tú publicaste. Independiente de la membresía de IA.
+        Lecciones de lo que ya pagaste o de lo que tú publicaste.
       </p>
-      <AcademyHubNav />
 
       <div className="mt-8 flex flex-wrap items-start justify-between gap-4">
         {userId ? (
@@ -49,7 +43,7 @@ export default async function AcademyCoursesPage() {
             El acceso se guarda en tu cuenta, no en el teléfono.
           </p>
           <Link
-            href="/login?callbackUrl=/academy/cursos"
+            href="/login?callbackUrl=/cursos"
             className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
             Entrar
@@ -71,7 +65,7 @@ export default async function AcademyCoursesPage() {
       ) : (
         <div className="mt-8 space-y-3">
           {enrollments.map((course) => {
-            const href = courseHref(course);
+            const href = courseWatchHref(course.slug, course.resumeLessonId);
             const cta =
               course.role === "creator"
                 ? "Ver curso"

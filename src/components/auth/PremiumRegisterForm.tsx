@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ACADEMY_REF_COOKIE, normalizeReferralCode } from "@/lib/academy/referral";
+import { REF_COOKIE, normalizeReferralCode } from "@/lib/auth/referral";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { PasswordInput } from "@/components/auth/PasswordInput";
@@ -30,7 +30,7 @@ function detectTimezone() {
 
 function cookieReferralCode() {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${ACADEMY_REF_COOKIE}=([^;]*)`));
+  const match = document.cookie.match(new RegExp(`(?:^|; )${REF_COOKIE}=([^;]*)`));
   return match ? normalizeReferralCode(decodeURIComponent(match[1])) : null;
 }
 

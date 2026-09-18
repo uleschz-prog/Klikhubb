@@ -20,8 +20,8 @@ export function CheckoutStage({
   cancelPath?: string;
 }) {
   const router = useRouter();
-  const closeTo = item.slug === "qlyk-academy" ? "/academy" : "/feed";
-  const stripeCancel = cancelPath ?? (item.slug === "qlyk-academy" ? "/academy" : `/c/${item.slug}`);
+  const closeTo = "/feed";
+  const stripeCancel = cancelPath ?? `/c/${item.slug}`;
 
   return (
     <div className="relative min-h-[100dvh] bg-background">

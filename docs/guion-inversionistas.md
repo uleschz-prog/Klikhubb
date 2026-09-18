@@ -37,7 +37,7 @@
 > «**Qlyk** une en una sola app:
 >
 > 1. **Feed de video** vertical (descubrimiento + venta integrada).
-> 2. **Academy** (cursos con módulos y lecciones).
+> 2. **Cursos** (módulos y lecciones en `/cursos` y `/learn`).
 > 3. **Community** (espacios ligados a membresías).
 > 4. **Marketplace** (catálogo de ofertas).
 > 5. **Monedero** con reparto automático y retiros.
@@ -54,7 +54,7 @@
 
 | Actor | Valor |
 |-------|-------|
-| **Creador** | 85–90% de cada venta, feed propio, academia y comunidad integradas |
+| **Creador** | 85–90% de cada venta, feed propio, cursos y comunidad integradas |
 | **Miembro** | Contenido + compra + acceso en un solo lugar |
 | **Plataforma** | 10% de cada transacción, efecto red por referidos de un nivel |
 | **Inversor** | Take rate claro, modelo no-MLM, márgenes en volumen de GMV |

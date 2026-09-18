@@ -245,7 +245,7 @@ export async function fulfillStripeInvoice(invoice: Stripe.Invoice) {
   return { settled };
 }
 
-export async function expireStripeAcademySubscription(subscription: Stripe.Subscription) {
+export async function expireStripeSubscription(subscription: Stripe.Subscription) {
   const existing = await prisma.productSubscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
     select: { id: true, userId: true, productId: true },

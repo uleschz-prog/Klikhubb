@@ -1,6 +1,5 @@
 import { CommissionType, Prisma, UserStatus } from "@prisma/client";
 import { PLATFORM_ADMIN } from "@/config/platform-admin";
-import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 import { prisma } from "@/lib/prisma";
 
 export class AdminUsersError extends Error {
@@ -21,7 +20,6 @@ export type AdminUserRow = {
   lastLoginAt: string | null;
   isAdmin: boolean;
   sponsorCode: string | null;
-  academyActive: boolean;
   invitedCount: number;
   walletAvailable: number;
   walletPending: number;
@@ -33,7 +31,6 @@ export type AdminUsersOverview = {
   users: number;
   active: number;
   suspended: number;
-  academyActive: number;
   lockedNetwork: number;
   lockedNetworkCount: number;
 };
@@ -52,13 +49,10 @@ function isPlatformAdminUser(user: {
 }
 
 export async function loadAdminUsersOverview(): Promise<AdminUsersOverview> {
-  const [users, active, suspended, academyActive, locked] = await Promise.all([
+  const [users, active, suspended, locked] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { status: "ACTIVE" } }),
     prisma.user.count({ where: { status: { in: ["SUSPENDED", "BANNED"] } } }),
-    prisma.enrollment.count({
-      where: { status: "ACTIVE", product: { slug: QLYK_ACADEMY_SLUG } },
-    }),
     prisma.commission.aggregate({
       where: { status: "LOCKED", type: CommissionType.UNILEVEL },
       _sum: { amount: true },
@@ -70,7 +64,6 @@ export async function loadAdminUsersOverview(): Promise<AdminUsersOverview> {
     users,
     active,
     suspended,
-    academyActive,
     lockedNetwork: Number(locked._sum.amount ?? 0),
     lockedNetworkCount: locked._count,
   };
@@ -112,46 +105,18 @@ export async function listAdminUsers(query?: string): Promise<AdminUserRow[]> {
   const ids = rows.map((row) => row.id);
   if (ids.length === 0) return [];
 
-  const now = new Date();
-  const [locked, enrollments] = await Promise.all([
-    prisma.commission.groupBy({
-      by: ["beneficiaryId"],
-      where: {
-        beneficiaryId: { in: ids },
-        status: "LOCKED",
-        type: CommissionType.UNILEVEL,
-      },
-      _sum: { amount: true },
-      _count: { _all: true },
-    }),
-    prisma.enrollment.findMany({
-      where: {
-        userId: { in: ids },
-        status: "ACTIVE",
-        product: { slug: QLYK_ACADEMY_SLUG },
-      },
-      select: {
-        userId: true,
-        subscriptions: {
-          where: { status: { in: ["active", "trialing", "demo"] } },
-          select: { currentPeriodEnd: true },
-          take: 1,
-        },
-      },
-    }),
-  ]);
+  const locked = await prisma.commission.groupBy({
+    by: ["beneficiaryId"],
+    where: {
+      beneficiaryId: { in: ids },
+      status: "LOCKED",
+      type: CommissionType.UNILEVEL,
+    },
+    _sum: { amount: true },
+    _count: { _all: true },
+  });
 
   const lockedMap = new Map(locked.map((row) => [row.beneficiaryId, row]));
-  const academySet = new Set(
-    enrollments
-      .filter((row) => {
-        const sub = row.subscriptions[0];
-        if (!sub) return true;
-        if (sub.currentPeriodEnd && sub.currentPeriodEnd < now) return false;
-        return true;
-      })
-      .map((row) => row.userId),
-  );
 
   return rows.map((row) => {
     const hold = lockedMap.get(row.id);
@@ -166,7 +131,6 @@ export async function listAdminUsers(query?: string): Promise<AdminUserRow[]> {
       lastLoginAt: row.lastLoginAt?.toISOString() ?? null,
       isAdmin: isPlatformAdminUser(row),
       sponsorCode: row.invitedBy?.referralCode ?? row.invitedBy?.username ?? null,
-      academyActive: academySet.has(row.id),
       invitedCount: row._count.invitedUsers,
       walletAvailable: Number(row.wallet?.available ?? 0),
       walletPending: Number(row.wallet?.pending ?? 0),

@@ -247,7 +247,7 @@ def main() -> None:
         slide(
             "s05-features.png",
             [
-                ("Feed + Academy", 68, CYAN, "bold"),
+                ("Feed + Cursos", 68, CYAN, "bold"),
                 ("+ Community + Wallet", 68, GREEN, "bold"),
             ],
             subtitle="Todo en un solo clic",

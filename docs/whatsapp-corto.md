@@ -55,7 +55,7 @@ https://qlyk.vercel.app?ref=TUCODIGO
 
 *Problema:* creadores repartidos entre TikTok + Gumroad + Skool. Pierden conversión en cada enlace.
 
-*Solución:* una app donde *video → compra → academia → comunidad* en un solo clic.
+*Solución:* una app donde *video → compra → curso → comunidad* en un solo clic.
 
 *Modelo:* 10% de cada venta (take rate claro).
 Reparto: 85% creador · 10% plataforma · 5% referido (1 solo nivel).

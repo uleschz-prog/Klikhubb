@@ -2,14 +2,14 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { ACADEMY_REF_COOKIE, ACADEMY_REF_MAX_AGE, normalizeReferralCode } from "@/lib/academy/referral";
+import { REF_COOKIE, REF_COOKIE_MAX_AGE, normalizeReferralCode } from "@/lib/auth/referral";
 
 export function ReferralCapture() {
   const params = useSearchParams();
   useEffect(() => {
     const code = normalizeReferralCode(params.get("ref"));
     if (!code) return;
-    document.cookie = `${ACADEMY_REF_COOKIE}=${encodeURIComponent(code)};path=/;max-age=${ACADEMY_REF_MAX_AGE};samesite=lax`;
+    document.cookie = `${REF_COOKIE}=${encodeURIComponent(code)};path=/;max-age=${REF_COOKIE_MAX_AGE};samesite=lax`;
   }, [params]);
   return null;
 }

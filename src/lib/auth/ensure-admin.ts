@@ -54,11 +54,6 @@ export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
       create: { userId: existing.id },
     });
 
-    const { ensureOperatorAcademyMembership } = await import("@/lib/academy/membership");
-    await ensureOperatorAcademyMembership(existing.id).catch((error) => {
-      console.error("academy complimentary membership", error);
-    });
-
     return db.user.findUniqueOrThrow({ where: { id: existing.id } });
   }
 
@@ -79,11 +74,6 @@ export async function ensurePlatformAdmin(db: PrismaClient = defaultPrisma) {
       wallet: { create: {} },
       stats: { create: {} },
     },
-  });
-
-  const { ensureOperatorAcademyMembership } = await import("@/lib/academy/membership");
-  await ensureOperatorAcademyMembership(created.id).catch((error) => {
-    console.error("academy complimentary membership", error);
   });
 
   return created;

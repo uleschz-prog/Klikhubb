@@ -11,7 +11,7 @@ const tabs = [
   { href: "/play", label: "Ver", match: ["/play"] },
   { href: "/feed", label: "Comprar", match: ["/feed", "/marketplace"] },
   { href: "/search", label: "Buscar", match: ["/search"] },
-  { href: "/orders", label: "Mis cosas", match: ["/orders", "/academy"] },
+  { href: "/orders", label: "Mis cosas", match: ["/orders", "/cursos", "/learn"] },
   { href: "/dashboard", label: "Yo", match: ["/dashboard", "/wallet", "/studio", "/notifications"] },
 ];
 

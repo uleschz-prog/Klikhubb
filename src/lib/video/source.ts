@@ -100,7 +100,7 @@ export function youtubeEmbedSrc(
   return `https://www.youtube.com/embed/${id}?${params.toString()}`;
 }
 
-/** Embed with controls for Academy — not the muted loop used in the feed. */
+/** Embed with controls for lecciones — not the muted loop used in the feed. */
 export function youtubeLessonEmbedSrc(raw: string) {
   const id = youtubeVideoId(raw);
   if (!id) return null;

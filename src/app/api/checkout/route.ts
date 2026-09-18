@@ -12,8 +12,6 @@ import { isLivePaymentsRequired } from "@/config/payment-instructions";
 import { isSpeiEnabled, isStripeEnabled, resolveCheckoutIntent } from "@/config/checkout-methods";
 import { demoSettleOrder } from "@/lib/demo/store";
 import { checkoutSchema } from "@/lib/validations/auth";
-import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
-import { ensureAcademyProduct } from "@/lib/academy/product";
 
 export const runtime = "nodejs";
 
@@ -32,14 +30,6 @@ export async function POST(request: Request) {
 
   const slug = parsed.data.slug;
   const method = parsed.data.method;
-  if (slug === QLYK_ACADEMY_SLUG) {
-    try {
-      await ensureAcademyProduct();
-    } catch (error) {
-      console.error(error);
-      return NextResponse.json({ error: "Qlyk Academy aún no está lista." }, { status: 503 });
-    }
-  }
   const product = await resolveProduct(slug);
   if (!product) {
     return NextResponse.json({ error: "Producto no encontrado." }, { status: 404 });

@@ -53,7 +53,7 @@ export function CreateCourseForm() {
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           maxLength={120}
-          placeholder="Academia de cierre"
+          placeholder="Curso de cierre"
           className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan placeholder:text-white/35 focus:ring-2"
         />
       </label>

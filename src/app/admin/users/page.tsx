@@ -21,16 +21,15 @@ export default async function AdminUsersPage({
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Operaciones</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Usuarios y red</h1>
       <p className="mt-2 max-w-2xl text-sm text-white/55">
-        Solo la cuenta administradora ve este panel. Activa o suspende cuentas y libera las comisiones unilevel de
-        Qlyk Academy sin esperar el hold.
+        Solo la cuenta administradora ve este panel. Activa o suspende cuentas y libera las comisiones unilevel
+        pendientes sin esperar el hold.
       </p>
       <AdminOpsNav current="/admin/users" />
 
-      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Usuarios" value={String(overview.users)} />
         <Stat label="Activos" value={String(overview.active)} />
         <Stat label="Suspendidos" value={String(overview.suspended)} />
-        <Stat label="Academy activa" value={String(overview.academyActive)} />
         <Stat
           label="Red en hold"
           value={formatMoney(overview.lockedNetwork)}

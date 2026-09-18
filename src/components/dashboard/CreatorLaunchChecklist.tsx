@@ -53,7 +53,7 @@ export function buildCreatorLaunchChecklist(progress: CreatorLaunchProgress): Ch
       label: "Primer curso o producto",
       done: progress.hasCourse,
       href: "/studio/new",
-      hint: "Crea tu academia en Studio.",
+      hint: "Crea tu curso en Studio.",
     },
     {
       id: "shop",

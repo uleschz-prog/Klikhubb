@@ -27,7 +27,7 @@ export default async function StudioPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Creador</p>
           <h1 className="mt-2 font-display text-3xl font-extrabold">Crear cursos</h1>
           <p className="mt-2 max-w-xl text-sm text-white/55">
-            Arma tu academia: módulos, lecciones con video o archivos, y publícala cuando esté lista.
+            Arma tu curso: módulos, lecciones con video o archivos, y publícalo cuando esté listo.
           </p>
         </div>
         <Link
@@ -42,7 +42,7 @@ export default async function StudioPage() {
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
           <h2 className="font-display text-2xl font-extrabold">Todavía no tienes cursos</h2>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            Crea tu primera academia, sube lecciones y ponla a la venta cuando quieras.
+            Crea tu primer curso, sube lecciones y ponlo a la venta cuando quieras.
           </p>
           <Link
             href="/studio/new"

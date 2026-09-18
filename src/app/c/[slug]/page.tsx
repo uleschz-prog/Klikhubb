@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { AcademyPlayer } from "@/components/academy/AcademyPlayer";
+import { CoursePlayer } from "@/components/course/CoursePlayer";
 import { BuyButton } from "@/components/commerce/BuyButton";
 import { CourseReviewForm } from "@/components/course/CourseReviewForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { groupLessonsByModule, loadPublicCourse } from "@/lib/commerce/public-course";
 import { formatProductPrice } from "@/lib/commerce/billing";
+import { courseWatchHref } from "@/lib/commerce/course";
 import { site } from "@/config/site";
-import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 
 export const dynamic = "force-dynamic";
 
 const TYPE_LABEL: Record<string, string> = {
-  COURSE: "Academia",
+  COURSE: "Curso",
   MEMBERSHIP: "Membresía",
   DIGITAL: "Digital",
   PHYSICAL: "Físico",
@@ -51,7 +51,6 @@ export default async function PublicCoursePage({
   params: { slug: string };
   searchParams: { l?: string };
 }) {
-  if (params.slug === QLYK_ACADEMY_SLUG) redirect("/academy");
   const userId = await getDbUserId();
   const course = await loadPublicCourse(params.slug, userId);
   if (!course) notFound();
@@ -62,7 +61,7 @@ export default async function PublicCoursePage({
   const lockedSelected = requested && !requested.isFreePreview ? requested : null;
   const modules = groupLessonsByModule(course.lessons);
   const checkoutHref = `/checkout/${course.slug}`;
-  const academyHref = `/academy/${course.slug}`;
+  const learnHref = courseWatchHref(course.slug);
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/c/${course.slug}`)}`;
 
   return (
@@ -89,7 +88,7 @@ export default async function PublicCoursePage({
       <div className="mt-6 flex flex-wrap items-center gap-3">
         {course.access === "student" ? (
           <Link
-            href={academyHref}
+            href={learnHref}
             className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
           >
             Continuar
@@ -119,7 +118,7 @@ export default async function PublicCoursePage({
         <div>
           {selected ? (
             <>
-              <AcademyPlayer
+              <CoursePlayer
                 title={selected.title}
                 videoUrl={selected.videoUrl}
                 thumbnailUrl={selected.thumbnailUrl}
@@ -132,14 +131,14 @@ export default async function PublicCoursePage({
             <div className="flex aspect-video flex-col items-center justify-center rounded-2xl border border-klik-line bg-klik-card px-6 text-center">
               <p className="font-display text-xl font-bold">Esta lección es del curso</p>
               <p className="mt-2 max-w-md text-sm text-white/50">
-                {lockedSelected.title}. Cómpralo y la ves completa en Academy.
+                {lockedSelected.title}. Cómpralo y la ves completa en el curso.
               </p>
               {course.access === "student" ? (
                 <Link
-                  href={`${academyHref}?l=${encodeURIComponent(lockedSelected.id)}`}
+                  href={courseWatchHref(course.slug, lockedSelected.id)}
                   className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
                 >
-                  Ver en Academy
+                  Ver el curso
                 </Link>
               ) : (
                 <Link
@@ -179,7 +178,7 @@ export default async function PublicCoursePage({
                   <p className="mt-2 max-w-md text-sm text-white/50">
                     {course.access === "creator"
                       ? "El temario ya está. En Studio, en la primera lección toca Preview para que la gente la pruebe sin pagar."
-                      : "El temario de la derecha te dice qué incluye. Compra para verlo completo en Academy."}
+                      : "El temario de la derecha te dice qué incluye. Compra para verlo completo."}
                   </p>
                   {course.access === "creator" ? (
                     <Link

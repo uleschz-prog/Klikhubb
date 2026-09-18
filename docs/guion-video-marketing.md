@@ -20,7 +20,7 @@
 | **0:12–0:18** | Screen recording: feed vertical, video con botón COMPRAR | «Del **video al pago**. Sin salir del feed.» |
 | **0:18–0:24** | Split: creador publica en /publish → clip live en feed | «Subes. Tu gente ve. Tu gente **compra**. En el mismo clic.» |
 | **0:24–0:30** | Dashboard + monedero subiendo | «Tú te quedas el **85–90%**. La plataforma solo el 10%.» |
-| **0:30–0:36** | Academy + Community rápido | «Curso. Comunidad. Monedero. **Todo en un sitio.**» |
+| **0:30–0:36** | Cursos + Community rápido | «Curso. Comunidad. Monedero. **Todo en un sitio.**» |
 | **0:36–0:42** | Formulario registro en móvil (3 taps) | «Registro **gratis**. Directo. Sin lista de espera.» |
 | **0:42–0:48** | Hero landing + URL | «Entra a **Qlyk**. Link en la descripción.» |
 | **0:48–0:60** | CTA final con código ref opcional | «**Qlyk** — el centro donde todo sucede con un solo clic. 👇 Regístrate ya.» |
@@ -41,7 +41,7 @@
 >
 > ¿Cuánto te quedas? Entre el **85 y el 90 por ciento** de cada venta. Sin trucos. Sin multinivel. Sin pagar por tener cuenta.
 >
-> Academia. Comunidad. Feed. Todo conectado.
+> Cursos. Comunidad. Feed. Todo conectado.
 >
 > Registro gratis. Directo. Sin lista de espera.
 >
@@ -71,7 +71,7 @@
 
 > «Por eso existe **Qlyk**.
 >
-> No es otro link en bio. Es tu **propio centro**: feed de video, academia, comunidad y monedero.
+> No es otro link en bio. Es tu **propio centro**: feed de video, cursos, comunidad y monedero.
 >
 > Imagina esto: tu audiencia ve tu reel… le pica comprar… paga… y **sigue en tu mundo**. Sin mandarlos a otro sitio.
 >

@@ -200,7 +200,7 @@ export function CourseBuilder({ initial, blobEnabled }: Props) {
           </Link>
           <CopyCourseLink slug={course.slug} />
           <Link
-            href={`/academy/${course.slug}`}
+            href={`/learn/${course.slug}`}
             className="inline-flex min-h-11 items-center rounded-full border border-white/15 px-5 text-sm font-semibold text-white"
           >
             Ver como alumno

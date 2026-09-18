@@ -1,38 +1,32 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { AcademyPlayer } from "@/components/academy/AcademyPlayer";
+import { CoursePlayer } from "@/components/course/CoursePlayer";
 import { getDbUserId } from "@/lib/auth/session";
-import { groupLessonsByModule, loadAcademyCourse, markLessonProgress } from "@/lib/commerce/academy";
-import { ACADEMY_RESERVED_SLUGS, QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
+import { courseWatchHref, groupLessonsByModule, loadOwnedCourse, markLessonProgress } from "@/lib/commerce/course";
 
 export const dynamic = "force-dynamic";
 
 const TYPE_LABEL: Record<string, string> = {
-  COURSE: "Academia",
+  COURSE: "Curso",
   MEMBERSHIP: "Membresía",
   DIGITAL: "Digital",
   PHYSICAL: "Físico",
 };
 
-export default async function AcademyCoursePage({
+export default async function LearnCoursePage({
   params,
   searchParams,
 }: {
   params: { slug: string };
   searchParams: { l?: string };
 }) {
-  const reserved = (ACADEMY_RESERVED_SLUGS as readonly string[]).includes(params.slug);
-  if (reserved || params.slug === QLYK_ACADEMY_SLUG) {
-    redirect(params.slug === "cursos" ? "/academy/cursos" : params.slug === "red" ? "/academy/red" : params.slug === "studio" ? "/academy/studio" : "/academy");
-  }
-
   const userId = await getDbUserId();
   if (!userId) {
     redirect(`/c/${params.slug}`);
   }
 
-  const course = await loadAcademyCourse(userId, params.slug);
+  const course = await loadOwnedCourse(userId, params.slug);
   if (course === "not_found") notFound();
   if (course === "forbidden") {
     redirect(`/c/${params.slug}`);
@@ -45,7 +39,7 @@ export default async function AcademyCoursePage({
     null;
   const selectedIndex = selected ? course.lessons.findIndex((lesson) => lesson.id === selected.id) : -1;
   const nextLesson = selectedIndex >= 0 ? course.lessons[selectedIndex + 1] ?? null : null;
-  const nextLessonHref = nextLesson ? `/academy/${course.slug}?l=${encodeURIComponent(nextLesson.id)}` : null;
+  const nextLessonHref = nextLesson ? courseWatchHref(course.slug, nextLesson.id) : null;
   const reachedCount = Math.max(
     Math.round((course.progressPct / 100) * course.lessons.length),
     selectedIndex + 1,
@@ -64,7 +58,7 @@ export default async function AcademyCoursePage({
 
   return (
     <PlatformShell title={course.title}>
-      <Link href="/academy/cursos" className="text-sm font-semibold text-klik-cyan hover:underline">
+      <Link href="/cursos" className="text-sm font-semibold text-klik-cyan hover:underline">
         Volver a mis cursos
       </Link>
       <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
@@ -77,7 +71,7 @@ export default async function AcademyCoursePage({
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div>
           {selected ? (
-            <AcademyPlayer
+            <CoursePlayer
               title={selected.title}
               videoUrl={selected.videoUrl}
               thumbnailUrl={selected.thumbnailUrl}
@@ -145,7 +139,7 @@ export default async function AcademyCoursePage({
                       return (
                         <li key={lesson.id}>
                           <Link
-                            href={`/academy/${course.slug}?l=${encodeURIComponent(lesson.id)}`}
+                            href={courseWatchHref(course.slug, lesson.id)}
                             className={`flex items-start gap-3 rounded-xl px-3 py-3 text-sm transition ${
                               active
                                 ? "bg-klik-cyan/15 text-white"

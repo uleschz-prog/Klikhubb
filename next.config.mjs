@@ -25,6 +25,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: "/academy", destination: "/cursos", permanent: true },
+      { source: "/academy/cursos", destination: "/cursos", permanent: true },
+      { source: "/academy/studio", destination: "/cursos", permanent: true },
+      { source: "/academy/red", destination: "/cursos", permanent: true },
+      { source: "/academy/:slug", destination: "/learn/:slug", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

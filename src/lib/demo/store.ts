@@ -3,8 +3,6 @@ import { join } from "path";
 import bcrypt from "bcryptjs";
 import { COMPENSATION_PLAN_V1, creatorHoldLabel, creatorHoldMs } from "@/config/compensation-plan";
 import { splitSaleCommissions } from "@/lib/commerce/split";
-import { splitAcademyMembership } from "@/lib/academy/split";
-import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 import { fromCents, toCents } from "@/lib/money/cents";
 import type { SettledOrder } from "@/lib/commerce/settle-order";
 import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
@@ -280,26 +278,6 @@ export function demoPlatformUserId(db: DemoDB) {
   );
 }
 
-function demoAcademyUpline(db: DemoDB, buyerId: string) {
-  const seats: { userId: string; level: number; active: boolean }[] = [];
-  const seen = new Set<string>([buyerId]);
-  let cursor = db.users.find((user) => user.id === buyerId);
-  const academyProduct = db.products.find((product) => product.slug === QLYK_ACADEMY_SLUG);
-  for (let level = 1; level <= 8; level += 1) {
-    const parentId = cursor?.invitedById;
-    if (!parentId || seen.has(parentId)) break;
-    seen.add(parentId);
-    const parent = db.users.find((user) => user.id === parentId);
-    if (!parent) break;
-    const active = academyProduct
-      ? db.enrollments.some((row) => row.userId === parent.id && row.productId === academyProduct.id)
-      : false;
-    seats.push({ userId: parent.id, level, active });
-    cursor = parent;
-  }
-  return seats;
-}
-
 export async function demoFindUserByEmail(email: string) {
   return demoFindUserByLogin(email);
 }
@@ -403,10 +381,10 @@ export async function demoRegister(input: {
 export async function demoSettleOrder(input: { buyerId: string; slug: string }): Promise<SettledOrder> {
   const db = await loadDemo();
   const product = db.products.find((row) => row.slug === input.slug);
-  if (!product || product.status !== "ACTIVE") {
+  if (!product || product.status !== "ACTIVE" || product.slug === "qlyk-academy") {
     throw new Error("PRODUCT_UNAVAILABLE");
   }
-  if (product.creatorId === input.buyerId && product.slug !== QLYK_ACADEMY_SLUG) {
+  if (product.creatorId === input.buyerId) {
     throw new Error("SELF_PURCHASE");
   }
   if (db.enrollments.some((row) => row.userId === input.buyerId && row.productId === product.id)) {
@@ -416,18 +394,10 @@ export async function demoSettleOrder(input: { buyerId: string; slug: string }):
   const platformUserId = demoPlatformUserId(db);
   const buyer = db.users.find((row) => row.id === input.buyerId);
 
-  const lines =
-    product.slug === QLYK_ACADEMY_SLUG
-      ? splitAcademyMembership({
-          saleAmount: product.price,
-          buyerId: input.buyerId,
-          upline: demoAcademyUpline(db, input.buyerId),
-          platformUserId,
-        })
-      : splitSaleCommissions({
-          saleAmount: product.price,
-          creatorId: product.creatorId,
-        });
+  const lines = splitSaleCommissions({
+    saleAmount: product.price,
+    creatorId: product.creatorId,
+  });
 
   const orderId = `ord_${Math.random().toString(36).slice(2, 10)}`;
   db.orders.push({

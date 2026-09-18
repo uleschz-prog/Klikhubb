@@ -78,9 +78,6 @@ export function AdminUsersPanel({ users }: { users: AdminUserRow[] }) {
                       {statusCopy(user.status)}
                     </span>
                     <span className="rounded-full bg-white/5 px-2.5 py-1 text-white/60">
-                      Academy {user.academyActive ? "activa" : "inactiva"}
-                    </span>
-                    <span className="rounded-full bg-white/5 px-2.5 py-1 text-white/60">
                       {user.invitedCount} invitados
                     </span>
                     <span className="rounded-full bg-white/5 px-2.5 py-1 text-white/60">
@@ -145,7 +142,7 @@ export function AdminReleaseNetworkButton() {
   const [message, setMessage] = useState("");
 
   async function releaseAll() {
-    if (!window.confirm("¿Liberar ahora todas las comisiones unilevel en hold de la red Academy?")) return;
+    if (!window.confirm("¿Liberar ahora todas las comisiones unilevel en hold?")) return;
     setBusy(true);
     setError("");
     setMessage("");

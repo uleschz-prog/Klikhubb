@@ -5,12 +5,6 @@ import { joinMembershipCommunity } from "@/lib/community";
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/money/cents";
 import { splitSaleCommissions } from "@/lib/commerce/split";
-import { splitAcademyMembership } from "@/lib/academy/split";
-import { walkAcademyUpline } from "@/lib/academy/network";
-import { academyPeriodEnd } from "@/lib/academy/product";
-import { isAcademyMemberActive } from "@/lib/academy/network";
-import { notifyAcademyCommissions } from "@/lib/academy/notify";
-import { QLYK_ACADEMY_SLUG } from "@/config/qlyk-academy";
 
 export class CommerceError extends Error {
   constructor(
@@ -98,8 +92,7 @@ export async function settlePaidOrder(input: {
     if (!product || product.status !== "ACTIVE") {
       throw new CommerceError("Este producto no está disponible.", "PRODUCT_UNAVAILABLE");
     }
-    const isAcademy = product.slug === QLYK_ACADEMY_SLUG;
-    if (product.creatorId === input.buyerId && !isAcademy) {
+    if (product.creatorId === input.buyerId) {
       throw new CommerceError("No puedes comprar tu propio producto.", "SELF_PURCHASE");
     }
 
@@ -108,9 +101,7 @@ export async function settlePaidOrder(input: {
         where: { userId_productId: { userId: input.buyerId, productId: input.productId } },
       });
       if (owned?.status === "ACTIVE") {
-        if (!isAcademy || (await isAcademyMemberActive(tx, input.buyerId))) {
-          throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
-        }
+        throw new CommerceError("Ya tienes este producto.", "ALREADY_OWNED");
       }
     }
 
@@ -150,18 +141,11 @@ export async function settlePaidOrder(input: {
         where: { email: "platform@klikhubb.internal" },
       }));
 
-    const lines = isAcademy
-      ? splitAcademyMembership({
-          saleAmount,
-          buyerId: input.buyerId,
-          upline: await walkAcademyUpline(tx, input.buyerId),
-          platformUserId: platform?.id ?? product.creatorId,
-        })
-      : splitSaleCommissions({
-          saleAmount,
-          creatorId: product.creatorId,
-          plan: sellerPlan,
-        });
+    const lines = splitSaleCommissions({
+      saleAmount,
+      creatorId: product.creatorId,
+      plan: sellerPlan,
+    });
 
     const now = new Date();
     const availableAt = new Date(now.getTime() + creatorHoldMs());
@@ -238,15 +222,15 @@ export async function settlePaidOrder(input: {
       );
     }
 
-    if (isAcademy && enrollmentId) {
-      const periodEnd = input.periodEnd ?? academyPeriodEnd();
+    if (product.billing === "MONTHLY" && enrollmentId) {
+      const periodEnd = input.periodEnd ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       const existingSub = await tx.productSubscription.findUnique({
         where: { userId_productId: { userId: input.buyerId, productId: product.id } },
       });
       const stripeSubId =
         input.stripeSubscriptionId ||
         existingSub?.stripeSubscriptionId ||
-        (input.provider === "stripe" ? input.providerRef : `academy_${order.id}`);
+        (input.provider === "stripe" ? input.providerRef : `sub_${order.id}`);
       const status = input.provider === "stripe" ? "active" : existingSub?.status === "active" ? "active" : "demo";
       await tx.productSubscription.upsert({
         where: { userId_productId: { userId: input.buyerId, productId: product.id } },
@@ -280,7 +264,7 @@ export async function settlePaidOrder(input: {
             type: LedgerType.FEE,
             destination: "available",
             orderId: order.id,
-            note: isAcademy ? "Qlyk Academy · 40% + residual" : "Fee de plataforma Qlyk",
+            note: "Fee de plataforma Qlyk",
           });
         }
         continue;
@@ -308,7 +292,7 @@ export async function settlePaidOrder(input: {
         destination: "pending",
         orderId: order.id,
         commissionId: commission.id,
-        note: line.type === "UNILEVEL" ? `Qlyk Academy · nivel ${line.level}` : "Venta de tu producto",
+        note: line.type === "UNILEVEL" ? `Red · nivel ${line.level}` : "Venta de tu producto",
       });
     }
 
@@ -329,13 +313,11 @@ export async function settlePaidOrder(input: {
       },
     });
 
-    if (!isAcademy) {
-      await tx.userStats.upsert({
-        where: { userId: product.creatorId },
-        create: { userId: product.creatorId, totalSales: money(saleCents) },
-        update: { totalSales: { increment: money(saleCents) } },
-      });
-    }
+    await tx.userStats.upsert({
+      where: { userId: product.creatorId },
+      create: { userId: product.creatorId, totalSales: money(saleCents) },
+      update: { totalSales: { increment: money(saleCents) } },
+    });
 
     return {
       orderId: order.id,
@@ -351,12 +333,6 @@ export async function settlePaidOrder(input: {
       })),
     };
   });
-
-  if (settled.productSlug === QLYK_ACADEMY_SLUG) {
-    await notifyAcademyCommissions(settled).catch((error) => {
-      console.error("academy commission notify", error);
-    });
-  }
 
   return settled;
 }

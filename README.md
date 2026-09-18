@@ -1,6 +1,6 @@
 # Qlyk
 
-El centro donde todo sucede con un solo clic. Red social con video, academia y comunidad.
+El centro donde todo sucede con un solo clic. Red social con video, cursos y comunidad.
 
 ## Stack
 

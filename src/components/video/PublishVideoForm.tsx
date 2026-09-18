@@ -198,7 +198,7 @@ export function PublishVideoForm({
                   value={offerTitle}
                   onChange={(event) => setOfferTitle(event.target.value)}
                   maxLength={80}
-                  placeholder="Academia de cierre"
+                  placeholder="Curso de cierre"
                   className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan placeholder:text-white/35 focus:ring-2"
                 />
               </label>
@@ -222,7 +222,7 @@ export function PublishVideoForm({
                     onChange={(event) => setOfferType(event.target.value as OfferType)}
                     className="mt-2 w-full rounded-full border border-white/10 bg-black/50 px-5 py-3 text-sm text-white outline-none ring-klik-cyan focus:ring-2"
                   >
-                    <option value="COURSE">Academia</option>
+                    <option value="COURSE">Curso</option>
                     <option value="MEMBERSHIP">Membresía</option>
                     <option value="DIGITAL">Digital</option>
                   </select>

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { shouldUseDemoFallback } from "@/lib/demo/store";
-import { groupLessonsByModule, listCourseLessons, type AcademyLesson } from "@/lib/commerce/academy";
+import { groupLessonsByModule, listCourseLessons, type CourseLesson } from "@/lib/commerce/course";
 import { listProductReviews, type ProductReviewSummary } from "@/lib/commerce/reviews";
 
 export type PublicLesson = {
@@ -31,7 +31,7 @@ export type PublicCourse = {
   reviews: ProductReviewSummary;
 };
 
-function toPublicLesson(lesson: AcademyLesson): PublicLesson {
+function toPublicLesson(lesson: CourseLesson): PublicLesson {
   const open = lesson.isFreePreview;
   return {
     id: lesson.id,

@@ -34,7 +34,7 @@ export async function registerUser(input: {
   const hashedPassword = await bcrypt.hash(input.password, 12);
   const locale = input.locale?.trim().slice(0, 10) || "es";
   const timezone = input.timezone?.trim().slice(0, 64) || "UTC";
-  const { resolveSponsorId } = await import("@/lib/academy/network");
+  const { resolveSponsorId } = await import("@/lib/auth/referral");
   const invitedById = await resolveSponsorId(prisma, input.referralCode);
 
   const user = await prisma.user.create({

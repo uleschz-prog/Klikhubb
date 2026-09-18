@@ -35,7 +35,7 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
 
   return (
     <article
-      className={`relative isolate overflow-hidden bg-klik-black ${
+      className={`theme-media relative isolate overflow-hidden bg-black ${
         preview ? "h-full w-full rounded-[1.6rem]" : "h-full min-h-full w-full"
       }`}
     >
@@ -66,29 +66,32 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
         <button
           type="button"
           onClick={toggleMute}
-          className="absolute right-3 top-3 z-20 rounded-full border border-white/15 bg-black/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80"
+          className="overlay-chip overlay-label absolute right-3 top-3 z-20 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider"
         >
           {muted ? "Toca para audio" : "Audio"}
         </button>
       ) : null}
 
+      <div className="overlay-vignette-right pointer-events-none absolute inset-y-0 right-0 z-10 w-24" />
+      <div className="overlay-vignette-bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 h-40" />
       <div
-        className={`absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/55 to-transparent ${
+        className={`absolute inset-x-0 bottom-0 z-10 ${
           preview ? "p-4 pb-5" : "p-5 pb-24 md:pb-8"
         }`}
       >
-        <p className="font-display text-sm font-bold text-white">
+        <div className="overlay-caption-plate rounded-2xl px-4 py-3">
+        <p className="overlay-label font-display text-sm font-bold">
           @{video.handle}
-          <span className="ml-2 font-sans text-xs font-medium text-white/70">{video.creatorName}</span>
+          <span className="ml-2 font-sans text-xs font-medium opacity-80">{video.creatorName}</span>
         </p>
-        <p className={`mt-2 max-w-[85%] text-white/85 ${preview ? "text-xs leading-5" : "text-sm leading-6"}`}>
+        <p className={`overlay-label mt-2 max-w-[85%] ${preview ? "text-xs leading-5" : "text-sm leading-6"}`}>
           {video.caption}
         </p>
         {video.product ? (
           <div className={preview ? "mt-3" : "mt-4 max-w-sm"}>
             {video.product.owned ? (
               <Link
-                href={`/academy/${video.product.slug}`}
+                href={`/learn/${video.product.slug}`}
                 className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-klik-cyan px-5 py-3 text-sm font-bold text-klik-black"
               >
                 Continuar
@@ -103,6 +106,7 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
             )}
           </div>
         ) : null}
+        </div>
       </div>
 
       <aside
@@ -127,10 +131,10 @@ export function VideoPlayer({ video, variant = "full" }: VideoPlayerProps) {
 function Action({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-black/35 text-klik-cyan backdrop-blur">
+      <span className="overlay-chip overlay-icon flex h-11 w-11 items-center justify-center rounded-full text-klik-cyan">
         {children}
       </span>
-      <span className="text-[10px] font-semibold tracking-wide text-white/80">{label}</span>
+      <span className="overlay-label overlay-meta text-[10px] font-semibold tracking-wide">{label}</span>
     </div>
   );
 }

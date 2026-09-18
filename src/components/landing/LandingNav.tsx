@@ -23,11 +23,11 @@ export function LandingNav() {
         <div className="hidden items-center gap-2 sm:flex">
           <ThemeToggle />
           <Link
-            href="/academy"
+            href="/feed"
             className="rounded-full px-4 py-2 text-sm font-medium transition hover:opacity-80"
             style={{ color: "var(--l-fg)" }}
           >
-            Academy
+            Tienda
           </Link>
           <Link
             href="/login"
@@ -67,12 +67,12 @@ export function LandingNav() {
         <div className="border-t px-4 py-3 sm:hidden" style={{ borderColor: "var(--l-border)" }}>
           <div className="flex flex-col gap-2">
             <Link
-              href="/academy"
+              href="/feed"
               onClick={() => setOpen(false)}
               className="rounded-xl px-4 py-3 text-sm font-medium"
               style={{ color: "var(--l-fg)", background: "var(--l-surface)" }}
             >
-              Academy
+              Tienda
             </Link>
             <Link
               href="/login"

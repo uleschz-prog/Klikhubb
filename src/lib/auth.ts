@@ -105,9 +105,8 @@ export const authOptions: NextAuthOptions = {
       if (!user.id) return;
       try {
         const { cookies } = await import("next/headers");
-        const { ACADEMY_REF_COOKIE, normalizeReferralCode } = await import("@/lib/academy/referral");
-        const { resolveSponsorId } = await import("@/lib/academy/network");
-        const raw = cookies().get(ACADEMY_REF_COOKIE)?.value;
+        const { REF_COOKIE, normalizeReferralCode, resolveSponsorId } = await import("@/lib/auth/referral");
+        const raw = cookies().get(REF_COOKIE)?.value;
         const sponsorId = await resolveSponsorId(prisma, normalizeReferralCode(raw), user.id);
         await prisma.user.update({
           where: { id: user.id },
@@ -131,7 +130,7 @@ export const authOptions: NextAuthOptions = {
           skipDuplicates: true,
         });
       } catch (error) {
-        console.error("createUser academy invite", error);
+        console.error("createUser invite", error);
       }
     },
   },

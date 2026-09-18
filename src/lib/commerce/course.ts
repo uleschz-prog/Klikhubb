@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { shouldUseDemoFallback } from "@/lib/demo/store";
 
-export type AcademyLesson = {
+export type CourseLesson = {
   id: string;
   title: string;
   videoUrl: string | null;
@@ -14,7 +14,7 @@ export type AcademyLesson = {
   sortOrder: number;
 };
 
-export type AcademyCourse = {
+export type OwnedCourse = {
   productId: string;
   slug: string;
   title: string;
@@ -23,16 +23,21 @@ export type AcademyCourse = {
   role: "student" | "creator";
   progressPct: number;
   lastLessonId: string | null;
-  lessons: AcademyLesson[];
+  lessons: CourseLesson[];
 };
 
-export type AcademyLessonGroup<T extends { moduleTitle: string } = AcademyLesson> = {
+export type CourseLessonGroup<T extends { moduleTitle: string } = CourseLesson> = {
   title: string;
   lessons: T[];
 };
 
-export function groupLessonsByModule<T extends { moduleTitle: string }>(lessons: T[]): AcademyLessonGroup<T>[] {
-  const groups: AcademyLessonGroup<T>[] = [];
+export function courseWatchHref(slug: string, lessonId?: string | null) {
+  const path = `/learn/${encodeURIComponent(slug)}`;
+  return lessonId ? `${path}?l=${encodeURIComponent(lessonId)}` : path;
+}
+
+export function groupLessonsByModule<T extends { moduleTitle: string }>(lessons: T[]): CourseLessonGroup<T>[] {
+  const groups: CourseLessonGroup<T>[] = [];
   for (const lesson of lessons) {
     const last = groups[groups.length - 1];
     if (!last || last.title !== lesson.moduleTitle) {
@@ -44,7 +49,7 @@ export function groupLessonsByModule<T extends { moduleTitle: string }>(lessons:
   return groups;
 }
 
-export async function listCourseLessons(productId: string): Promise<AcademyLesson[]> {
+export async function listCourseLessons(productId: string): Promise<CourseLesson[]> {
   await ensureLessonsFromVideos(productId);
 
   const course = await prisma.course.findUnique({
@@ -64,7 +69,7 @@ export async function listCourseLessons(productId: string): Promise<AcademyLesso
     },
   });
 
-  const lessons: AcademyLesson[] = [];
+  const lessons: CourseLesson[] = [];
   for (const courseModule of course?.modules ?? []) {
     for (const lesson of courseModule.lessons) {
       lessons.push({
@@ -107,10 +112,10 @@ export async function listCourseLessons(productId: string): Promise<AcademyLesso
   return lessons;
 }
 
-export async function loadAcademyCourse(
+export async function loadOwnedCourse(
   userId: string,
   slug: string,
-): Promise<AcademyCourse | "not_found" | "forbidden"> {
+): Promise<OwnedCourse | "not_found" | "forbidden"> {
   try {
     const product = await prisma.product.findUnique({
       where: { slug },

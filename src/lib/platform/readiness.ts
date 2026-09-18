@@ -41,8 +41,6 @@ export function getPlatformReadiness() {
   const blob = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
   const legal = getLegalSetupStatus();
   const isProduction = process.env.VERCEL_ENV === "production";
-  const openai = Boolean(process.env.OPENAI_API_KEY?.trim());
-  const openrouter = Boolean(process.env.OPENROUTER_API_KEY?.trim());
 
   const checks: SetupCheck[] = [
     {
@@ -107,23 +105,10 @@ export function getPlatformReadiness() {
         ? "Términos y privacidad muestran razón social y domicilio"
         : `Faltan: ${legal.missing.join(", ") || "LEGAL_*"}`,
     },
-    {
-      id: "academy_ai",
-      label: "Qlyk Academy (IA)",
-      ok: openai || openrouter,
-      hint:
-        openai && openrouter
-          ? "OpenAI (imagen) + OpenRouter (texto) listos"
-          : openai
-            ? "OpenAI listo. Añade OPENROUTER_API_KEY para Notebook y agentes"
-            : openrouter
-              ? "OpenRouter listo. Añade OPENAI_API_KEY para imágenes nativas"
-              : "Define OPENAI_API_KEY y/o OPENROUTER_API_KEY. Sin ellas el estudio usa un fallback público",
-    },
   ];
 
   const blockers = checks.filter((check) => {
-    if (check.id === "stripe" || check.id === "payment_bank" || check.id === "stripe_connect" || check.id === "academy_ai")
+    if (check.id === "stripe" || check.id === "payment_bank" || check.id === "stripe_connect")
       return false;
     return !check.ok;
   });

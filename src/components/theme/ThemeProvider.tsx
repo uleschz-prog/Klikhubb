@@ -71,14 +71,25 @@ export function useTheme() {
   return ctx;
 }
 
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({
+  className = "",
+  tone = "page",
+}: {
+  className?: string;
+  tone?: "page" | "media";
+}) {
   const { mode, toggle } = useTheme();
   const isDark = mode === "dark";
+  const media = tone === "media";
 
   return (
     <button
       type="button"
-      className={`relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-klik-line bg-klik-card text-foreground transition hover:opacity-80 ${className}`}
+      className={`relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full transition hover:opacity-80 ${
+        media
+          ? "border border-white/25 bg-transparent text-white"
+          : "border border-klik-line bg-klik-card text-foreground"
+      } ${className}`}
       aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
       title={isDark ? "Modo claro" : "Modo oscuro"}
       onClick={(event) => {

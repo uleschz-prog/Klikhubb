@@ -14,7 +14,7 @@ export const LAUNCH_COURSE = {
   fallbackSlug: "cierre-qlyk",
   title: "Cierre Qlyk",
   description:
-    "El loop de Qlyk: un clip, una compra, el curso en Academy. Preview gratis y el resto cuando pagas.",
+    "El loop de Qlyk: un clip, una compra y el curso. Preview gratis y el resto cuando pagas.",
   price: 49,
   level: "Principiante",
   videoUrl: "/videos/qlyk-hero-premium.mp4",
@@ -25,7 +25,7 @@ export const LAUNCH_COURSE = {
     {
       title: "Preview: así se cierra en Qlyk",
       content:
-        "Un clip vertical, una oferta y Academy. Esta lección es gratis. El resto del curso se abre cuando compras.",
+        "Un clip vertical y una oferta. Esta lección es gratis. El resto del curso se abre cuando compras.",
       isFreePreview: true,
     },
     {
@@ -35,7 +35,7 @@ export const LAUNCH_COURSE = {
       isFreePreview: false,
     },
     {
-      title: "Paga y entra a Academy",
+      title: "Paga y entra al curso",
       content:
         "Tarjeta o SPEI. Al confirmar, el botón principal abre el curso. No te deja en una pantalla de pedido vacío.",
       isFreePreview: false,
@@ -59,7 +59,7 @@ export type LaunchCourseStatus = {
   shopClipId: string | null;
   links: {
     ficha: string;
-    academy: string;
+    learn: string;
     studio: string;
     feed: string;
   };
@@ -76,7 +76,7 @@ function emptyStatus(): LaunchCourseStatus {
     shopClipId: null,
     links: {
       ficha: "/c/cierre-qlyk",
-      academy: "/academy/cierre-qlyk",
+      learn: "/learn/cierre-qlyk",
       studio: "/studio/cierre-qlyk",
       feed: "/feed",
     },
@@ -131,7 +131,7 @@ export async function getLaunchCourseStatus(): Promise<LaunchCourseStatus> {
     shopClipId: shopClip?.id ?? null,
     links: {
       ficha: `/c/${product.slug}`,
-      academy: `/academy/${product.slug}`,
+      learn: `/learn/${product.slug}`,
       studio: `/studio/${product.slug}`,
       feed: shopClip ? `/feed?v=${shopClip.id}` : "/feed",
     },

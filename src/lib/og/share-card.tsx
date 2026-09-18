@@ -136,7 +136,7 @@ export function createShareImage() {
               letterSpacing: 4,
             }}
           >
-            RED SOCIAL · ACADEMIA · VENTAS
+            RED SOCIAL · CURSOS · VENTAS
           </div>
         </div>
 

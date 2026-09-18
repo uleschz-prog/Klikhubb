@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleStripeChargeRefunded } from "@/lib/commerce/refunds";
-import { fulfillCheckoutSession, fulfillStripeInvoice, expireStripeAcademySubscription, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
+import { fulfillCheckoutSession, fulfillStripeInvoice, expireStripeSubscription, getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
 import { handleConnectAccountUpdated } from "@/lib/commerce/stripe-connect";
 
 export const runtime = "nodejs";
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
   if (event.type === "customer.subscription.deleted") {
     try {
-      await expireStripeAcademySubscription(event.data.object);
+      await expireStripeSubscription(event.data.object);
     } catch (error) {
       console.error(error);
     }

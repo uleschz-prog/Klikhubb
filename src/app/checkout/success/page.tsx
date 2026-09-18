@@ -58,17 +58,9 @@ export default async function CheckoutSuccessPage({
     productTitle = fromOrder?.title ?? productTitle;
   }
 
-  const courseHref =
-    productSlug === "qlyk-academy" ? "/academy/studio" : productSlug ? `/academy/${productSlug}` : "/academy";
-  const fichaHref = productSlug === "qlyk-academy" ? "/academy" : productSlug ? `/c/${productSlug}` : "/academy";
-  const startLabel =
-    productSlug === "qlyk-academy"
-      ? alreadyOwned
-        ? "Ir al estudio"
-        : "Abrir el estudio"
-      : alreadyOwned
-        ? "Ir al curso"
-        : "Empezar el curso";
+  const courseHref = productSlug ? `/learn/${productSlug}` : "/cursos";
+  const fichaHref = productSlug ? `/c/${productSlug}` : "/cursos";
+  const startLabel = alreadyOwned ? "Ir al curso" : "Empezar el curso";
 
   const headline = pending
     ? "Comprobante recibido"
@@ -82,14 +74,10 @@ export default async function CheckoutSuccessPage({
     : settleFailed
       ? "El cargo puede estar bien, pero el acceso no se asentó. Escribe a soporte con el id de la sesión de Stripe."
       : unpaid
-        ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en tu academy."
+        ? "Stripe aún no confirmó el pago. En cuanto lo haga, el curso aparece en Mis cursos."
         : alreadyOwned
-          ? productSlug === "qlyk-academy"
-            ? "Qlyk Academy ya estaba activa. Entra al estudio."
-            : "Este producto ya estaba en tu academy. No se cobró de nuevo."
-          : productSlug === "qlyk-academy"
-            ? "Ya pagaste Qlyk Academy. El estudio de IA queda ilimitado este periodo. Invita alumnos y gana el 60% en 8 niveles."
-            : productTitle
+          ? "Este producto ya estaba en tus cursos. No se cobró de nuevo."
+          : productTitle
             ? `Ya pagaste ${productTitle}. Entra a la primera lección. Tienes 24 horas para pedir la devolución desde Mis pedidos.`
             : "Ya pagaste. Entra al curso. Tienes 24 horas para pedir la devolución desde Mis pedidos.";
 
@@ -113,7 +101,7 @@ export default async function CheckoutSuccessPage({
           </Link>
         ) : settleFailed || unpaid ? (
           <Link
-            href="/academy"
+            href="/cursos"
             className="rounded-full bg-klik-green px-5 py-3 text-sm font-bold text-klik-black"
           >
             Ver mis cursos

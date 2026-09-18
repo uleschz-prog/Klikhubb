@@ -81,7 +81,7 @@ export function CheckoutForm({
     if (!response.ok) {
       setLoadingMethod(null);
       if (payload.code === "ALREADY_OWNED") {
-        router.push(slug === "qlyk-academy" ? "/academy/studio" : `/academy/${encodeURIComponent(slug)}`);
+        router.push(`/learn/${encodeURIComponent(slug)}`);
         return;
       }
       setError(payload.error ?? "No se pudo iniciar el pago.");
@@ -178,7 +178,7 @@ export function CheckoutForm({
         <div className="rounded-2xl border border-klik-green/30 bg-klik-green/5 p-5">
           <p className="font-display text-lg font-bold text-klik-green">Comprobante recibido</p>
           <p className="mt-2 text-sm text-white/65">
-            Revisaremos tu transferencia pronto. Cuando la confirmemos, el acceso aparecerá en tu academy.
+            Revisaremos tu transferencia pronto. Cuando la confirmemos, el acceso aparecerá en Mis cursos.
           </p>
         </div>
       </div>
@@ -268,7 +268,7 @@ export function CheckoutForm({
         <div className="rounded-2xl border border-klik-line bg-klik-card p-5">
           <p className="text-[11px] uppercase tracking-wider text-white/40">Lo que te llevas</p>
           <ul className="mt-4 space-y-2 text-sm text-white/70">
-            <li>Entras a la academia en cuanto confirmemos tu pago</li>
+            <li>Entras al curso en cuanto confirmemos tu pago</li>
             <li>Te quedas en la comunidad del creador</li>
             <li>El creador cobra sin pedirte nada por fuera</li>
           </ul>

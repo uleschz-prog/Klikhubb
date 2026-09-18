@@ -12,13 +12,13 @@ Este documento describe la plataforma Qlyk de forma completa. Puede usarse como 
 **Frase principal de marketing:** Del video al pago. Sin salir del feed.
 
 **Qué es Qlyk:**  
-Qlyk es una red social con comercio y academia integrados. Permite a los creadores publicar video, vender productos digitales (cursos, membresías, contenido digital), gestionar comunidad y cobrar en un monedero interno, todo dentro de la misma aplicación.
+Qlyk es una red social con comercio y cursos integrados. Permite a los creadores publicar video, vender productos digitales (cursos, membresías, contenido digital), gestionar comunidad y cobrar en un monedero interno, todo dentro de la misma aplicación.
 
 **Problema que resuelve:**  
-Los creadores suelen estar fragmentados entre redes sociales (alcance), plataformas de pago (cobro), herramientas de cursos (formación) y apps de comunidad (retención). Cada enlace extra reduce la conversión. Qlyk unifica video, venta, academia, comunidad y monedero en un solo flujo.
+Los creadores suelen estar fragmentados entre redes sociales (alcance), plataformas de pago (cobro), herramientas de cursos (formación) y apps de comunidad (retención). Cada enlace extra reduce la conversión. Qlyk unifica video, venta, cursos, comunidad y monedero en un solo flujo.
 
 **Propuesta de valor:**  
-- Para creadores: dueño del feed, la academia y la venta; se queda entre el 85% y el 90% de cada venta.  
+- Para creadores: dueño del feed, los cursos y la venta; se queda entre el 85% y el 90% de cada venta.  
 - Para miembros/compradores: consumir contenido y comprar sin salir de la experiencia.  
 - Para la plataforma: 10% de tarifa de servicio en cada transacción.
 
@@ -47,7 +47,7 @@ Los creadores suelen estar fragmentados entre redes sociales (alcance), platafor
 - Catálogo de productos: cursos, membresías, productos digitales y físicos.
 - Cada producto tiene slug, precio, moneda y creador asociado.
 
-### 2.5 Academy (`/academy`)
+### 2.5 Cursos (`/cursos`, `/learn`)
 - Acceso a cursos comprados o creados por el usuario.
 - Reproductor de lecciones con módulos estructurados.
 
@@ -161,7 +161,7 @@ Cada venta completada se reparte al 100%:
 3. Sube un clip en `/publish` (lane SHOP) vinculado al producto.
 4. El video aparece en el Feed con CTA de compra.
 5. Un miembro paga con tarjeta (Stripe) o transfiere por SPEI y sube comprobante; Qlykadmin aprueba SPEI en `/admin/payments`.
-6. El comprador accede al curso/comunidad en Academy.
+6. El comprador accede al curso/comunidad.
 7. El creador ve la comisión en su monedero (pendiente 14 días, luego disponible).
 8. Solicita retiro cuando supera el mínimo.
 
@@ -169,7 +169,7 @@ Cada venta completada se reparte al 100%:
 1. Se registra gratis.
 2. Explora Feed, Play o Marketplace.
 3. Compra un producto.
-4. Accede al contenido en Academy y Community si aplica.
+4. Accede al contenido en Mis cursos (`/cursos`) y Community si aplica.
 5. Puede seguir creadores, guardar videos e interactuar.
 
 ### 5.3 Flujo del referidor
@@ -232,7 +232,7 @@ Las cuentas y contraseñas de prueba se eliminaron del producto. El operador ent
 
 ## 10. Productos demo en el catálogo seed
 
-- **Academia Cierre Élite** — $497 — Curso — Creadora: Maya Chen  
+- **Cierre Élite** — $497 — Curso — Creadora: Maya Chen  
 - **Inner Circle** — $49 — Membresía  
 - **De view a cliente** — $197 — Curso  
 
@@ -275,7 +275,7 @@ Las cuentas y contraseñas de prueba se eliminaron del producto. El operador ent
 **Implementado:**
 - Landing premium con video hero.
 - Registro directo ampliado.
-- Feed, Play, Marketplace, Academy, Community.
+- Feed, Play, Marketplace, Cursos, Community.
 - Course Studio y publicación de video.
 - Checkout Stripe + SPEI, confirmación admin (`/admin/payments`), monedero, hold 14 días.
 - Términos, privacidad, cookies completos.

@@ -212,8 +212,8 @@ export async function approveManualPayment(input: {
     userId: row.buyerId,
     type: "PAYMENT_APPROVED",
     title: "Pago confirmado",
-    body: `Ya tienes acceso a «${row.product.title}». Entra a tu academy.`,
-    href: `/academy/${row.product.slug}`,
+    body: `Ya tienes acceso a «${row.product.title}». Entra a tus cursos.`,
+    href: `/learn/${row.product.slug}`,
     emailSubject: `Qlyk · Acceso a ${row.product.title}`,
   });
 

@@ -64,7 +64,7 @@ export default async function OrdersPage() {
                   <div className="mt-3 flex flex-wrap items-start gap-2 sm:justify-end">
                     {row.accessActive && row.productSlug ? (
                       <Link
-                        href={row.productSlug === "qlyk-academy" ? "/academy/studio" : `/academy/${row.productSlug}`}
+                        href={`/learn/${row.productSlug}`}
                         className="rounded-full bg-klik-green px-4 py-2 text-xs font-bold text-klik-black"
                       >
                         Ver curso

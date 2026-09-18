@@ -11,7 +11,7 @@ Qlyk es tu **centro de operaciones** como creador:
 
 - Publicas **video** en un feed vertical.
 - Vendes **cursos, membresías y productos digitales** sin mandar a tu audiencia a otro sitio.
-- Tu gente se queda contigo en **academy** y **community**.
+- Tu gente se queda contigo en **cursos** y **community**.
 - Cobras en un **monedero** con reparto automático y retiros.
 
 > **Idea clave:** del video al pago, sin salir del feed.
@@ -101,10 +101,10 @@ https://qlyk.vercel.app?ref=TUCODIGO
 1. Título, precio y descripción.
 2. Crea **módulos** (capítulos).
 3. Añade **lecciones** con video o archivos.
-4. Publica el curso → aparece en **Marketplace** y **Academy**.
+4. Publica el curso → aparece en **Tienda** y en **Mis cursos**.
 5. Opcional: promociona con un video en `/publish` enlazado al curso.
 
-**Ideal para:** formaciones largas, academias, programas estructurados.
+**Ideal para:** formaciones largas, programas estructurados.
 
 ---
 
@@ -112,7 +112,7 @@ https://qlyk.vercel.app?ref=TUCODIGO
 
 | Tipo | Qué es | Ejemplo |
 |------|--------|---------|
-| **Curso (COURSE)** | Lecciones en módulos | «Academia de cierre de ventas» |
+| **Curso (COURSE)** | Lecciones en módulos | «Cierre de ventas» |
 | **Membresía (MEMBERSHIP)** | Acceso recurrente + comunidad | «Inner Circle mensual» |
 | **Digital (DIGITAL)** | PDF, plantilla, recurso descargable | «Pack de scripts» |
 | **Físico (PHYSICAL)** | Producto físico (estructura disponible) | Merchandising |
@@ -166,13 +166,13 @@ Quien compra un curso tiene **24 horas** desde el pago confirmado para pedir la 
 
 ---
 
-## 8. Community y Academy
+## 8. Community y cursos
 
 - Al vender una **membresía**, tu comprador puede acceder a tu **Community** (`/community/[slug]`).
 - Publica anuncios, wins, preguntas → refuerza retención y LTV.
-- Tus cursos activos aparecen en **Academy** para quien compró acceso.
+- Tus cursos activos aparecen en **Mis cursos** (`/cursos`) para quien compró acceso.
 
-**Flujo ideal:** video en feed → compra → curso en academy → comunidad para soporte y upsells.
+**Flujo ideal:** video en feed → compra → curso en `/learn` → comunidad para soporte y upsells.
 
 ---
 

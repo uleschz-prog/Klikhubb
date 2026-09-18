@@ -18,7 +18,7 @@ export type BuyItem = {
 };
 
 const TYPE_LABEL: Record<string, string> = {
-  COURSE: "Academia",
+  COURSE: "Curso",
   MEMBERSHIP: "Membresía",
   DIGITAL: "Digital",
   PHYSICAL: "Físico",
@@ -127,7 +127,7 @@ export function BuyDrawer({
           <ul className="mt-5 space-y-2.5 text-sm text-white/70">
             <li className="flex gap-2">
               <span className="text-klik-pastel">✓</span>
-              Entras a la academia en cuanto confirmemos tu pago
+              Entras al curso en cuanto confirmemos tu pago
             </li>
             <li className="flex gap-2">
               <span className="text-klik-pastel">✓</span>
@@ -149,14 +149,14 @@ export function BuyDrawer({
             <div className="mt-8 rounded-2xl bg-klik-pastel/10 px-4 py-5">
               <p className="font-display text-xl font-extrabold text-white">Ya estás dentro</p>
               <p className="mt-2 text-sm text-white/60">
-                El acceso quedó en tu academy y en la comunidad. El video sigue aquí.
+                El acceso quedó en tus cursos y en la comunidad. El video sigue aquí.
               </p>
               <div className="mt-4 flex flex-col gap-2">
                 <Link
-                  href={item.slug === "qlyk-academy" ? "/academy/studio" : `/academy/${item.slug}`}
+                  href={`/learn/${item.slug}`}
                   className="flex min-h-11 items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black"
                 >
-                  {item.slug === "qlyk-academy" ? "Abrir Qlyk Academy" : "Ir a Academy"}
+                  Ir al curso
                 </Link>
                 <button
                   type="button"

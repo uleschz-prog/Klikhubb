@@ -28,7 +28,7 @@ export const site = {
   slogan: brand.slogan,
   url: siteUrl(),
   description:
-    "La red social donde publicas, vendes y tu gente se queda contigo. Video, comunidad y academia en un clic.",
+    "La red social donde publicas, vendes y tu gente se queda contigo. Video, comunidad y cursos en un clic.",
   share: {
     title: "Qlyk — Del video al pago. Sin salir del feed.",
     description:

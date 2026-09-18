@@ -94,7 +94,7 @@ export function ExploreHome({
           })}
         </nav>
         <p className="mt-auto px-2 text-[11px] leading-5 text-white/30">
-          Video, academia y cobro. Un clic.
+          Video, cursos y cobro. Un clic.
         </p>
       </aside>
 

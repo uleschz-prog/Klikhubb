@@ -311,6 +311,85 @@ html[data-theme="light"] .theme-media .logo-play-disc {
   fill: #000000;
 }
 
+/* Contraste permanente sobre video claro u oscuro. No usar utilidades
+   bg-black/* aquí: en tema claro se remapean a tinta casi invisible. */
+.overlay-chip {
+  background: rgba(8, 10, 14, 0.62);
+  backdrop-filter: blur(18px) saturate(1.45);
+  -webkit-backdrop-filter: blur(18px) saturate(1.45);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 8px 22px rgba(0, 0, 0, 0.32);
+}
+.overlay-icon svg {
+  filter:
+    drop-shadow(0 0 0.7px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
+}
+.overlay-label {
+  color: #fff;
+  text-shadow:
+    0 0 1px rgba(0, 0, 0, 1),
+    0 1px 2px rgba(0, 0, 0, 1),
+    0 0 12px rgba(0, 0, 0, 0.9);
+}
+.overlay-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(8, 10, 14, 0.5);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+}
+.overlay-caption-plate {
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0.22), rgba(8, 10, 14, 0.64));
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+}
+.overlay-vignette-right {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.08), transparent);
+}
+.overlay-vignette-bottom {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.1), transparent);
+}
+.overlay-progress-track {
+  background: rgba(0, 0, 0, 0.45);
+}
+.overlay-bar {
+  background: rgba(8, 10, 14, 0.72);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+}
+html[data-theme="light"] .theme-media .overlay-chip {
+  background: rgba(8, 10, 14, 0.62) !important;
+}
+html[data-theme="light"] .theme-media .overlay-caption-plate {
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0.28), rgba(8, 10, 14, 0.72)) !important;
+}
+html[data-theme="light"] .theme-media .overlay-label {
+  color: #fff !important;
+}
+html[data-theme="light"] .theme-media .overlay-meta {
+  background: rgba(8, 10, 14, 0.5) !important;
+}
+html[data-theme="light"] .theme-media .overlay-bar {
+  background: rgba(8, 10, 14, 0.72) !important;
+}
+html[data-theme="light"] .theme-media .overlay-progress-track {
+  background: rgba(0, 0, 0, 0.45) !important;
+}
+html[data-theme="light"] .theme-media .fill-white {
+  fill: #fff !important;
+}
+html[data-theme="light"] .theme-media .stroke-white {
+  stroke: #fff !important;
+}
+
 .font-apple {
   font-family: inherit;
 }

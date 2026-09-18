@@ -60,7 +60,7 @@ export const privacySections: LegalSection[] = [
         paragraphs: ["Tratamos tus datos para las siguientes finalidades, amparadas en estas bases legales:"],
         list: [
           "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato (art. 6.1.b RGPD).",
-          "Operar el feed, comunidad, academia, checkout y monedero — ejecución del contrato.",
+          "Operar el feed, comunidad, cursos, checkout y monedero — ejecución del contrato.",
           "Calcular y abonar importes de ventas (93/7 o plan mensual), aplicar retenciones de 24 horas y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
           "Procesar pagos con Stripe (tarjeta) o transferencia SPEI y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
           "Enviar comunicaciones operativas (confirmaciones, seguridad, cambios legales) — ejecución del contrato e interés legítimo.",

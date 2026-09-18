@@ -73,11 +73,7 @@ export default async function DashboardPage() {
               <p className="font-display text-lg font-bold">Compras</p>
               <p className="mt-1 text-xs text-white/45">Pedidos y cursos</p>
             </Link>
-            <Link href="/academy" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
-              <p className="font-display text-lg font-bold">Qlyk Academy</p>
-              <p className="mt-1 text-xs text-white/45">IA, red y USD 50/mes</p>
-            </Link>
-            <Link href="/academy/cursos" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
+            <Link href="/cursos" className="rounded-2xl border border-klik-line bg-klik-card p-4 transition hover:border-klik-cyan/40">
               <p className="font-display text-lg font-bold">Mis cursos</p>
               <p className="mt-1 text-xs text-white/45">Lo que ya tienes</p>
             </Link>

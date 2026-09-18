@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { youtubeLessonEmbedSrc, youtubeVideoId } from "@/lib/video/source";
 
-export function AcademyPlayer({
+export function CoursePlayer({
   title,
   videoUrl,
   thumbnailUrl,

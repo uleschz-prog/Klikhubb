@@ -63,7 +63,7 @@ export function PwaInstallHint() {
             <p className="mt-1 text-xs leading-5 text-white/60">
               {iosHint
                 ? "Toca Compartir → «Añadir a inicio». Experiencia app premium, sin navegador."
-                : "Acceso directo en tu pantalla. Feed, pagos y academia como app nativa."}
+                : "Acceso directo en tu pantalla. Feed, pagos y cursos como app nativa."}
             </p>
           </div>
           <button type="button" onClick={dismiss} className="shrink-0 text-lg leading-none text-white/40" aria-label="Cerrar">

@@ -51,7 +51,7 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          `${legalMeta.brand} es una red social con funciones de feed de video, comunidad, academia y comercio digital. Permite publicar contenido, vender productos digitales, interactuar con audiencias y recibir pagos integrados en la experiencia.`,
+          `${legalMeta.brand} es una red social con funciones de feed de video, comunidad, cursos y comercio digital. Permite publicar contenido, vender productos digitales, interactuar con audiencias y recibir pagos integrados en la experiencia.`,
           "El Operador actúa como intermediario tecnológico entre Creadores y compradores. Salvo que se indique expresamente lo contrario, el Operador no es vendedor de los Productos de terceros ni empleador de los Creadores.",
           "Podemos modificar, suspender o discontinuar funciones de la Plataforma por mantenimiento, seguridad, cumplimiento legal o mejora del producto, procurando avisar con antelación razonable cuando sea posible.",
         ],
