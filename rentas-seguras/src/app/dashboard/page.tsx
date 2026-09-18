@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/supabase/session";
-import { getVerifiedPaymentFromCookie } from "@/lib/payments";
+import { getVerifiedPaymentForUser } from "@/lib/payments";
 import { CONTRACT_PRICE_MXN } from "@/lib/constants";
+import { IntegrationStatus } from "@/components/integration-status";
 
 export const metadata = { title: "Panel" };
 
@@ -9,7 +10,7 @@ export default async function DashboardPage() {
   const user = await requireUser("/dashboard");
   let paid = false;
   try {
-    paid = Boolean(await getVerifiedPaymentFromCookie());
+    paid = Boolean(await getVerifiedPaymentForUser(user.id));
   } catch {
     paid = false;
   }
@@ -50,6 +51,9 @@ export default async function DashboardPage() {
             Ver resultado
           </Link>
         </article>
+      </div>
+      <div className="mt-6">
+        <IntegrationStatus />
       </div>
     </div>
   );

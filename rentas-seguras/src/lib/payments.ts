@@ -33,3 +33,10 @@ export async function getVerifiedPaymentFromCookie() {
     throw error;
   }
 }
+
+export async function getVerifiedPaymentForUser(userId: string) {
+  const payment = await getVerifiedPaymentFromCookie();
+  if (!payment) return null;
+  if (payment.externalReference !== userId) return null;
+  return payment;
+}

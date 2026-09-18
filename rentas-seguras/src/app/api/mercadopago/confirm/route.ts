@@ -21,9 +21,10 @@ export async function GET(request: Request) {
 
   try {
     const verified = await verifyApprovedContractPayment(paymentId);
+    const belongsToUser = verified?.externalReference === auth.user.id;
     const redirectUrl = new URL("/pago/exito", origin);
-    redirectUrl.searchParams.set("confirmed", verified ? "1" : "0");
-    if (!verified) {
+    redirectUrl.searchParams.set("confirmed", belongsToUser ? "1" : "0");
+    if (!verified || !belongsToUser) {
       redirectUrl.searchParams.set("payment_id", paymentId);
       return NextResponse.redirect(redirectUrl);
     }

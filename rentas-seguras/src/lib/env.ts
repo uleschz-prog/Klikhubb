@@ -1,14 +1,27 @@
+function looksLikePlaceholder(value: string | undefined | null) {
+  if (!value) return true;
+  const v = value.trim();
+  if (!v) return true;
+  return /your_|YOUR_PROJECT|placeholder|example\.supabase\.co|sk-your_|APP_USR-your_/i.test(
+    v
+  );
+}
+
+export function isConfiguredSecret(value: string | undefined | null) {
+  return !looksLikePlaceholder(value);
+}
+
 export function getPublicEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!url || !anonKey) {
+  if (!isConfiguredSecret(url) || !isConfiguredSecret(anonKey)) {
     throw new Error(
-      "Faltan NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY. Copia rentas-seguras/.env.example a .env.local."
+      "Faltan NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY. Copia rentas-seguras/.env.example a .env.local y usa claves reales (no de ejemplo)."
     );
   }
 
-  return { url, anonKey };
+  return { url: url as string, anonKey: anonKey as string };
 }
 
 export function getAppUrl(request?: Request) {
@@ -28,8 +41,7 @@ export function getAppUrl(request?: Request) {
 
 export function getOpenAiKey() {
   const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  return key;
+  return isConfiguredSecret(key) ? key!.trim() : null;
 }
 
 export function getOpenAiModel() {
@@ -38,10 +50,20 @@ export function getOpenAiModel() {
 
 export function getMercadoPagoAccessToken() {
   const token = process.env.MERCADOPAGO_ACCESS_TOKEN;
-  if (!token) return null;
-  return token;
+  return isConfiguredSecret(token) ? token!.trim() : null;
 }
 
 export function getMercadoPagoWebhookSecret() {
-  return process.env.MERCADOPAGO_WEBHOOK_SECRET ?? null;
+  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+  return isConfiguredSecret(secret) ? secret!.trim() : null;
+}
+
+export function getIntegrationStatus() {
+  return {
+    supabase: isConfiguredSecret(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+      isConfiguredSecret(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+    openai: Boolean(getOpenAiKey()),
+    mercadopago: Boolean(getMercadoPagoAccessToken()),
+    mercadopagoWebhook: Boolean(getMercadoPagoWebhookSecret()),
+  };
 }

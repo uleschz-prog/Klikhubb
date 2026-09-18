@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 import { contractMarkdownToPdf } from "@/lib/pdf";
-import { getVerifiedPaymentFromCookie } from "@/lib/payments";
+import { getVerifiedPaymentForUser } from "@/lib/payments";
 import { requireApiUser } from "@/lib/supabase/require-api-user";
 import { MercadoPagoNotConfiguredError } from "@/lib/mercadopago";
 
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   if ("error" in auth) return auth.error;
 
   try {
-    const payment = await getVerifiedPaymentFromCookie();
+    const payment = await getVerifiedPaymentForUser(auth.user.id);
     if (!payment) {
       return NextResponse.json(
         {

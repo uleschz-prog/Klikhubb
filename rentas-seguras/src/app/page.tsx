@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CONTRACT_PRICE_MXN } from "@/lib/constants";
+import { IntegrationStatus } from "@/components/integration-status";
 
 export default function HomePage() {
   return (
@@ -33,16 +34,19 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        <aside className="paper-card rounded-3xl p-8">
-          <p className="stamp text-[10px] text-moss-800">Incluye</p>
-          <ul className="mt-4 space-y-3 text-sm leading-relaxed">
-            <li>Arrendador y arrendatario con RFC, domicilio e identificación.</li>
-            <li>Vivienda: dirección, tipo, uso habitacional y descripción.</li>
-            <li>Renta en MXN, fianza, vigencia, día de pago y servicios.</li>
-            <li>Cláusulas al estilo del Código Civil de Hidalgo.</li>
-            <li>Checkout MercadoPago por exactamente $499.00 MXN.</li>
-          </ul>
-        </aside>
+        <div className="space-y-4">
+          <aside className="paper-card rounded-3xl p-8">
+            <p className="stamp text-[10px] text-moss-800">Incluye</p>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed">
+              <li>Arrendador y arrendatario con RFC, domicilio e identificación.</li>
+              <li>Vivienda: dirección, tipo, uso habitacional y descripción.</li>
+              <li>Renta en MXN, fianza, vigencia, día de pago y servicios.</li>
+              <li>Cláusulas al estilo del Código Civil de Hidalgo.</li>
+              <li>Checkout MercadoPago por exactamente $499.00 MXN.</li>
+            </ul>
+          </aside>
+          <IntegrationStatus />
+        </div>
       </section>
     </div>
   );

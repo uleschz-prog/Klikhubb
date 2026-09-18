@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/session";
-import { getVerifiedPaymentFromCookie } from "@/lib/payments";
+import { getVerifiedPaymentForUser } from "@/lib/payments";
 
 type Search = {
   payment_id?: string;
@@ -17,20 +17,18 @@ export default async function PagoExitoPage({
 }: {
   searchParams: Search;
 }) {
-  await requireUser("/pago/exito");
+  const user = await requireUser("/pago/exito");
 
   const paymentId = searchParams.payment_id || searchParams.collection_id;
   if (paymentId && searchParams.confirmed === undefined) {
     redirect(`/api/mercadopago/confirm?payment_id=${encodeURIComponent(paymentId)}`);
   }
 
-  let approved = searchParams.confirmed === "1";
-  if (!approved) {
-    try {
-      approved = Boolean(await getVerifiedPaymentFromCookie());
-    } catch {
-      approved = false;
-    }
+  let approved = false;
+  try {
+    approved = Boolean(await getVerifiedPaymentForUser(user.id));
+  } catch {
+    approved = false;
   }
 
   const message = approved

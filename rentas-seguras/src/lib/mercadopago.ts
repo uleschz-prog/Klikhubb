@@ -65,10 +65,15 @@ export async function createContractPreference(input: {
     throw new Error("MercadoPago no devolvió un Checkout válido.");
   }
 
+  const accessToken = getMercadoPagoAccessToken() ?? "";
+
   return {
     preferenceId: result.id,
     initPoint: result.init_point,
     sandboxInitPoint: result.sandbox_init_point ?? null,
+    checkoutUrl: accessToken.startsWith("TEST-")
+      ? result.sandbox_init_point || result.init_point
+      : result.init_point,
   };
 }
 

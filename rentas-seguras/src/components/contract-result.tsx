@@ -46,14 +46,17 @@ export function ContractResult() {
         method: "POST",
       });
       const body = (await response.json()) as {
+        checkoutUrl?: string;
         initPoint?: string;
         sandboxInitPoint?: string | null;
         error?: string;
       };
-      if (!response.ok || !body.initPoint) {
+      const checkoutUrl =
+        body.checkoutUrl || body.sandboxInitPoint || body.initPoint;
+      if (!response.ok || !checkoutUrl) {
         throw new Error(body.error || "No se pudo abrir MercadoPago.");
       }
-      window.location.href = body.sandboxInitPoint || body.initPoint;
+      window.location.href = checkoutUrl;
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Error de pago.");
       setPending(null);

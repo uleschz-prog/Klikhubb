@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getVerifiedPaymentFromCookie } from "@/lib/payments";
+import { getVerifiedPaymentForUser } from "@/lib/payments";
 import { requireApiUser } from "@/lib/supabase/require-api-user";
 
 export async function GET() {
@@ -7,7 +7,7 @@ export async function GET() {
   if ("error" in auth) return auth.error;
 
   try {
-    const payment = await getVerifiedPaymentFromCookie();
+    const payment = await getVerifiedPaymentForUser(auth.user.id);
     return NextResponse.json({
       paid: Boolean(payment),
       payment,
