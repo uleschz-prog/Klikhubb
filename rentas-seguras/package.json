@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:schema": "npx --yes tsx scripts/check-contract-schema.ts",
+    "test:pdf": "npx --yes tsx scripts/check-pdf.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
