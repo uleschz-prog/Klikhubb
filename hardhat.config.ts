@@ -29,6 +29,12 @@ export default defineConfig({
       chainType: "l1",
       chainId: 31337,
     },
+    // Nodo local con el chainId de Amoy, para escuchar eventos sin la testnet.
+    amoyNode: {
+      type: "edr-simulated",
+      chainType: "generic",
+      chainId: AMOY_CHAIN_ID,
+    },
     polygonAmoy: {
       type: "http",
       chainType: "generic",

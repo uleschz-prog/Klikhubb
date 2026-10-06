@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { LyraStrategyHistory } from "@/components/wallet/LyraStrategyHistory";
 import { WalletConnectCard } from "@/components/wallet/WalletConnectCard";
 import { WalletPayoutForm } from "@/components/wallet/WalletPayoutForm";
 import { getDbUserId } from "@/lib/auth/session";
@@ -141,6 +142,8 @@ export default async function WalletPage({
           </ul>
         </div>
       ) : null}
+
+      <LyraStrategyHistory />
 
       <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Movimientos</p>
