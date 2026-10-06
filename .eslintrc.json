@@ -1,3 +1,12 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": [
+    "artifacts/**",
+    "cache/**",
+    "typechain-types/**",
+    "hardhat.config.ts",
+    "test/**",
+    "scripts/deploy-lyra.ts",
+    "config/amoy.ts"
+  ]
 }

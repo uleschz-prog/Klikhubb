@@ -8,6 +8,10 @@
     "build": "prisma generate && node scripts/migrate-if-ready.mjs && next build",
     "start": "next start",
     "lint": "next lint",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy-lyra.ts --network polygonAmoy",
+    "deploy:local": "hardhat run scripts/deploy-lyra.ts --network hardhat",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -38,15 +42,19 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^4.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^18.0.5",
     "eslint": "^8",
     "eslint-config-next": "^14.2.35",
+    "hardhat": "^3.18.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.23.12",
     "typescript": "^5"
-  }
+  },
+  "type": "module"
 }
