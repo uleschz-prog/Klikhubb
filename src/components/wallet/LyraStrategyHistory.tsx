@@ -1,9 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createPublicClient, formatUnits, http } from "viem";
+import { createPublicClient, formatUnits, http, isAddress } from "viem";
 import { polygonAmoy } from "viem/chains";
-import { lyraAutonomousAgentAbi, lyraAutonomousAgentAddress, lyraRpcUrl } from "@/lib/lyra/autonomous-agent";
+import { AMOY_PUBLIC_RPC_URL, lyraAutonomousAgentAbi } from "@/lib/lyra/autonomous-agent";
+
+function configuredAddress(): `0x${string}` | null {
+  const raw = process.env.NEXT_PUBLIC_LYRA_AUTONOMOUS_AGENT_ADDRESS?.trim();
+  if (!raw || !isAddress(raw)) return null;
+  return raw;
+}
+
+function configuredRpcUrl() {
+  const raw = process.env.NEXT_PUBLIC_LYRA_RPC_URL?.trim();
+  return raw || AMOY_PUBLIC_RPC_URL;
+}
 
 type TradeRow = {
   id: string;
@@ -60,8 +71,9 @@ function formatTradeTime(timestamp: bigint) {
     .replace(".", "");
 }
 
+/** Historial en vivo de StrategyExecuted en Polygon Amoy. */
 export function LyraStrategyHistory() {
-  const address = lyraAutonomousAgentAddress();
+  const address = configuredAddress();
   const [trades, setTrades] = useState<TradeRow[]>([]);
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +84,7 @@ export function LyraStrategyHistory() {
 
     const client = createPublicClient({
       chain: polygonAmoy,
-      transport: http(lyraRpcUrl()),
+      transport: http(configuredRpcUrl()),
       pollingInterval: 2_000,
     });
     let unwatch: (() => void) | undefined;
