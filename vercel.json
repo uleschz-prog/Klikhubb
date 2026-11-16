@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/release-wallets",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/sync-payouts",
+      "schedule": "0 * * * *"
     }
   ]
 }
