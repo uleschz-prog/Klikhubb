@@ -35,6 +35,7 @@ export function FeedTheater({
   initialId,
   signedIn = false,
   mercadoPagoEnabled = false,
+  usdtEnabled = false,
   speiEnabled = false,
   amountMxn,
   fxRate,
@@ -47,6 +48,7 @@ export function FeedTheater({
   initialId?: string;
   signedIn?: boolean;
   mercadoPagoEnabled?: boolean;
+  usdtEnabled?: boolean;
   speiEnabled?: boolean;
   amountMxn?: number;
   fxRate?: number;
@@ -837,6 +839,7 @@ export function FeedTheater({
         item={shopItem}
         signedIn={signedIn}
         mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
         speiEnabled={speiEnabled}
         amountMxn={amountMxn}
         fxRate={fxRate}

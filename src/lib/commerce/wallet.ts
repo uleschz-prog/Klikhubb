@@ -55,6 +55,7 @@ export type WalletView = {
   payouts: WalletPayoutRow[];
   demo: boolean;
   mpPayoutEmail: string | null;
+  usdtTrc20Address: string | null;
 };
 
 export type ReleaseResult = {
@@ -138,11 +139,15 @@ export async function loadWalletView(userId: string): Promise<WalletView> {
   }
 }
 
-export async function requestPayout(userId: string, amount?: number) {
+export async function requestPayout(
+  userId: string,
+  amount?: number,
+  method?: "mercadopago" | "usdt" | "manual",
+) {
   try {
     await releaseInDb(userId);
     const { requestCreatorPayout } = await import("@/lib/commerce/payouts");
-    return await requestCreatorPayout(userId, amount);
+    return await requestCreatorPayout(userId, amount, method);
   } catch (error) {
     if (error instanceof WalletError) throw error;
     if (!shouldUseDemoFallback(error)) throw error;
@@ -367,5 +372,6 @@ async function readWalletView(userId: string): Promise<WalletView> {
     })),
     demo: false,
     mpPayoutEmail: wallet?.mpPayoutEmail ?? null,
+    usdtTrc20Address: wallet?.usdtTrc20Address ?? null,
   };
 }

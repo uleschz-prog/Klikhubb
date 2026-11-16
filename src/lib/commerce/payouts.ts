@@ -9,6 +9,8 @@ import {
   isMercadoPagoPayoutsReady,
   newPayoutIdempotencyKey,
 } from "@/lib/payments/mp-payouts";
+import { createUsdtPayout, isUsdtPayoutsReady } from "@/lib/payments/nowpayments";
+import { isValidTrc20Address, normalizeTrc20Address } from "@/lib/payments/trc20";
 import {
   isValidMpPayoutEmail,
   mapMpTransactionStatus,
@@ -57,6 +59,27 @@ export async function loadMpPayoutEmail(userId: string): Promise<string | null> 
   return wallet?.mpPayoutEmail ?? null;
 }
 
+export async function saveUsdtPayoutAddress(userId: string, address: string) {
+  const normalized = normalizeTrc20Address(address);
+  if (!isValidTrc20Address(normalized)) {
+    throw new PayoutDestinationError("Escribe una dirección USDT TRC20 válida (empieza con T).");
+  }
+  await prisma.wallet.upsert({
+    where: { userId },
+    update: { usdtTrc20Address: normalized },
+    create: { userId, usdtTrc20Address: normalized, currency: "USD" },
+  });
+  return { address: normalized };
+}
+
+export async function loadUsdtPayoutAddress(userId: string): Promise<string | null> {
+  const wallet = await prisma.wallet.findUnique({
+    where: { userId },
+    select: { usdtTrc20Address: true },
+  });
+  return wallet?.usdtTrc20Address ?? null;
+}
+
 export type CreatorPayoutResult = {
   payoutId: string;
   amount: number;
@@ -64,13 +87,14 @@ export type CreatorPayoutResult = {
   fxRate: number | null;
   available: number;
   pending: number;
-  mode: "mercadopago" | "manual";
+  mode: "mercadopago" | "usdt" | "manual";
   status: PayoutStatus;
 };
 
 export async function requestCreatorPayout(
   userId: string,
   requestedAmount?: number,
+  preferredMethod?: "mercadopago" | "usdt" | "manual",
 ): Promise<CreatorPayoutResult> {
   let fx: FxQuote | null = null;
   try {
@@ -79,14 +103,37 @@ export async function requestCreatorPayout(
     fx = null;
   }
 
-  const auto = isMercadoPagoPayoutsReady();
+  const autoMp = isMercadoPagoPayoutsReady();
+  const autoUsdt = isUsdtPayoutsReady();
   const existingEmail = await loadMpPayoutEmail(userId);
+  const existingUsdt = await loadUsdtPayoutAddress(userId);
 
-  if (auto && !existingEmail) {
+  let method: "mercadopago" | "usdt" | "manual" = "manual";
+  if (preferredMethod === "manual") {
+    method = "manual";
+  } else if (preferredMethod === "usdt" || (preferredMethod !== "mercadopago" && autoUsdt && existingUsdt && !autoMp)) {
+    method = "usdt";
+  } else if (preferredMethod === "mercadopago" || autoMp) {
+    method = autoMp ? "mercadopago" : "manual";
+  }
+
+  if (preferredMethod === "usdt") method = "usdt";
+  if (preferredMethod === "mercadopago") method = "mercadopago";
+
+  if (method === "mercadopago" && autoMp && !existingEmail) {
     throw new WalletError(
       "Guarda el correo de tu cuenta Mercado Pago antes de pedir un retiro automático.",
       "DESTINATION_REQUIRED",
     );
+  }
+  if (method === "usdt" && !existingUsdt) {
+    throw new WalletError(
+      "Guarda tu dirección USDT TRC20 antes de pedir un retiro en cripto.",
+      "DESTINATION_REQUIRED",
+    );
+  }
+  if (method === "usdt" && !autoUsdt) {
+    method = "usdt"; // queda pendiente para el admin
   }
 
   const draft = await prisma.$transaction(async (tx) => {
@@ -117,8 +164,12 @@ export async function requestCreatorPayout(
     const amount = money(requestCents);
     const amountUsd = Number(amount);
     const amountMxn = fx ? usdToMxn(amountUsd, fx.rate) : null;
-    const destination = existingEmail;
-    const method = auto && destination ? "mercadopago" : "manual";
+    const destination = method === "usdt" ? existingUsdt : existingEmail;
+    const resolvedMethod = method === "mercadopago" && existingEmail && autoMp
+      ? "mercadopago"
+      : method === "usdt" && existingUsdt
+        ? "usdt"
+        : "manual";
     const idempotencyKey = newPayoutIdempotencyKey();
 
     const payout = await tx.payout.create({
@@ -126,7 +177,7 @@ export async function requestCreatorPayout(
         userId,
         amount,
         currency: wallet.currency,
-        method,
+        method: resolvedMethod,
         status: "PENDING",
         destination,
         amountUsd: amount,
@@ -149,9 +200,11 @@ export async function requestCreatorPayout(
     });
 
     const note =
-      method === "mercadopago"
+      resolvedMethod === "mercadopago"
         ? `Retiro solicitado a Mercado Pago (${destination}).`
-        : "Retiro solicitado. El equipo lo deposita manualmente.";
+        : resolvedMethod === "usdt"
+          ? `Retiro solicitado en USDT TRC20 (${destination}).`
+          : "Retiro solicitado. El equipo lo deposita manualmente.";
 
     await tx.walletLedger.create({
       data: {
@@ -180,7 +233,7 @@ export async function requestCreatorPayout(
       fxRate: fx?.rate ?? null,
       available: Number(updated.available),
       pending: Number(updated.pending),
-      mode: method as "mercadopago" | "manual",
+      mode: resolvedMethod as "mercadopago" | "usdt" | "manual",
       status: "PENDING" as PayoutStatus,
       externalRef,
       idempotencyKey,
@@ -188,30 +241,122 @@ export async function requestCreatorPayout(
     };
   });
 
-  if (draft.mode !== "mercadopago" || !draft.destination || draft.amountMxn == null) {
+  if (draft.mode === "mercadopago" && draft.destination && draft.amountMxn != null) {
+    const dispatched = await dispatchMercadoPagoPayout(draft.payoutId);
     return {
       payoutId: draft.payoutId,
       amount: draft.amount,
       amountMxn: draft.amountMxn,
       fxRate: draft.fxRate,
-      available: draft.available,
+      available: dispatched.available ?? draft.available,
       pending: draft.pending,
-      mode: "manual",
-      status: draft.status,
+      mode: "mercadopago",
+      status: dispatched.status,
     };
   }
 
-  const dispatched = await dispatchMercadoPagoPayout(draft.payoutId);
+  if (draft.mode === "usdt" && draft.destination && isUsdtPayoutsReady()) {
+    const dispatched = await dispatchUsdtPayout(draft.payoutId);
+    return {
+      payoutId: draft.payoutId,
+      amount: draft.amount,
+      amountMxn: draft.amountMxn,
+      fxRate: draft.fxRate,
+      available: dispatched.available ?? draft.available,
+      pending: draft.pending,
+      mode: "usdt",
+      status: dispatched.status,
+    };
+  }
+
   return {
     payoutId: draft.payoutId,
     amount: draft.amount,
     amountMxn: draft.amountMxn,
     fxRate: draft.fxRate,
-    available: dispatched.available ?? draft.available,
+    available: draft.available,
     pending: draft.pending,
-    mode: dispatched.status === "FAILED" ? "mercadopago" : "mercadopago",
-    status: dispatched.status,
+    mode: draft.mode,
+    status: draft.status,
   };
+}
+
+export async function dispatchUsdtPayout(payoutId: string): Promise<{
+  status: PayoutStatus;
+  available?: number;
+}> {
+  const payout = await prisma.payout.findUnique({ where: { id: payoutId } });
+  if (!payout) return { status: "FAILED" };
+  if (payout.status === "COMPLETED" || payout.status === "FAILED") {
+    return { status: payout.status };
+  }
+  if (!isUsdtPayoutsReady()) return { status: payout.status };
+  if (!payout.destination || !isValidTrc20Address(payout.destination)) {
+    return failPayout(payoutId, "Falta una dirección USDT TRC20 válida.", "api");
+  }
+  if (payout.mpPayoutId) {
+    return { status: payout.status };
+  }
+  try {
+    const created = await createUsdtPayout({
+      address: payout.destination,
+      amountUsd: Number(payout.amountUsd ?? payout.amount),
+    });
+    await prisma.payout.update({
+      where: { id: payout.id },
+      data: {
+        status: "PROCESSING",
+        method: "usdt",
+        providerRef: created.batchId,
+        mpPayoutId: created.batchId,
+        mpTransactionId: created.withdrawalId,
+        failureNote: created.verified ? null : "Payout creado; falta confirmar el 2FA de NOWPayments si aplica.",
+      },
+    });
+    await prisma.payoutEvent.create({
+      data: {
+        payoutId: payout.id,
+        source: "api",
+        status: "PROCESSING",
+        detail: `Enviado a NOWPayments (${created.batchId}${created.verified ? ", 2FA ok" : ", pendiente de 2FA"}).`,
+      },
+    });
+    return { status: "PROCESSING" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "No se pudo enviar el retiro USDT.";
+    return failPayout(payoutId, message, "api");
+  }
+}
+
+export async function applyNowPaymentsPayoutIpn(input: {
+  batchId?: string | null;
+  withdrawalId?: string | null;
+  status?: string | null;
+  hash?: string | null;
+  detail?: string;
+}) {
+  const ref = input.batchId || input.withdrawalId;
+  if (!ref) return { ignored: true as const };
+  const payout = await prisma.payout.findFirst({
+    where: { OR: [{ mpPayoutId: ref }, { providerRef: ref }, { mpTransactionId: input.withdrawalId ?? "" }] },
+  });
+  if (!payout) return { ignored: true as const, reason: "unknown_payout" };
+  const status = (input.status ?? "").toUpperCase();
+  if (status === "FINISHED") {
+    return applyRemotePayoutStatus(payout.id, "COMPLETED", "webhook", {
+      mpPayoutId: input.batchId ?? payout.mpPayoutId,
+      mpTransactionId: input.withdrawalId ?? payout.mpTransactionId,
+      detail: input.hash ? `txid ${input.hash}` : input.detail,
+    });
+  }
+  if (status === "REJECTED" || status === "FAILED" || status === "REJECTED_NOT_CHECKED") {
+    return applyRemotePayoutStatus(payout.id, "FAILED", "webhook", {
+      detail: input.detail || `NOWPayments ${status}`,
+    });
+  }
+  return applyRemotePayoutStatus(payout.id, "PROCESSING", "webhook", {
+    detail: input.detail || status,
+  });
 }
 
 export async function dispatchMercadoPagoPayout(payoutId: string): Promise<{
