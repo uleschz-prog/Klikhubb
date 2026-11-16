@@ -86,6 +86,10 @@ export async function settlePaidOrder(input: {
   periodEnd?: Date | null;
   /** Comisión del procesador (bruto). Se descuenta antes del 93/7. */
   processorFeeAmount?: number;
+  amountUsd?: number;
+  amountMxn?: number;
+  fxRate?: number;
+  fxAt?: Date;
 }): Promise<SettledOrder> {
   const settled = await prisma.$transaction(async (tx) => {
     const replayed = await settledFromProviderRef(tx, input.provider, input.providerRef);
@@ -165,6 +169,10 @@ export async function settlePaidOrder(input: {
         fees: money(platformFeeCents),
         total: money(saleCents),
         currency,
+        ...(input.amountUsd != null ? { amountUsd: money(toCents(input.amountUsd)) } : {}),
+        ...(input.amountMxn != null ? { amountMxn: new Prisma.Decimal(Number(input.amountMxn).toFixed(4)) } : {}),
+        ...(input.fxRate != null ? { fxRate: new Prisma.Decimal(Number(input.fxRate).toFixed(8)) } : {}),
+        ...(input.fxAt ? { fxAt: input.fxAt } : {}),
         paidAt: now,
         items: {
           create: {
