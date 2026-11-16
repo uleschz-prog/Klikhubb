@@ -5,6 +5,7 @@ import {
   completeManualPayout,
   listPendingManualPayouts,
   rejectManualPayout,
+  syncAdminPayout,
 } from "@/lib/commerce/admin-payouts";
 import { requireAdminApi } from "@/lib/auth/require-admin";
 
@@ -21,7 +22,7 @@ export async function GET() {
 
 const actionSchema = z.object({
   payoutId: z.string().min(1),
-  action: z.enum(["complete", "reject"]),
+  action: z.enum(["complete", "reject", "sync"]),
   note: z.string().max(500).optional(),
 });
 
@@ -40,6 +41,10 @@ export async function POST(request: Request) {
   try {
     if (action === "complete") {
       const payout = await completeManualPayout(payoutId, note);
+      return NextResponse.json({ ok: true, payoutId: payout.id, status: payout.status });
+    }
+    if (action === "sync") {
+      const payout = await syncAdminPayout(payoutId);
       return NextResponse.json({ ok: true, payoutId: payout.id, status: payout.status });
     }
 
