@@ -62,7 +62,7 @@ export const privacySections: LegalSection[] = [
           "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato y consentimiento al registrarte.",
           "Operar el feed, comunidad, cursos, checkout y monedero — ejecución del contrato.",
           "Calcular y abonar importes de ventas (93/7 o plan mensual), aplicar retenciones de 24 horas y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
-          "Procesar pagos (hoy, transferencia SPEI) y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
+          "Procesar pagos con Mercado Pago (tarjeta, SPEI u OXXO) o transferencia SPEI manual y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
           "Enviar comunicaciones operativas (confirmaciones, seguridad, cambios legales) — ejecución del contrato e interés legítimo.",
           "Enviar comunicaciones comerciales propias — consentimiento, con opción de baja en todo momento.",
           "Moderar contenido, investigar abusos y proteger la Plataforma — interés legítimo en seguridad.",
@@ -95,6 +95,7 @@ export const privacySections: LegalSection[] = [
         ],
         list: [
           "Proveedores de infraestructura y hosting (p. ej. Vercel) — alojamiento de la aplicación.",
+          "Mercado Pago — procesamiento de pagos cuando eliges ese método en checkout. Mercado Pago trata datos de pago según su propia política.",
           "Base de datos PostgreSQL gestionada por el proveedor configurado en el despliegue.",
           "Almacenamiento de comprobantes de pago (Vercel Blob) — conservación de evidencia de transferencias SPEI.",
           "Resend u otros proveedores de email transaccional — envío de notificaciones operativas.",
