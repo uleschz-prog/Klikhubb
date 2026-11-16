@@ -48,8 +48,9 @@ El comprador tiene **24 horas** desde el pago confirmado para pedir la devoluci�
 
 ### 5. Retiro
 
-- El creador pide retiro en `/wallet` (mínimo 10 USD).
-- El retiro queda `manual` / `PENDING` y **Qlykadmin** lo marca pagado en `/admin/payouts`.
+- El creador guarda en `/wallet` el correo de su cuenta Mercado Pago y pide retiro (mínimo 10 USD). El saldo en USD se convierte a MXN con el tipo de cambio de ese momento.
+- Si `MP_PAYOUTS_ENABLED=1` (y, en producción, la clave Ed25519 `MP_PAYOUTS_PRIVATE_KEY` está registrada ante Mercado Pago), Qlyk llama a `POST /v1/payouts` con `X-Idempotency-Key`, deja el retiro en `PROCESSING` y lo cierra con el webhook o el cron `/api/cron/sync-payouts`. Si el envío falla, el saldo vuelve a disponible.
+- Si el flag está apagado o falta la firma, el retiro queda `PENDING` y **Qlykadmin** lo marca pagado o lo rechaza (devolviendo el saldo) en `/admin/payouts`.
 
 ---
 
@@ -61,6 +62,8 @@ Webhook de Mercado Pago: `https://qlyk.vercel.app/api/webhooks/mercadopago`
 MP_ACCESS_TOKEN="..."
 MP_PUBLIC_KEY="..."
 MP_WEBHOOK_SECRET="..."
+# MP_PAYOUTS_ENABLED="1"
+# MP_PAYOUTS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
 FX_USD_MXN="18.50"
 PAYMENT_BANK_NAME="BBVA"
 PAYMENT_BENEFICIARY="…"
