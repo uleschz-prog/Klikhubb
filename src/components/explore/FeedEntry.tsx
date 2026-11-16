@@ -13,6 +13,7 @@ export function FeedEntry({
   speiEnabled,
   buySlug,
   canceled,
+  fxRate,
 }: {
   videos: FeedVideo[];
   clipId?: string;
@@ -21,6 +22,7 @@ export function FeedEntry({
   speiEnabled: boolean;
   buySlug?: string;
   canceled?: boolean;
+  fxRate?: number;
 }) {
   const theaterVideos =
     tab === "following" && !clipId
@@ -80,6 +82,7 @@ export function FeedEntry({
       speiEnabled={speiEnabled}
       buySlug={buySlug}
       canceled={canceled}
+      fxRate={fxRate}
     />
   );
 }
