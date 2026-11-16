@@ -17,7 +17,11 @@ export function PwaInstallHint() {
 
   useEffect(() => {
     if (isStandaloneDisplayMode()) return;
-    if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
+    try {
+      if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
+    } catch {
+      return;
+    }
     if (!isMobileUserAgent()) return;
 
     if (isIosDevice()) {
@@ -39,7 +43,11 @@ export function PwaInstallHint() {
   }, []);
 
   function dismiss() {
-    sessionStorage.setItem(DISMISS_KEY, "1");
+    try {
+      window.localStorage.setItem(DISMISS_KEY, "1");
+    } catch {
+      // ignore quota / private mode
+    }
     setVisible(false);
   }
 
@@ -54,50 +62,47 @@ export function PwaInstallHint() {
   if (!visible) return null;
 
   return (
-    <div className="pwa-install-hint fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-[60] md:hidden">
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0f]/95 shadow-[0_16px_48px_rgba(0,0,0,0.55)] ring-1 ring-klik-cyan/20 backdrop-blur-xl">
-        <div className="flex items-start gap-3 p-4">
+    <div className="pwa-install-hint fixed inset-x-0 bottom-0 z-[60] md:hidden">
+      <div className="border-t border-white/15 bg-[#0a0a0f]/96 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-16px_48px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="mx-auto h-1 w-10 rounded-full bg-white/25" aria-hidden />
+        <div className="mt-3 flex items-start gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/icon-96x96.png" alt="" className="h-12 w-12 shrink-0 rounded-2xl" />
           <div className="min-w-0 flex-1">
-            <p className="font-display text-sm font-bold text-white">Instala Qlyk</p>
-            <p className="mt-1 text-xs leading-5 text-white/60">
+            <p className="text-base font-bold text-white">Instalar Qlyk</p>
+            <p className="mt-1 text-sm leading-6 text-white/80">
               {iosHint
-                ? "Toca Compartir → «Añadir a inicio». Experiencia app premium, sin navegador."
-                : "Acceso directo en tu pantalla. Feed, pagos y cursos como app nativa."}
+                ? "Toca Compartir y luego «Añadir a pantalla de inicio». Puedes cerrar este aviso y no volverá a salir."
+                : "Acceso directo en tu pantalla. El feed y tus cursos se ven como una app. Puedes cerrarlo; no te lo volvemos a mostrar."}
             </p>
           </div>
-          <button type="button" onClick={dismiss} className="shrink-0 text-lg leading-none text-white/40" aria-label="Cerrar">
+          <button
+            type="button"
+            onClick={dismiss}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl leading-none text-white/70"
+            aria-label="Cerrar aviso de instalación"
+          >
             ×
           </button>
         </div>
-        {!iosHint ? (
-          <div className="flex gap-2 border-t border-white/8 px-4 py-3">
-            <button
-              type="button"
-              onClick={dismiss}
-              className="flex-1 rounded-full border border-white/15 py-2 text-xs font-semibold text-white/70"
-            >
-              Ahora no
-            </button>
-            <button
-              type="button"
-              onClick={() => void install()}
-              className="flex-1 rounded-full bg-klik-green py-2 text-xs font-bold text-klik-black"
-            >
-              Instalar app
-            </button>
-          </div>
-        ) : (
-          <div className="border-t border-white/8 px-4 py-3">
-            <button
-              type="button"
-              onClick={dismiss}
-              className="w-full rounded-full bg-klik-cyan/15 py-2 text-xs font-semibold text-klik-cyan"
-            >
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            onClick={dismiss}
+            className="flex-1 rounded-full border border-white/20 py-3 text-sm font-semibold text-white"
+          >
+            Ahora no
+          </button>
+          {iosHint ? (
+            <button type="button" onClick={dismiss} className="btn-primary flex-1 rounded-full py-3 text-sm font-bold">
               Entendido
             </button>
-          </div>
-        )}
+          ) : (
+            <button type="button" onClick={() => void install()} className="btn-primary flex-1 rounded-full py-3 text-sm font-bold">
+              Instalar app
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

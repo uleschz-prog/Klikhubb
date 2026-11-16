@@ -10,7 +10,7 @@ import { Logo } from "@/components/brand/Logo";
 import { PlatformNav } from "@/components/layout/PlatformNav";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { ThemeToggle } from "@/components/theme/ThemeProvider";
-import { formatProductPrice } from "@/lib/commerce/billing";
+import { PriceTag } from "@/components/ui/PriceTag";
 import { BuyDrawer, type BuyItem } from "@/components/commerce/BuyDrawer";
 import {
   apiAddComment,
@@ -39,6 +39,7 @@ export function FeedTheater({
   canceled = false,
   home = "shop",
   feedTab = "foryou",
+  fxRate,
 }: {
   videos: FeedVideo[];
   initialId?: string;
@@ -48,6 +49,7 @@ export function FeedTheater({
   canceled?: boolean;
   home?: "play" | "shop";
   feedTab?: "foryou" | "following" | "saved";
+  fxRate?: number;
 }) {
   const router = useRouter();
   const stage = useRef<HTMLDivElement>(null);
@@ -510,7 +512,7 @@ export function FeedTheater({
             </div>
           </header>
 
-          <aside className="absolute right-2 z-30 flex max-h-[calc(100dvh-11rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col items-center gap-2 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] max-md:top-auto md:right-8 md:top-[12%] md:max-h-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <aside className="absolute right-2 z-30 flex max-h-[calc(100dvh-16rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col items-center gap-2 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[calc(14.75rem+env(safe-area-inset-bottom))] max-md:top-auto md:right-8 md:top-[12%] md:max-h-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden">
             <div className="hidden md:contents">
               <NavArrow label="Anterior" disabled={index === 0} onClick={() => go(index - 1)}>
                 <ChevronUp />
@@ -586,7 +588,7 @@ export function FeedTheater({
             ) : null}
           </aside>
 
-          <div className="absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-4.75rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
+          <div className="absolute bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-6.25rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
             <div className="overlay-caption-plate rounded-2xl px-4 py-3">
             <p className="overlay-label text-sm font-semibold">
               @{video.handle}
@@ -604,19 +606,26 @@ export function FeedTheater({
               <button
                 type="button"
                 onClick={openShop}
-                className={`mt-3 flex max-w-sm items-center justify-between gap-3 rounded-full px-4 py-2.5 text-sm font-bold ${
+                className={`mt-3 flex w-full max-w-full items-center justify-between gap-2 rounded-full px-4 py-2.5 text-sm font-bold ${
                   video.product.owned
                     ? "bg-klik-cyan text-klik-black"
                     : "bg-klik-green text-klik-black"
                 }`}
               >
                 {video.product.owned ? (
-                  <span>Continuar · {video.product.title}</span>
+                  <span className="truncate">Continuar</span>
                 ) : (
                   <>
-                    <span>Comprar · {video.product.title}</span>
-                    <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-xs">
-                      {formatProductPrice(video.product.price, video.product.currency)}
+                    <span>Comprar</span>
+                    <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-left">
+                      <PriceTag
+                        amount={video.product.price}
+                        currency={video.product.currency}
+                        fx={fxRate}
+                        size="sm"
+                        compact
+                        align="right"
+                      />
                     </span>
                   </>
                 )}
@@ -651,43 +660,21 @@ export function FeedTheater({
             style={{ width: duration ? `${(current / duration) * 100}%` : "0%" }}
           />
         </button>
-        <div className="overlay-bar hidden items-center gap-3 px-4 py-2 md:flex">
-          <button type="button" onClick={togglePlay} className="p-1" aria-label={playing ? "Pausa" : "Reproducir"}>
+        <div className="overlay-bar hidden items-center gap-2 px-4 py-2 md:flex">
+          <button type="button" onClick={togglePlay} className="p-1" aria-label={playing ? "Pausar" : "Reproducir"}>
             {playing ? <PauseIcon /> : <PlayIcon />}
           </button>
-          <p className="min-w-[7.5rem] font-mono text-xs text-white/80">
+          <p className="min-w-[7.5rem] font-mono text-xs tabular-nums text-white/80" aria-live="off">
             {formatTimecode(current)} / {formatTimecode(duration)}
           </p>
           <div className="flex-1" />
-          <label className="flex items-center gap-2 text-xs text-white/80">
-            <span
-              className={`relative h-5 w-9 rounded-full ${continuous ? "bg-[#FE2C55]" : "bg-white/25"}`}
+          <div className="relative">
+            <IconBtn
+              label={speed === 1 ? "Velocidad normal" : `Velocidad ${speed} por uno`}
+              onClick={() => setMenu(menu === "speed" ? "none" : "speed")}
             >
-              <input
-                type="checkbox"
-                className="peer sr-only"
-                checked={continuous}
-                onChange={(event) => setContinuous(event.target.checked)}
-              />
-              <span
-                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition ${
-                  continuous ? "left-4" : "left-0.5"
-                }`}
-              />
-            </span>
-            Continuo
-          </label>
-          <BarButton onClick={() => setChrome((value) => !value)}>Limpiar</BarButton>
-          <div className="relative">
-            <BarButton onClick={() => setMenu(menu === "quality" ? "none" : "quality")}>Auto</BarButton>
-            {menu === "quality" ? (
-              <MenuCard>
-                <p className="px-3 py-2 text-xs text-white/50">Una calidad · Auto</p>
-              </MenuCard>
-            ) : null}
-          </div>
-          <div className="relative">
-            <BarButton onClick={() => setMenu(menu === "speed" ? "none" : "speed")}>Velocidad</BarButton>
+              <span className="min-w-[1.75rem] text-center text-[11px] font-semibold">{speed === 1 ? "1x" : `${speed}x`}</span>
+            </IconBtn>
             {menu === "speed" ? (
               <MenuCard>
                 {SPEEDS.map((value) => (
@@ -699,7 +686,7 @@ export function FeedTheater({
                       setMenu("none");
                     }}
                     className={`block w-full px-3 py-2 text-left text-sm ${
-                      speed === value ? "text-klik-cyan" : "text-white/80 hover:bg-white/10"
+                      speed === value ? "text-klik-green" : "text-white/80 hover:bg-white/10"
                     }`}
                   >
                     {value === 1 ? "Normal" : `${value}x`}
@@ -708,7 +695,16 @@ export function FeedTheater({
               </MenuCard>
             ) : null}
           </div>
-          <IconBtn label="Lista" onClick={() => setPanel(panel === "playlist" ? "none" : "playlist")}>
+          <IconBtn
+            label={continuous ? "Desactivar reproducción continua" : "Activar reproducción continua"}
+            onClick={() => setContinuous((value) => !value)}
+          >
+            <LoopIcon active={continuous} />
+          </IconBtn>
+          <IconBtn label="Modo cine, ocultar controles" onClick={() => setChrome(false)}>
+            <CinemaIcon />
+          </IconBtn>
+          <IconBtn label="Lista de videos" onClick={() => setPanel(panel === "playlist" ? "none" : "playlist")}>
             <ListIcon />
           </IconBtn>
           <IconBtn label="Mini reproductor" onClick={() => void togglePip()}>
@@ -716,7 +712,7 @@ export function FeedTheater({
           </IconBtn>
           <div className="relative">
             <IconBtn
-              label={muted ? "Silencio" : "Volumen"}
+              label={muted ? "Activar sonido" : "Ajustar volumen"}
               onClick={() => setMenu(menu === "volume" ? "none" : "volume")}
             >
               {muted || volume === 0 ? <MuteIcon /> : <VolumeIcon />}
@@ -729,6 +725,7 @@ export function FeedTheater({
                   max={1}
                   step={0.05}
                   value={muted ? 0 : volume}
+                  aria-label="Volumen"
                   onChange={(event) => {
                     const next = Number(event.target.value);
                     setVolume(next);
@@ -834,6 +831,7 @@ export function FeedTheater({
         loginHref={`/login?callbackUrl=${encodeURIComponent(clipHref(video.id, video.product ? { buy: video.product.slug } : {}))}`}
         cancelPath={clipHref(video.id, video.product ? { buy: video.product.slug } : {})}
         canceled={canceled}
+        fxRate={fxRate}
       />
 
       {toast ? (
@@ -845,7 +843,7 @@ export function FeedTheater({
       <Link
         href={home === "play" ? "/publish?lane=play" : "/publish"}
         aria-label={home === "play" ? "Subir un video" : "Publicar y vender"}
-        className="absolute bottom-[calc(4.85rem+env(safe-area-inset-bottom))] right-2 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-8 md:right-8 md:h-14 md:w-14 md:text-3xl"
+        className="absolute bottom-[calc(11.5rem+env(safe-area-inset-bottom))] right-2 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-24 md:right-8 md:h-14 md:w-14 md:text-3xl"
       >
         +
       </Link>
@@ -909,14 +907,6 @@ function NavArrow({
       onClick={onClick}
       className="overlay-chip overlay-icon flex h-9 w-9 items-center justify-center rounded-full text-white disabled:opacity-25"
     >
-      {children}
-    </button>
-  );
-}
-
-function BarButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="px-2 py-1 text-xs text-white/85 hover:text-white">
       {children}
     </button>
   );
@@ -1064,6 +1054,23 @@ function ExpandIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8">
       <path d="M4 10V4h6M20 14v6h-6M20 10V4h-6M4 14v6h6" />
+    </svg>
+  );
+}
+
+function LoopIcon({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className={`h-5 w-5 fill-none ${active ? "stroke-klik-green" : "stroke-white"}`} strokeWidth="1.8" aria-hidden>
+      <path d="M7 7h9a4 4 0 0 1 0 8h-1M17 17H8a4 4 0 0 1 0-8h1" />
+      <path d="M7 7 9.5 4.5M7 7 9.5 9.5M17 17 14.5 14.5M17 17 14.5 19.5" />
+    </svg>
+  );
+}
+function CinemaIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-white" strokeWidth="1.8" aria-hidden>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M8 6v12M16 6v12" />
     </svg>
   );
 }
