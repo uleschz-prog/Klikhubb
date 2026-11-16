@@ -11,6 +11,7 @@ export function FeedEntry({
   tab,
   signedIn,
   mercadoPagoEnabled,
+  usdtEnabled,
   speiEnabled,
   amountMxn,
   fxRate,
@@ -22,6 +23,7 @@ export function FeedEntry({
   tab: "foryou" | "following" | "saved";
   signedIn: boolean;
   mercadoPagoEnabled: boolean;
+  usdtEnabled: boolean;
   speiEnabled: boolean;
   amountMxn?: number;
   fxRate?: number;
@@ -84,6 +86,7 @@ export function FeedEntry({
       initialId={clipId}
       signedIn={signedIn}
       mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
       speiEnabled={speiEnabled}
       amountMxn={amountMxn}
       fxRate={fxRate}

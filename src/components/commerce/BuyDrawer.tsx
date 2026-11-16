@@ -30,6 +30,7 @@ export function BuyDrawer({
   item,
   signedIn,
   mercadoPagoEnabled = false,
+  usdtEnabled = false,
   speiEnabled = false,
   amountMxn,
   fxRate,
@@ -42,6 +43,7 @@ export function BuyDrawer({
   item: BuyItem | null;
   signedIn: boolean;
   mercadoPagoEnabled?: boolean;
+  usdtEnabled?: boolean;
   speiEnabled?: boolean;
   amountMxn?: number;
   fxRate?: number;
@@ -181,6 +183,7 @@ export function BuyDrawer({
                 compact
                 cancelPath={cancelPath}
                 mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
                 speiEnabled={speiEnabled}
                 amountMxn={amountMxn}
                 fxRate={fxRate}

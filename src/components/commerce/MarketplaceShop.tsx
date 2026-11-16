@@ -10,6 +10,7 @@ export function MarketplaceShop({
   signedIn,
 
   mercadoPagoEnabled,
+  usdtEnabled,
   speiEnabled,
   amountMxn,
   fxRate,
@@ -17,6 +18,7 @@ export function MarketplaceShop({
   products: CatalogProduct[];
   signedIn: boolean;
   mercadoPagoEnabled: boolean;
+  usdtEnabled: boolean;
   speiEnabled: boolean;
   amountMxn?: number;
   fxRate?: number;
@@ -58,6 +60,7 @@ export function MarketplaceShop({
         item={item}
         signedIn={signedIn}
         mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
         speiEnabled={speiEnabled}
         amountMxn={amountMxn}
         fxRate={fxRate}

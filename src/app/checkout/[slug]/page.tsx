@@ -47,6 +47,7 @@ export default async function CheckoutPage({
       }}
       signedIn
       mercadoPagoEnabled={methods.mercadopago}
+      usdtEnabled={methods.usdt}
       speiEnabled={methods.spei}
       fxRate={fx?.rate}
       canceled={searchParams.canceled === "1"}
