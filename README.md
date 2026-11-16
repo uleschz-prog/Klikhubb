@@ -2,12 +2,14 @@
 
 El centro donde todo sucede con un solo clic. Red social con video, cursos y comunidad.
 
+Producción: **https://qlyk.vercel.app**
+
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript + Tailwind
 - Prisma 5 + PostgreSQL
 - NextAuth (JWT + Credentials, Google opcional)
-- Framer Motion en la landing
+- Vercel Blob, Resend, PWA
 
 ## Arranque local
 
@@ -19,8 +21,25 @@ npm run db:seed
 npm run dev
 ```
 
-La landing queda en `http://localhost:3000`. Producción: **https://qlyk.vercel.app**
+La landing queda en `http://localhost:3000`.
+
+En desarrollo, `NEXTAUTH_SECRET` y `PLATFORM_ADMIN_PASSWORD` tienen fallbacks explícitos (`NODE_ENV=development`). En producción hay que definirlos; si faltan, la app falla con un error claro. El cron de liberación de monederos exige `CRON_SECRET` (`Authorization: Bearer $CRON_SECRET`).
 
 ## Modelo de dinero
 
-Cada venta: creador 85% + plataforma 10% + invitación 5% (un solo amigo). Si nadie invitó al comprador, el creador se queda el 90%. El 10% de plataforma lo recibe siempre Qlykadmin (usuario raíz de la red).
+Cada venta se reparte **después** de descontar, si aplica, la comisión del procesador de pagos sobre el importe bruto:
+
+- Plan «pago cuando vendo» (PAYG): **93% creador / 7% plataforma** (Qlykadmin).
+- Plan mensual (FLAT, 25 USD / 30 días): **100% al creador** mientras el periodo esté activo.
+
+No hay comisión por invitación. El saldo del creador queda en hold **24 horas** (misma ventana de reembolso del comprador) y después pasa a disponible. El retiro lo deposita el equipo a mano desde `/admin/payouts` (mínimo 10 USD).
+
+Hoy el único método de cobro en producción es **SPEI manual** (datos bancarios + comprobante, aprobación en `/admin/payments`). Qlyk cobra en una cuenta central y paga a los creadores después.
+
+## Tests
+
+```bash
+npm test
+```
+
+Vitest cubre el reparto (incluido el descuento de tarifa del procesador) y la autenticación del cron.
