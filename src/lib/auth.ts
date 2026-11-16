@@ -5,15 +5,13 @@ import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { hasDatabaseUrl, prisma } from "@/lib/prisma";
 import { hydrateAuthToken } from "@/lib/auth/resolve-user";
+import { resolveNextAuthSecret } from "@/lib/auth/secret";
 
 const googleConfigured =
   Boolean(process.env.GOOGLE_CLIENT_ID) && Boolean(process.env.GOOGLE_CLIENT_SECRET);
 
 export const authOptions: NextAuthOptions = {
-  secret:
-    process.env.NEXTAUTH_SECRET?.trim() ||
-    process.env.AUTH_SECRET?.trim() ||
-    "klikhubb-demo-secret",
+  secret: resolveNextAuthSecret(),
   adapter: hasDatabaseUrl ? PrismaAdapter(prisma) : undefined,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },

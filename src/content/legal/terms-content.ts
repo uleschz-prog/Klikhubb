@@ -24,7 +24,7 @@ export const termsSections: LegalSection[] = [
           '«Creador»: Usuario que publica contenido, productos, cursos o membresías en la Plataforma.',
           '«Miembro» o «Estudiante»: Usuario que consume contenido, participa en comunidades o realiza compras.',
           '«Producto»: bien o servicio digital (curso, membresía, contenido descargable u otro activo digital) ofrecido por un Creador.',
-          '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (Stripe Checkout con tarjeta y/o transferencia bancaria SPEI con confirmación manual).',
+          '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (hoy, transferencia bancaria SPEI con confirmación manual; otros métodos que el Operador habilite en el checkout).',
           '«Monedero»: saldo interno que refleja importes pendientes o disponibles derivados de ventas o ajustes, sujeto a retenciones y verificaciones.',
           '«Hold» o «retención»: periodo de 24 horas durante el cual ciertos importes permanecen bloqueados antes de poder retirarse, alineado con la ventana de reembolso del comprador, para gestionar devoluciones o incidencias.',
         ],
@@ -100,7 +100,7 @@ export const termsSections: LegalSection[] = [
         paragraphs: [
           "Los precios de los Productos los fija cada Creador. El importe final puede incluir impuestos según la legislación aplicable y la configuración del checkout.",
           "Al realizar una Compra, celebras un contrato directo con el Creador vendedor. La Plataforma facilita el pago, el acceso digital y el reparto económico descrito en estos Términos.",
-          "Si adquieres un curso u otro Producto digital a través de la Plataforma, tienes 24 horas desde el momento en que el pago queda confirmado para solicitar la devolución del dinero a Qlyk (desde Mis pedidos). Tras aceptar la solicitud, se revoca el acceso al contenido. Si pagaste con tarjeta, Stripe reembolsa el cargo; si pagaste por SPEI, el Operador procesa la devolución a tu cuenta. Pasadas las 24 horas, las solicitudes se gestionarán conforme a la normativa de consumo aplicable y a la política del Creador, sin perjuicio de los derechos legales irrenunciables del comprador.",
+          "Si adquieres un curso u otro Producto digital a través de la Plataforma, tienes 24 horas desde el momento en que el pago queda confirmado para solicitar la devolución del dinero a Qlyk (desde Mis pedidos). Tras aceptar la solicitud, se revoca el acceso al contenido y el Operador procesa la devolución por el mismo medio de pago o, si no es posible, por transferencia a tu cuenta. Pasadas las 24 horas, las solicitudes se gestionarán conforme a la normativa de consumo aplicable y a la política del Creador, sin perjuicio de los derechos legales irrenunciables del comprador.",
           "Los contracargos, devoluciones o impagos pueden generar ajustes negativos en el Monedero del Creador o del Operador, incluida la recuperación de importes ya acreditados.",
         ],
       },
@@ -113,12 +113,13 @@ export const termsSections: LegalSection[] = [
       {
         paragraphs: [
           "Este apartado describe con precisión cómo se reparte cada venta. Léelo con atención: no garantiza ingresos, beneficios ni resultados concretos.",
-          "Por cada Compra completada con éxito, el importe neto de la venta se distribuye así:",
+          "Por cada Compra completada con éxito, el importe neto de la venta (después de descontar, en su caso, las comisiones o tarifas del procesador de pagos sobre el importe bruto) se distribuye así:",
         ],
         list: [
           "Plan «pago cuando vendo»: 93% para el Creador y 7% de tarifa de plataforma (Qlykadmin).",
           "Plan mensual ($25 USD / 30 días): 100% para el Creador mientras el periodo esté activo (0% de tarifa de plataforma).",
           "El Creador puede cambiar de modalidad en cualquier momento desde su dashboard. Cada venta usa el plan efectivo en el momento del pago.",
+          "Las comisiones o tarifas del procesador de pagos (cuando el cobro se realice por un proveedor externo) se descuentan del importe bruto de la venta antes de aplicar el reparto 93/7 o el 100% del plan mensual. El método SPEI manual no aplica tarifa de procesador.",
         ],
       },
       {
@@ -137,8 +138,8 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Los pagos de los compradores se procesan por Stripe Checkout (tarjeta) y/o transferencia bancaria SPEI, según los métodos habilitados en el checkout. El Operador no almacena números completos de tarjeta en sus servidores; el cargo con tarjeta lo procesa Stripe.",
-          "Los Creadores pueden vincular una cuenta de Stripe Connect (Express) para recibir transferencias de sus retiros. Stripe recaba los datos de identidad y bancarios en su flujo hospedado. El Operador no almacena números de cuenta completos.",
+          "Los pagos de los compradores se procesan por los métodos habilitados en el checkout. Hoy el método disponible es la transferencia bancaria SPEI con confirmación manual. El Operador no almacena números completos de tarjeta en sus servidores.",
+          "Los retiros del Monedero se procesan de forma manual por el Operador, previa verificación. El Operador no almacena números de cuenta completos más allá de lo necesario para ejecutar el depósito.",
           "El Monedero muestra saldos pendientes y disponibles con carácter informativo. Un saldo disponible no implica necesariamente que el retiro sea inmediato si faltan verificaciones de identidad (KYC), datos bancarios o revisiones de riesgo.",
           "Las solicitudes de retiro pueden estar sujetas a importes mínimos, comisiones de terceros, plazos de procesamiento y comprobaciones antilavado. Nos reservamos el derecho de rechazar retiros si existen indicios de fraude o incumplimiento.",
           "El Operador no es entidad de crédito ni custodio de depósitos bancarios regulados. Los saldos reflejan derechos económicos internos derivados de la actividad en la Plataforma, convertibles según las reglas vigentes.",
@@ -214,10 +215,9 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Estos Términos se rigen por la legislación española, sin perjuicio de normas imperativas de protección al consumidor del país en que residas si actúas como consumidor.",
-          "Para Usuarios consumidores en la Unión Europea, conservas los derechos irrenunciables reconocidos por la normativa de consumo y puedes acudir a los tribunales de tu domicilio cuando la ley lo permita.",
-          "Para controversias mercantiles entre profesionales y el Operador, las partes se someten a los Juzgados y Tribunales del domicilio del Operador, salvo pacto escrito en contrario.",
-          "Conforme al Reglamento (UE) 524/2013, los consumidores de la UE pueden utilizar la plataforma de resolución de litigios en línea de la Comisión Europea: https://ec.europa.eu/consumers/odr",
+          "Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos, sin perjuicio de normas imperativas de protección al consumidor del país en que residas si actúas como consumidor.",
+          "Para controversias mercantiles entre profesionales y el Operador, las partes se someten a los tribunales competentes del domicilio del Operador, salvo pacto escrito en contrario o fuero que la ley reserve a la persona consumidora.",
+          "Los consumidores en México pueden acudir a la Procuraduría Federal del Consumidor (PROFECO) o a los mecanismos de conciliación que la ley prevea.",
         ],
       },
     ],

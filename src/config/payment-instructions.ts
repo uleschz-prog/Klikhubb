@@ -20,7 +20,7 @@ export function isManualPaymentsConfigured() {
   return getPaymentInstructions() !== null;
 }
 
-/** En Vercel producción no se regala el acceso: hace falta Stripe o SPEI confirmado. */
+/** En Vercel producción no se regala el acceso: hace falta un método de cobro real (hoy, SPEI confirmado). */
 export function isLivePaymentsRequired() {
   if (process.env.REQUIRE_LIVE_PAYMENTS === "0") return false;
   if (process.env.REQUIRE_LIVE_PAYMENTS === "1") return true;

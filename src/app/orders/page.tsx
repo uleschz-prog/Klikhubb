@@ -21,7 +21,7 @@ export default async function OrdersPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Compras</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Mis pedidos</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
-        Aquí ves tus pagos con tarjeta (Stripe) y tus transferencias SPEI. Tienes{" "}
+        Aquí ves tus pedidos y transferencias SPEI. Tienes{" "}
         {BUYER_REFUND_WINDOW_HOURS} horas desde la compra para pedir la devolución a Qlyk.
       </p>
 

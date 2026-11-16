@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RefundError) {
       const status =
-        error.code === "NOT_FOUND" ? 404 : error.code === "FORBIDDEN" ? 403 : error.code === "STRIPE_FAILED" ? 502 : 400;
+        error.code === "NOT_FOUND" ? 404 : error.code === "FORBIDDEN" ? 403 : 400;
       return NextResponse.json({ error: error.message, code: error.code }, { status });
     }
     console.error(error);

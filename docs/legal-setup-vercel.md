@@ -2,15 +2,17 @@
 
 Antes del beta público, configura estos datos en **Vercel → Settings → Environment Variables → Production**.
 
+El repositorio es público: no subas RFC, domicilio ni secretos al código ni a `.env.example`.
+
 ## Variables
 
-| Variable | Ejemplo | Para qué sirve |
-|----------|---------|----------------|
-| `LEGAL_ENTITY_NAME` | `Mi Empresa S.L.` | Razón social en términos y privacidad |
-| `LEGAL_TAX_ID` | `B12345678` | NIF/CIF en documentos legales |
-| `LEGAL_ADDRESS` | `Calle Ejemplo 1, 28001 Madrid, España` | Domicilio fiscal |
-| `LEGAL_CONTACT_EMAIL` | `qlykadmin@qlyk.app` | Contacto general (ya tiene default) |
-| `LEGAL_PRIVACY_EMAIL` | `privacidad@qlyk.app` | Contacto RGPD (ya tiene default) |
+| Variable | Qué poner | Para qué sirve |
+|----------|-----------|----------------|
+| `LEGAL_ENTITY_NAME` | Razón social o nombre de la persona titular | Términos y privacidad |
+| `LEGAL_TAX_ID` | RFC del titular | Documentos legales (se muestra como RFC) |
+| `LEGAL_ADDRESS` | Domicilio fiscal | Domicilio en textos legales |
+| `LEGAL_CONTACT_EMAIL` | Correo de contacto (hay default) | Contacto general |
+| `LEGAL_PRIVACY_EMAIL` | Correo de privacidad (hay default) | Derechos ARCO / LFPDPPP |
 
 ## Pasos
 
@@ -19,7 +21,7 @@ Antes del beta público, configura estos datos en **Vercel → Settings → Envi
 3. **Redeploy** el proyecto (Deployments → ⋯ → Redeploy).
 4. Entra como **Qlykadmin** → **Admin · Configuración** (`/admin/setup`).
 5. Verifica que **Identidad legal pública** aparezca en verde.
-6. Abre `/legal/terms` y `/legal/privacy` y confirma que se muestran razón social, NIF y domicilio.
+6. Abre `/legal/terms` y `/legal/privacy` y confirma que se muestran razón social, RFC y domicilio.
 
 ## Si faltan datos
 

@@ -34,7 +34,6 @@ export function FeedTheater({
   videos,
   initialId,
   signedIn = false,
-  stripeEnabled = false,
   speiEnabled = false,
   buySlug,
   canceled = false,
@@ -44,7 +43,6 @@ export function FeedTheater({
   videos: FeedVideo[];
   initialId?: string;
   signedIn?: boolean;
-  stripeEnabled?: boolean;
   speiEnabled?: boolean;
   buySlug?: string;
   canceled?: boolean;
@@ -832,7 +830,6 @@ export function FeedTheater({
         onClose={closeShop}
         item={shopItem}
         signedIn={signedIn}
-        stripeEnabled={stripeEnabled}
         speiEnabled={speiEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent(clipHref(video.id, video.product ? { buy: video.product.slug } : {}))}`}
         cancelPath={clipHref(video.id, video.product ? { buy: video.product.slug } : {})}

@@ -15,7 +15,7 @@
 | Tiempo | Pantalla | Voz en off / texto en pantalla |
 |--------|----------|--------------------------------|
 | **0:00–0:03** | Close-up ojo / scroll infinito en TikTok | **TEXTO GIGANTE:** «¿Cuántos clics perdiste hoy?» |
-| **0:03–0:08** | Montaje rápido: link en bio → Gumroad → WhatsApp → Stripe | «Publicas en una app. Vendes en otra. Cobras en otra. *Tu audiencia se va.*» |
+| **0:03–0:08** | Montaje rápido: link en bio → Gumroad → WhatsApp → otra pasarela | «Publicas en una app. Vendes en otra. Cobras en otra. *Tu audiencia se va.*» |
 | **0:08–0:12** | Pantalla negra → logo Qlyk aparece con glow cyan/verde | «Conoce **Qlyk**.» |
 | **0:12–0:18** | Screen recording: feed vertical, video con botón COMPRAR | «Del **video al pago**. Sin salir del feed.» |
 | **0:18–0:24** | Split: creador publica en /publish → clip live en feed | «Subes. Tu gente ve. Tu gente **compra**. En el mismo clic.» |

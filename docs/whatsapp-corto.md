@@ -61,7 +61,7 @@ https://qlyk.vercel.app?ref=TUCODIGO
 Reparto: 85% creador · 10% plataforma · 5% referido (1 solo nivel).
 *No es MLM.* Sin pago por reclutar.
 
-*Estado:* producto live, pagos Stripe + SPEI, Course Studio, wallet, legal RGPD.
+*Estado:* producto live, pagos SPEI, Course Studio, wallet, legal LFPDPPP.
 *URL:* https://qlyk.vercel.app
 
 Buscamos capital para growth de creadores ancla y escala LATAM/hispano.

@@ -10,7 +10,6 @@ export function FeedEntry({
   clipId,
   tab,
   signedIn,
-  stripeEnabled,
   speiEnabled,
   buySlug,
   canceled,
@@ -19,7 +18,6 @@ export function FeedEntry({
   clipId?: string;
   tab: "foryou" | "following" | "saved";
   signedIn: boolean;
-  stripeEnabled: boolean;
   speiEnabled: boolean;
   buySlug?: string;
   canceled?: boolean;
@@ -79,7 +77,6 @@ export function FeedEntry({
       videos={theaterVideos}
       initialId={clipId}
       signedIn={signedIn}
-      stripeEnabled={stripeEnabled}
       speiEnabled={speiEnabled}
       buySlug={buySlug}
       canceled={canceled}

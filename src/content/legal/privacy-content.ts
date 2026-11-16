@@ -1,7 +1,7 @@
 import { legalMeta, legalPrivacyParagraphs } from "@/config/legal";
 import type { LegalSection } from "@/config/legal";
 
-export const privacyIntro = `Esta Política de Privacidad explica qué datos personales recogemos en ${legalMeta.brand}, para qué los usamos, con quién los compartimos, durante cuánto tiempo y qué derechos puedes ejercer. Se aplica a visitantes, Usuarios registrados, Creadores y compradores. Al usar la Plataforma aceptas este tratamiento conforme a lo aquí descrito y a la normativa aplicable, incluido el Reglamento (UE) 2016/679 ("RGPD") cuando corresponda.`;
+export const privacyIntro = `Esta Política de Privacidad explica qué datos personales recogemos en ${legalMeta.brand}, para qué los usamos, con quién los compartimos, durante cuánto tiempo y qué derechos puedes ejercer. Se aplica a visitantes, Usuarios registrados, Creadores y compradores. Al usar la Plataforma aceptas este tratamiento conforme a lo aquí descrito y a la normativa aplicable, en particular la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y su Reglamento.`;
 
 export const privacySections: LegalSection[] = [
   {
@@ -27,7 +27,7 @@ export const privacySections: LegalSection[] = [
           "Contenido multimedia: videos, miniaturas, materiales de cursos y archivos subidos a la Plataforma.",
           "Datos comerciales: historial de pedidos, productos adquiridos o vendidos, importes, moneda, estado de pago, movimientos de monedero, solicitudes de retiro.",
           "Datos técnicos: dirección IP, identificadores de dispositivo/navegador, logs de servidor, cookies esenciales (ver Política de Cookies).",
-          "Datos de verificación: información KYC o bancaria si solicitas retiros o superas umbrales de riesgo. Si vinculas Stripe Connect, Stripe trata esos datos como responsable independiente de su plataforma de pagos.",
+          "Datos de verificación: información de identidad o bancaria si solicitas retiros o superas umbrales de riesgo. Esos datos se usan solo para ejecutar y documentar el depósito.",
           "Comunicaciones: mensajes que nos envíes a soporte o por email.",
         ],
       },
@@ -59,12 +59,12 @@ export const privacySections: LegalSection[] = [
       {
         paragraphs: ["Tratamos tus datos para las siguientes finalidades, amparadas en estas bases legales:"],
         list: [
-          "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato (art. 6.1.b RGPD).",
+          "Crear y gestionar tu Cuenta, autenticarte y mantener la sesión — ejecución del contrato y consentimiento al registrarte.",
           "Operar el feed, comunidad, cursos, checkout y monedero — ejecución del contrato.",
           "Calcular y abonar importes de ventas (93/7 o plan mensual), aplicar retenciones de 24 horas y procesar retiros — ejecución del contrato e interés legítimo en prevenir fraude.",
-          "Procesar pagos con Stripe (tarjeta) o transferencia SPEI y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
+          "Procesar pagos (hoy, transferencia SPEI) y cumplir obligaciones contables/fiscales — ejecución del contrato y obligación legal.",
           "Enviar comunicaciones operativas (confirmaciones, seguridad, cambios legales) — ejecución del contrato e interés legítimo.",
-          "Enviar comunicaciones comerciales propias — consentimiento o interés legítimo conforme a la LSSI, con opción de baja en todo momento.",
+          "Enviar comunicaciones comerciales propias — consentimiento, con opción de baja en todo momento.",
           "Moderar contenido, investigar abusos y proteger la Plataforma — interés legítimo en seguridad.",
           "Cumplir requerimientos de autoridades — obligación legal.",
           "Elaborar estadísticas agregadas y anónimas de uso — interés legítimo, sin identificarte cuando sea posible.",
@@ -96,7 +96,6 @@ export const privacySections: LegalSection[] = [
         list: [
           "Proveedores de infraestructura y hosting (p. ej. Vercel) — alojamiento de la aplicación.",
           "Base de datos PostgreSQL gestionada por el proveedor configurado en el despliegue.",
-          "Stripe — procesamiento de pagos con tarjeta cuando eliges ese método en checkout. Stripe trata datos de pago según su propia política.",
           "Almacenamiento de comprobantes de pago (Vercel Blob) — conservación de evidencia de transferencias SPEI.",
           "Resend u otros proveedores de email transaccional — envío de notificaciones operativas.",
           "Vercel Blob u otros almacenes de archivos — alojamiento de videos e imágenes subidas.",
@@ -118,7 +117,7 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Algunos proveedores pueden tratar datos fuera del Espacio Económico Europeo (EEE). En esos casos aplicamos garantías reconocidas por el RGPD, como Cláusulas Contractuales Tipo de la Comisión Europea o decisiones de adecuación, según el proveedor concreto.",
+          "Algunos proveedores (por ejemplo, de hosting o correo) pueden tratar datos fuera de México. En esos casos procuramos que el destinatario ofrezca un nivel de protección adecuado y contratos que limiten el uso de los datos a las finalidades aquí descritas.",
           "Puedes solicitarnos información adicional sobre las garantías aplicables escribiendo a privacidad.",
         ],
       },
@@ -145,22 +144,20 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Si resides en el EEE o en territorios con normativa equivalente, puedes ejercer gratuitamente (con identificación razonable) los siguientes derechos:",
+          "Conforme a la LFPDPPP puedes ejercer gratuitamente (con identificación razonable) los derechos ARCO y relacionados:",
         ],
         list: [
           "Acceso — saber qué datos tratamos sobre ti.",
           "Rectificación — corregir datos inexactos o incompletos.",
-          "Supresión — solicitar borrado cuando proceda.",
-          "Limitación — restringir el tratamiento en supuestos legalmente previstos.",
-          "Oposición — oponerte a tratamientos basados en interés legítimo.",
-          "Portabilidad — recibir tus datos en formato estructurado cuando el tratamiento se base en contrato o consentimiento y sea automatizado.",
-          "Retirar el consentimiento — en cualquier momento, sin afectar a la licitud previa.",
+          "Cancelación — solicitar el borrado o bloqueo cuando proceda.",
+          "Oposición — oponerte a tratamientos para finalidades distintas de las necesarias para el servicio.",
+          "Limitación y revocación del consentimiento — en cualquier momento, sin afectar a la licitud previa.",
         ],
       },
       {
         paragraphs: [
-          `Para ejercerlos escribe a ${legalMeta.privacyEmail} indicando el derecho que deseas ejercer y acreditando tu identidad. Responderemos en un plazo máximo de un mes, prorrogable según RGPD.`,
-          "Si consideras que no hemos atendido correctamente tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos (AEPD): https://www.aepd.es",
+          `Para ejercerlos escribe a ${legalMeta.privacyEmail} indicando el derecho que deseas ejercer y acreditando tu identidad. Responderemos en un plazo máximo de veinte días hábiles, o el que establezca la LFPDPPP.`,
+          "Si consideras que no hemos atendido correctamente tu solicitud, puedes acudir al Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales (INAI) o a la autoridad que lo sustituya.",
         ],
       },
     ],

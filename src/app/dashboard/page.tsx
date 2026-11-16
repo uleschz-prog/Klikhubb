@@ -62,7 +62,7 @@ export default async function DashboardPage() {
             Abrir monedero
           </Link>
           <p className="mt-3 text-center text-xs text-white/40">
-            Vincula Stripe en el monedero para recibir tus retiros.
+            Cuando tengas saldo disponible, pide el retiro en el monedero. El equipo lo deposita a mano.
           </p>
         </section>
 

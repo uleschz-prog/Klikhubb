@@ -8,21 +8,16 @@ export function WalletPayoutForm({
   available,
   minPayout,
   currency,
-  connectRequired = false,
-  connectReady = true,
 }: {
   available: number;
   minPayout: number;
   currency: string;
-  connectRequired?: boolean;
-  connectReady?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
-  const missingConnect = connectRequired && !connectReady;
-  const canWithdraw = available >= minPayout && !missingConnect;
+  const canWithdraw = available >= minPayout;
 
   async function submit() {
     if (busy || !canWithdraw) return;
@@ -48,13 +43,7 @@ export function WalletPayoutForm({
         payload && typeof payload === "object" && "amount" in payload
           ? Number(payload.amount)
           : available;
-      const viaConnect =
-        payload && typeof payload === "object" && "mode" in payload && payload.mode === "stripe_connect";
-      setDone(
-        viaConnect
-          ? `Listo. Enviamos ${formatMoney(amount, currency)} a tu cuenta de Stripe.`
-          : `Listo. Pedimos ${formatMoney(amount, currency)}. Te avisamos cuando salga.`,
-      );
+      setDone(`Listo. Pedimos ${formatMoney(amount, currency)}. Te avisamos cuando salga.`);
       router.refresh();
     } catch {
       setError("No se pudo solicitar el retiro.");
@@ -68,12 +57,7 @@ export function WalletPayoutForm({
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Retiro</p>
       <h2 className="mt-1 font-display text-xl font-bold">Saca lo disponible</h2>
       <p className="mt-3 text-sm leading-6 text-white/60">
-        El mínimo es {formatMoney(minPayout, currency)}.
-        {connectRequired
-          ? connectReady
-            ? " Al retirar, transferimos a tu cuenta de Stripe."
-            : " Primero vincula tu cuenta de Stripe."
-          : " Por ahora el depósito lo hacemos a mano."}
+        El mínimo es {formatMoney(minPayout, currency)}. Por ahora el depósito lo hacemos a mano.
       </p>
       <button
         type="button"
@@ -83,11 +67,9 @@ export function WalletPayoutForm({
       >
         {busy
           ? "Solicitando…"
-          : missingConnect
-            ? "Vincula Stripe para retirar"
-            : canWithdraw
-              ? `Retirar ${formatMoney(available, currency)}`
-              : `Faltan ${formatMoney(Math.max(0, minPayout - available), currency)} para el mínimo`}
+          : canWithdraw
+            ? `Retirar ${formatMoney(available, currency)}`
+            : `Faltan ${formatMoney(Math.max(0, minPayout - available), currency)} para el mínimo`}
       </button>
       {error ? <p className="mt-3 text-sm text-red-400">{error}</p> : null}
       {done ? <p className="mt-3 text-sm text-klik-green">{done}</p> : null}

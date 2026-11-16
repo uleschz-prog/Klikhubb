@@ -143,12 +143,12 @@ Pasados los 14 días, pasa a **disponible** automáticamente (cron diario).
 
 ### Devolución en 24 horas
 
-Quien compra un curso tiene **24 horas** desde el pago confirmado para pedir la devolución en `/orders`. Qlyk revoca el acceso y descuenta el importe del monedero. Si pagó con tarjeta, Stripe reembolsa.
+Quien compra un curso tiene **24 horas** desde el pago confirmado para pedir la devolución en `/orders`. Qlyk revoca el acceso y descuenta el importe del monedero. Si pagó por SPEI, el operador transfiere de vuelta.
 
 ### Retirar dinero
 
 - **Mínimo:** 10 USD
-- **Stripe:** en `/wallet` pulsa **Vincular cuenta de Stripe**, completa el onboarding y pide retiro. El dinero va a tu Stripe y de ahí a tu banco.
+- **Retiro:** en `/wallet` pide el retiro (mínimo 10 USD). Qlykadmin lo deposita a mano.
 - **Respaldo:** si Connect no está activo, el equipo deposita a mano y marca pagado en `/admin/payouts`
 
 ---
@@ -213,7 +213,7 @@ Quien compra un curso tiene **24 horas** desde el pago confirmado para pedir la 
 - [ ] Primer producto creado (Studio o desde Publish)
 - [ ] Primer video SHOP publicado en Feed
 - [ ] Enlace con `?ref=TUCODIGO` en redes sociales
-- [ ] Compra de prueba con tarjeta (Stripe) y otra con SPEI + comprobante
+- [ ] Compra de prueba con SPEI + comprobante
 - [ ] Revisado monedero y entendido el hold de 14 días
 - [ ] Términos y privacidad leídos
 
