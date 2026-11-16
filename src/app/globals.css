@@ -177,6 +177,89 @@ html.pwa-standalone .pwa-install-hint {
   animation: qlyk-drawer-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dash-rise {
+  animation: dash-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dash-rise-1 { animation-delay: 0.06s; }
+.dash-rise-2 { animation-delay: 0.12s; }
+.dash-rise-3 { animation-delay: 0.18s; }
+.dash-rise-4 { animation-delay: 0.24s; }
+.dash-rise-5 { animation-delay: 0.3s; }
+
+.dash-aurora {
+  position: absolute;
+  inset: -30% -10% auto -10%;
+  height: 140%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 12% 0%, rgb(48 209 88 / 0.32), transparent 52%),
+    radial-gradient(ellipse at 92% 18%, rgb(10 132 255 / 0.22), transparent 50%),
+    radial-gradient(ellipse at 48% 120%, rgb(168 218 181 / 0.16), transparent 46%);
+  filter: blur(12px);
+}
+
+html[data-theme="light"] .dash-aurora {
+  background:
+    radial-gradient(ellipse at 12% 0%, rgb(48 209 88 / 0.2), transparent 52%),
+    radial-gradient(ellipse at 92% 18%, rgb(10 132 255 / 0.12), transparent 50%),
+    radial-gradient(ellipse at 48% 120%, rgb(168 218 181 / 0.28), transparent 46%);
+}
+
+.dash-money-glow {
+  box-shadow:
+    0 0 0 1px rgb(48 209 88 / 0.18),
+    0 18px 50px -22px rgb(48 209 88 / 0.55),
+    0 0 40px -16px rgb(10 132 255 / 0.28);
+}
+
+html[data-theme="light"] .dash-money-glow {
+  box-shadow:
+    0 0 0 1px rgb(48 209 88 / 0.22),
+    0 16px 36px -18px rgb(16 24 16 / 0.18),
+    0 0 28px -12px rgb(48 209 88 / 0.35);
+}
+
+.dash-cta-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-cta-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 25%,
+    rgb(255 255 255 / 0.42) 50%,
+    transparent 75%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.dash-cta-shine:hover::after,
+.dash-cta-shine:focus-visible::after {
+  animation: dash-shine 0.7s ease;
+}
+
+@keyframes dash-shine {
+  from { transform: translateX(-130%); }
+  to { transform: translateX(130%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -186,8 +269,20 @@ html.pwa-standalone .pwa-install-hint {
   .hero-rise-delay-1,
   .hero-rise-delay-2,
   .hero-rise-delay-3,
-  .qlyk-buy-drawer {
+  .qlyk-buy-drawer,
+  .dash-rise,
+  .dash-rise-1,
+  .dash-rise-2,
+  .dash-rise-3,
+  .dash-rise-4,
+  .dash-rise-5,
+  .dash-cta-shine:hover::after,
+  .dash-cta-shine:focus-visible::after {
     animation: none;
+  }
+
+  .dash-cta-shine::after {
+    content: none;
   }
 }
 
