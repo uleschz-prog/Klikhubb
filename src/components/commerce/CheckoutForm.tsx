@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { upload } from "@vercel/blob/client";
-import { formatProductPrice } from "@/lib/commerce/billing";
+import { PriceTag } from "@/components/ui/PriceTag";
 
 type ManualInstructions = {
   bankName: string;
@@ -29,6 +29,7 @@ export function CheckoutForm({
   cancelPath,
   onPaid,
   speiEnabled = false,
+  fxRate,
 }: {
   slug: string;
   title: string;
@@ -38,6 +39,7 @@ export function CheckoutForm({
   cancelPath?: string;
   onPaid?: (orderId: string) => void;
   speiEnabled?: boolean;
+  fxRate?: number;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -184,7 +186,7 @@ export function CheckoutForm({
         <div className="rounded-2xl border border-klik-line bg-klik-card p-5">
           <p className="text-[11px] uppercase tracking-wider text-white/40">Transferencia SPEI</p>
           <p className="mt-3 font-display text-2xl font-extrabold text-klik-pastel">
-            {formatProductPrice(manual.amount, manual.currency)}
+            <PriceTag amount={manual.amount} currency={manual.currency} fx={fxRate} size="sm" compact />
           </p>
           <p className="mt-2 text-sm text-white/70">
             Referencia obligatoria: <span className="font-mono font-bold text-white">{manual.reference}</span>
@@ -278,7 +280,7 @@ export function CheckoutForm({
             className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
           >
             <span>{loadingMethod === "spei" ? "Preparando SPEI…" : "Transferir por SPEI"}</span>
-            <span>{formatProductPrice(price, currency)}</span>
+            <PriceTag amount={price} currency={currency} fx={fxRate} size="sm" compact align="right" />
           </button>
         ) : null}
 
@@ -290,7 +292,7 @@ export function CheckoutForm({
             className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
           >
             <span>{loadingMethod === "demo" ? "Procesando…" : `Pagar ${title}`}</span>
-            <span>{formatProductPrice(price, currency)}</span>
+            <PriceTag amount={price} currency={currency} fx={fxRate} size="sm" compact align="right" />
           </button>
         ) : null}
       </div>

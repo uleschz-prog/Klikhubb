@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { formatProductPrice } from "@/lib/commerce/billing";
+import { PriceTag } from "@/components/ui/PriceTag";
 import { CheckoutForm } from "@/components/commerce/CheckoutForm";
 
 export type BuyItem = {
@@ -33,6 +33,7 @@ export function BuyDrawer({
   loginHref,
   cancelPath,
   canceled,
+  fxRate,
 }: {
   open: boolean;
   onClose: () => void;
@@ -42,6 +43,7 @@ export function BuyDrawer({
   loginHref: string;
   cancelPath?: string;
   canceled?: boolean;
+  fxRate?: number;
 }) {
   const [paid, setPaid] = useState(false);
 
@@ -118,7 +120,7 @@ export function BuyDrawer({
             </p>
           ) : null}
           <p className="mt-4 font-display text-3xl font-extrabold text-klik-pastel">
-            {formatProductPrice(item.price, item.currency)}
+            <PriceTag amount={item.price} currency={item.currency} fx={fxRate} size="lg" />
           </p>
           {item.description ? <p className="mt-3 text-sm leading-6 text-white/65">{item.description}</p> : null}
 
@@ -172,6 +174,7 @@ export function BuyDrawer({
                 title={item.title}
                 price={item.price}
                 currency={item.currency}
+                fxRate={fxRate}
                 compact
                 cancelPath={cancelPath}
                 speiEnabled={speiEnabled}

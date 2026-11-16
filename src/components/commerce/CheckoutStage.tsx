@@ -10,12 +10,14 @@ export function CheckoutStage({
   speiEnabled,
   canceled,
   cancelPath,
+  fxRate,
 }: {
   item: BuyItem;
   signedIn: boolean;
   speiEnabled: boolean;
   canceled?: boolean;
   cancelPath?: string;
+  fxRate?: number;
 }) {
   const router = useRouter();
   const closeTo = "/feed";
@@ -35,6 +37,7 @@ export function CheckoutStage({
         loginHref={`/login?callbackUrl=${encodeURIComponent(`/checkout/${item.slug}`)}`}
         cancelPath={backPath}
         canceled={canceled}
+        fxRate={fxRate}
       />
     </div>
   );
