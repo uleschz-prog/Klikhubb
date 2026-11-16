@@ -34,7 +34,7 @@ Cada venta se reparte **después** de descontar, si aplica, la comisión del pro
 
 No hay comisión por invitación. El saldo del creador queda en hold **24 horas** (misma ventana de reembolso del comprador) y después pasa a disponible. El retiro lo deposita el equipo a mano desde `/admin/payouts` (mínimo 10 USD).
 
-Hoy el único método de cobro en producción es **SPEI manual** (datos bancarios + comprobante, aprobación en `/admin/payments`). Qlyk cobra en una cuenta central y paga a los creadores después.
+El cobro principal es **Mercado Pago Checkout Pro** (tarjeta, SPEI u OXXO, en MXN). Qlyk cobra en una cuenta central y paga a los creadores después. El SPEI manual con comprobante queda como respaldo. Las tarifas de Mercado Pago se descuentan del bruto antes del 93/7.
 
 ## Tests
 
