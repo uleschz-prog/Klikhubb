@@ -231,6 +231,57 @@ html[data-theme="light"] .dash-money-glow {
     0 0 28px -12px rgb(48 209 88 / 0.35);
 }
 
+/* Dashboard contrast: held-balance row + admin (WCAG AA in light, unchanged in dark). */
+.dash-held-label {
+  color: rgb(255 255 255 / 0.78);
+}
+
+.dash-held-hint {
+  color: rgb(255 255 255 / 0.45);
+}
+
+html[data-theme="light"] .dash-held-row {
+  background: rgb(29 29 31 / 0.05);
+  border-color: rgb(29 29 31 / 0.12);
+}
+
+html[data-theme="light"] .dash-held-label {
+  color: rgb(29 29 31 / 0.92);
+}
+
+html[data-theme="light"] .dash-held-hint {
+  color: rgb(75 75 80);
+}
+
+html[data-theme="light"] .dash-held-amount,
+html[data-theme="light"] .dash-held-icon {
+  color: #0051c7;
+}
+
+html[data-theme="light"] .dash-held-icon {
+  background: rgb(0 81 199 / 0.12);
+}
+
+html[data-theme="light"] .dash-admin {
+  border-color: rgb(133 79 11 / 0.28);
+  background: rgb(133 79 11 / 0.06);
+}
+
+html[data-theme="light"] .dash-admin-kicker {
+  color: #854f0b;
+}
+
+html[data-theme="light"] .dash-admin-chip {
+  color: #854f0b;
+  background: #fff;
+  border-color: rgb(133 79 11 / 0.32);
+}
+
+html[data-theme="light"] .dash-admin-chip:hover {
+  border-color: rgb(133 79 11 / 0.55);
+  background: rgb(133 79 11 / 0.06);
+}
+
 .dash-cta-shine {
   position: relative;
   overflow: hidden;

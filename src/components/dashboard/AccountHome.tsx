@@ -231,15 +231,15 @@ export function AccountHome({
             </span>
           </p>
 
-          <div className="mt-5 rounded-2xl border border-white/5 bg-black/20 px-4 py-3">
+          <div className="dash-held-row mt-5 rounded-2xl border border-white/5 bg-black/20 px-4 py-3">
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="inline-flex min-h-11 items-center gap-2 text-white/65">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-klik-cyan/15 text-klik-cyan">
+              <span className="dash-held-label inline-flex min-h-11 items-center gap-2">
+                <span className="dash-held-icon inline-flex h-8 w-8 items-center justify-center rounded-full bg-klik-cyan/15 text-klik-cyan">
                   <ClockIcon className="h-4 w-4" />
                 </span>
                 En espera ({holdLabel})
               </span>
-              <span className="font-semibold text-klik-cyan">{formatMoney(wallet.pending)}</span>
+              <span className="dash-held-amount font-semibold text-klik-cyan">{formatMoney(wallet.pending)}</span>
             </div>
             <div
               className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"
@@ -254,7 +254,7 @@ export function AccountHome({
                 style={{ width: `${heldPct}%` }}
               />
             </div>
-            <p className="mt-2 text-xs text-white/40">
+            <p className="dash-held-hint mt-2 text-xs">
               {wallet.pending > 0
                 ? "Este saldo se libera cuando pasa la ventana de espera."
                 : "Todavía no hay saldo en espera."}
@@ -376,14 +376,14 @@ export function AccountAdminSection() {
   ];
 
   return (
-    <section className="dash-rise dash-rise-5 rounded-2xl border border-amber-400/25 bg-amber-400/5 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">Admin</p>
+    <section className="dash-admin dash-rise dash-rise-5 rounded-2xl border border-amber-400/25 bg-amber-400/5 p-4">
+      <p className="dash-admin-kicker text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">Admin</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}
-            className="inline-flex min-h-11 items-center rounded-full border border-amber-400/20 bg-black/10 px-3 text-sm font-semibold text-klik-cyan transition hover:-translate-y-0.5 hover:border-klik-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="dash-admin-chip inline-flex min-h-11 items-center rounded-full border border-amber-400/20 bg-black/10 px-3 text-sm font-semibold text-klik-cyan transition hover:-translate-y-0.5 hover:border-klik-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {link.label}
           </Link>
