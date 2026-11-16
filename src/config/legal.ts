@@ -16,7 +16,8 @@ export const legalMeta = {
     return env("LEGAL_TAX_ID");
   },
   get address() {
-    return env("LEGAL_ADDRESS");
+    // Algunos valores en Vercel llegaron con underscores en lugar de espacios.
+    return env("LEGAL_ADDRESS").replace(/_+/g, " ").replace(/\s+/g, " ").trim();
   },
   get contactEmail() {
     return env("LEGAL_CONTACT_EMAIL") || "qlykadmin@qlyk.app";
@@ -24,8 +25,8 @@ export const legalMeta = {
   get privacyEmail() {
     return env("LEGAL_PRIVACY_EMAIL") || "privacidad@qlyk.app";
   },
-  lastUpdated: "30 de agosto de 2026",
-  version: "1.1",
+  lastUpdated: "16 de noviembre de 2026",
+  version: "1.2",
 };
 
 export function legalIdentityComplete() {
@@ -38,7 +39,7 @@ export function legalIdentityParagraphs() {
     return [
       `Titular del servicio: ${legalMeta.legalEntity}.`,
       `Denominación comercial: ${legalMeta.operatorName}.`,
-      `NIF/CIF: ${legalMeta.taxId}.`,
+      `RFC: ${legalMeta.taxId}.`,
       `Domicilio: ${legalMeta.address}.`,
       `Contacto: ${contact}.`,
     ];
@@ -54,7 +55,7 @@ export function legalPrivacyParagraphs() {
   const lines = legalIdentityComplete()
     ? [
         `Responsable: ${legalMeta.legalEntity}.`,
-        `NIF/CIF: ${legalMeta.taxId}.`,
+        `RFC: ${legalMeta.taxId}.`,
         `Domicilio: ${legalMeta.address}.`,
       ]
     : [
@@ -65,7 +66,7 @@ export function legalPrivacyParagraphs() {
     ...lines,
     `Correo de privacidad: ${legalMeta.privacyEmail}.`,
     `Correo general: ${legalMeta.contactEmail}.`,
-    "No hemos designado Delegado de Protección de Datos (DPD) obligatorio. Para cualquier cuestión de privacidad utiliza el correo indicado.",
+    "No hemos designado un oficial de privacidad formal. Para ejercer derechos ARCO u otras solicitudes de privacidad, utiliza el correo indicado.",
   ];
 }
 
