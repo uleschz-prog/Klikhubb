@@ -1,6 +1,5 @@
 import { CommissionStatus, LedgerType, Prisma } from "@prisma/client";
 import { BUYER_REFUND_WINDOW_HOURS, isWithinBuyerRefundWindow } from "@/config/refund-policy";
-import { getStripe, isStripeEnabled } from "@/lib/commerce/stripe";
 import { fromCents, toCents } from "@/lib/money/cents";
 import { prisma } from "@/lib/prisma";
 import { notifyAndEmail } from "@/lib/notifications";
@@ -13,8 +12,7 @@ export class RefundError extends Error {
       | "FORBIDDEN"
       | "WINDOW_CLOSED"
       | "ALREADY_REFUNDED"
-      | "NO_ACCESS"
-      | "STRIPE_FAILED",
+      | "NO_ACCESS",
   ) {
     super(message);
     this.name = "RefundError";
@@ -181,42 +179,11 @@ async function debitWallet(
   });
 }
 
-async function refundStripeCharge(providerRef: string, orderId: string) {
-  if (!isStripeEnabled()) return;
-  if (!providerRef.startsWith("cs_") && !providerRef.startsWith("pi_")) return;
-
-  const stripe = getStripe();
-  let paymentIntentId = providerRef.startsWith("pi_") ? providerRef : null;
-
-  if (providerRef.startsWith("cs_")) {
-    const session = await stripe.checkout.sessions.retrieve(providerRef);
-    const intent = session.payment_intent;
-    paymentIntentId = typeof intent === "string" ? intent : intent?.id ?? null;
-  }
-
-  if (!paymentIntentId) return;
-
-  try {
-    await stripe.refunds.create(
-      { payment_intent: paymentIntentId },
-      { idempotencyKey: `qlyk_refund_${orderId}` },
-    );
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "";
-    if (/already been refunded|has already been refunded/i.test(message)) return;
-    throw new RefundError(
-      "Stripe no pudo devolver el cargo. Inténtalo de nuevo o escribe a soporte.",
-      "STRIPE_FAILED",
-    );
-  }
-}
-
 export async function requestBuyerCourseRefund(buyerId: string, orderId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
       items: { take: 1, include: { product: { select: { id: true, title: true, slug: true, type: true } } } },
-      payments: { take: 1 },
     },
   });
 
@@ -240,11 +207,6 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     );
   }
 
-  const payment = order.payments[0];
-  if (payment?.provider === "stripe" && payment.providerRef) {
-    await refundStripeCharge(payment.providerRef, order.id);
-  }
-
   const result = await revokeCourseAccessForRefund({
     buyerId,
     productId: product.id,
@@ -263,10 +225,7 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     userId: buyerId,
     type: "SYSTEM",
     title: "Devolución aceptada",
-    body:
-      payment?.provider === "stripe"
-        ? `Reembolsamos «${product.title}». Stripe devuelve el cargo a tu tarjeta. Ya no tienes acceso al curso.`
-        : `Aceptamos la devolución de «${product.title}». Si pagaste por SPEI, Qlyk te transfiere de vuelta. Ya no tienes acceso al curso.`,
+    body: `Aceptamos la devolución de «${product.title}». Si pagaste por SPEI u otro método manual, Qlyk te transfiere de vuelta. Ya no tienes acceso al curso.`,
     href: "/orders",
     emailSubject: `Qlyk · Devolución de ${product.title}`,
   });
@@ -286,37 +245,7 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     ...result,
     ok: true as const,
     productTitle: product.title,
-    mode: payment?.provider === "stripe" ? ("stripe" as const) : ("manual" as const),
+    mode: "manual" as const,
   };
 }
 
-export async function handleStripeChargeRefunded(paymentIntentId: string | null) {
-  if (!paymentIntentId) return { ignored: true as const };
-
-  const stripe = getStripe();
-  const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntentId, limit: 1 });
-  const sessionId = sessions.data[0]?.id;
-  const payment = sessionId
-    ? await prisma.payment.findUnique({
-        where: { provider_providerRef: { provider: "stripe", providerRef: sessionId } },
-        include: { order: { include: { items: { take: 1 } } } },
-      })
-    : await prisma.payment.findFirst({
-        where: { provider: "stripe", providerRef: paymentIntentId },
-        include: { order: { include: { items: { take: 1 } } } },
-      });
-
-  if (!payment?.order) return { ignored: true as const };
-  if (payment.order.status === "REFUNDED") return { ok: true as const, already: true as const };
-
-  const productId = payment.order.items[0]?.productId;
-  if (!productId) return { ignored: true as const };
-
-  await revokeCourseAccessForRefund({
-    buyerId: payment.order.buyerId,
-    productId,
-    orderId: payment.order.id,
-    note: "Reembolso Stripe",
-  });
-  return { ok: true as const, already: false as const };
-}

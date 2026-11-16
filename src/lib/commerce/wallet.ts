@@ -8,18 +8,13 @@ import {
   demoRequestPayout,
   shouldUseDemoFallback,
 } from "@/lib/demo/store";
-import {
-  executeConnectTransfer,
-  isConnectPayoutsEnabled,
-  loadConnectStatus,
-} from "@/lib/commerce/stripe-connect";
 
 export const MIN_PAYOUT_CENTS = 1_000;
 
 export class WalletError extends Error {
   constructor(
     message: string,
-    public readonly code: "INSUFFICIENT" | "MINIMUM" | "USER_NOT_FOUND" | "CONNECT_REQUIRED",
+    public readonly code: "INSUFFICIENT" | "MINIMUM" | "USER_NOT_FOUND",
   ) {
     super(message);
     this.name = "WalletError";
@@ -387,13 +382,6 @@ async function readWalletView(userId: string): Promise<WalletView> {
 async function payoutInDb(userId: string, requestedAmount?: number) {
   await releaseInDb(userId);
 
-  if (isConnectPayoutsEnabled()) {
-    const connect = await loadConnectStatus(userId);
-    if (!connect.payoutsEnabled) {
-      throw new WalletError("Vincula tu cuenta de Stripe antes de retirar.", "CONNECT_REQUIRED");
-    }
-  }
-
   const draft = await prisma.$transaction(async (tx) => {
     const wallet = await tx.wallet.findUnique({ where: { userId } });
     if (!wallet) {
@@ -420,14 +408,13 @@ async function payoutInDb(userId: string, requestedAmount?: number) {
     }
 
     const amount = money(requestCents);
-    const useConnect = isConnectPayoutsEnabled();
     const payout = await tx.payout.create({
       data: {
         userId,
         amount,
         currency: wallet.currency,
-        method: useConnect ? "stripe_connect" : "manual",
-        status: useConnect ? "PROCESSING" : "PENDING",
+        method: "manual",
+        status: "PENDING",
       },
     });
 
@@ -443,91 +430,23 @@ async function payoutInDb(userId: string, requestedAmount?: number) {
         balanceAfter: asMoney(Number(updated.available) + Number(updated.pending)),
         type: LedgerType.PAYOUT,
         payoutId: payout.id,
-        note: useConnect
-          ? "Retiro enviado a tu cuenta de Stripe."
-          : "Retiro solicitado. El equipo lo deposita manualmente.",
+        note: "Retiro solicitado. El equipo lo deposita manualmente.",
       },
     });
 
     return {
       payoutId: payout.id,
       amount: Number(amount),
-      requestCents,
-      currency: wallet.currency.trim() || "USD",
       available: Number(updated.available),
       pending: Number(updated.pending),
-      useConnect,
     };
   });
 
-  if (!draft.useConnect) {
-    return {
-      payoutId: draft.payoutId,
-      amount: draft.amount,
-      available: draft.available,
-      pending: draft.pending,
-      mode: "manual" as const,
-    };
-  }
-
-  try {
-    const transfer = await executeConnectTransfer({
-      userId,
-      payoutId: draft.payoutId,
-      amountCents: draft.requestCents,
-      currency: draft.currency,
-    });
-
-    await prisma.payout.update({
-      where: { id: draft.payoutId },
-      data: {
-        status: "COMPLETED",
-        providerRef: transfer.id,
-        completedAt: new Date(),
-      },
-    });
-
-    return {
-      payoutId: draft.payoutId,
-      amount: draft.amount,
-      available: draft.available,
-      pending: draft.pending,
-      mode: "stripe_connect" as const,
-      transferId: transfer.id,
-    };
-  } catch (error) {
-    const failureNote = error instanceof Error ? error.message : "Transferencia fallida";
-
-    await prisma.$transaction(async (tx) => {
-      const wallet = await tx.wallet.findUnique({ where: { userId } });
-      if (!wallet) return;
-
-      const refund = money(draft.requestCents);
-      const updated = await tx.wallet.update({
-        where: { userId },
-        data: { available: { increment: refund } },
-      });
-
-      await tx.payout.update({
-        where: { id: draft.payoutId },
-        data: {
-          status: "FAILED",
-          failureNote,
-        },
-      });
-
-      await tx.walletLedger.create({
-        data: {
-          userId,
-          amount: refund,
-          balanceAfter: asMoney(Number(updated.available) + Number(updated.pending)),
-          type: LedgerType.ADJUSTMENT,
-          payoutId: draft.payoutId,
-          note: `Retiro fallido: ${failureNote}`,
-        },
-      });
-    });
-
-    throw new WalletError("No pudimos enviar el retiro a Stripe. Tu saldo quedó restaurado.", "INSUFFICIENT");
-  }
+  return {
+    payoutId: draft.payoutId,
+    amount: draft.amount,
+    available: draft.available,
+    pending: draft.pending,
+    mode: "manual" as const,
+  };
 }

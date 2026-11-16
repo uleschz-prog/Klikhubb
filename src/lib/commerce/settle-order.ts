@@ -71,6 +71,7 @@ async function settledFromProviderRef(
  * Marca una venta como pagada y escribe el reparto (PAYG 7% o FLAT 0%) + wallet + enrollment
  * en la misma transacción. El checkout manual (o demo local) llama esto
  * después de confirmar el cargo.
+ * Si hay comisión de procesador, se descuenta del bruto antes del 93/7 (o del 100% FLAT).
  * La tarifa de plataforma (si aplica) se acredita a Qlykadmin.
  */
 export async function settlePaidOrder(input: {
@@ -83,6 +84,8 @@ export async function settlePaidOrder(input: {
   stripeSubscriptionId?: string | null;
   stripeCustomerId?: string | null;
   periodEnd?: Date | null;
+  /** Comisión del procesador (bruto). Se descuenta antes del 93/7. */
+  processorFeeAmount?: number;
 }): Promise<SettledOrder> {
   const settled = await prisma.$transaction(async (tx) => {
     const replayed = await settledFromProviderRef(tx, input.provider, input.providerRef);
@@ -145,6 +148,7 @@ export async function settlePaidOrder(input: {
       saleAmount,
       creatorId: product.creatorId,
       plan: sellerPlan,
+      processorFeeAmount: input.processorFeeAmount ?? 0,
     });
 
     const now = new Date();
