@@ -7,13 +7,21 @@ import { Logo } from "@/components/brand/Logo";
 export function CheckoutStage({
   item,
   signedIn,
+  mercadoPagoEnabled,
+  usdtEnabled,
   speiEnabled,
+  amountMxn,
+  fxRate,
   canceled,
   cancelPath,
 }: {
   item: BuyItem;
   signedIn: boolean;
+  mercadoPagoEnabled: boolean;
+  usdtEnabled: boolean;
   speiEnabled: boolean;
+  amountMxn?: number;
+  fxRate?: number;
   canceled?: boolean;
   cancelPath?: string;
 }) {
@@ -31,7 +39,11 @@ export function CheckoutStage({
         onClose={() => router.push(closeTo)}
         item={item}
         signedIn={signedIn}
+        mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
         speiEnabled={speiEnabled}
+        amountMxn={amountMxn}
+        fxRate={fxRate}
         loginHref={`/login?callbackUrl=${encodeURIComponent(`/checkout/${item.slug}`)}`}
         cancelPath={backPath}
         canceled={canceled}

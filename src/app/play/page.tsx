@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listPublishedVideos, listSavedVideos, getPublishedVideo } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutMethods } from "@/config/checkout-methods";
+import { loadDisplayFxQuote } from "@/lib/payments/display-quote";
 import { FeedTheater } from "@/components/video/FeedTheater";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
@@ -102,6 +103,7 @@ export default async function PlayPage({
   }
 
   const methods = getCheckoutMethods();
+  const fx = await loadDisplayFxQuote();
 
   return (
     <FeedTheater
@@ -110,7 +112,10 @@ export default async function PlayPage({
       videos={theaterVideos}
       initialId={searchParams.v}
       signedIn={Boolean(session?.user)}
+      mercadoPagoEnabled={methods.mercadopago}
+      usdtEnabled={methods.usdt}
       speiEnabled={methods.spei}
+      fxRate={fx?.rate}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
     />

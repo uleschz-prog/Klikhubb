@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { formatProductPrice } from "@/lib/commerce/billing";
+import { usdToMxn } from "@/lib/payments/fx";
 
 type ManualInstructions = {
   bankName: string;
@@ -28,7 +29,11 @@ export function CheckoutForm({
   compact = false,
   cancelPath,
   onPaid,
+  mercadoPagoEnabled = false,
+  usdtEnabled = false,
   speiEnabled = false,
+  amountMxn,
+  fxRate,
 }: {
   slug: string;
   title: string;
@@ -37,20 +42,36 @@ export function CheckoutForm({
   compact?: boolean;
   cancelPath?: string;
   onPaid?: (orderId: string) => void;
+  mercadoPagoEnabled?: boolean;
+  usdtEnabled?: boolean;
   speiEnabled?: boolean;
+  amountMxn?: number;
+  fxRate?: number;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
-  const [loadingMethod, setLoadingMethod] = useState<"spei" | "demo" | null>(null);
+  const [loadingMethod, setLoadingMethod] = useState<"mercadopago" | "spei" | "usdt" | "demo" | null>(null);
   const [manual, setManual] = useState<ManualCheckout | null>(null);
+  const [usdt, setUsdt] = useState<{
+    paymentId: string;
+    payAddress: string;
+    payAmount: number;
+    payCurrency: string;
+    priceAmount: number;
+  } | null>(null);
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const busy = loadingMethod !== null;
-  const hasLiveMethod = speiEnabled;
+  const hasLiveMethod = mercadoPagoEnabled || speiEnabled || usdtEnabled;
+  const displayMxn = amountMxn ?? (fxRate ? usdToMxn(price, fxRate) : undefined);
+  const priceLabel =
+    displayMxn != null
+      ? `${formatProductPrice(displayMxn, "MXN")}${fxRate ? ` · ${formatProductPrice(price, "USD")}` : ""}`
+      : formatProductPrice(price, currency);
 
-  async function startCheckout(method: "spei" | "demo") {
+  async function startCheckout(method: "mercadopago" | "spei" | "usdt" | "demo") {
     setLoadingMethod(method);
     setError("");
 
@@ -69,11 +90,17 @@ export function CheckoutForm({
       orderId?: string;
       mode?: string;
       url?: string;
+      initPoint?: string;
       requestId?: string;
       reference?: string;
       amount?: number;
       currency?: string;
       instructions?: ManualInstructions;
+      paymentId?: string;
+      payAddress?: string;
+      payAmount?: number;
+      payCurrency?: string;
+      priceAmount?: number;
     };
 
     if (!response.ok) {
@@ -83,6 +110,23 @@ export function CheckoutForm({
         return;
       }
       setError(payload.error ?? "No se pudo iniciar el pago.");
+      return;
+    }
+
+    if (payload.mode === "mercadopago" && (payload.initPoint || payload.url)) {
+      window.location.href = payload.initPoint || payload.url || "";
+      return;
+    }
+
+    if (payload.mode === "usdt" && payload.payAddress && payload.paymentId) {
+      setUsdt({
+        paymentId: payload.paymentId,
+        payAddress: payload.payAddress,
+        payAmount: payload.payAmount ?? 0,
+        payCurrency: payload.payCurrency ?? "usdttrc20",
+        priceAmount: payload.priceAmount ?? price,
+      });
+      setLoadingMethod(null);
       return;
     }
 
@@ -255,6 +299,41 @@ export function CheckoutForm({
     );
   }
 
+  if (usdt) {
+    return (
+      <div className="space-y-4 rounded-2xl border border-klik-line bg-klik-card p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">USDT (TRC20)</p>
+        <h3 className="font-display text-xl font-bold">Envía el monto exacto</h3>
+        <p className="text-sm text-white/60">
+          Red Tron (TRC20). El acceso se abre cuando NOWPayments confirme la transacción (puede tardar unos minutos).
+        </p>
+        <div className="space-y-2 text-sm">
+          <p className="text-white/40">Monto</p>
+          <p className="font-display text-lg font-bold text-klik-green">
+            {usdt.payAmount} {usdt.payCurrency.toUpperCase()}
+          </p>
+          <p className="text-white/40">Dirección</p>
+          <p className="break-all font-mono text-sm text-white">{usdt.payAddress}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push(`/checkout/pending?slug=${encodeURIComponent(slug)}&usdt=1`)}
+          className="inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
+        >
+          Ya pagué, esperar confirmación
+        </button>
+        <button
+          type="button"
+          onClick={() => setUsdt(null)}
+          className="ml-3 text-sm text-white/50 underline"
+        >
+          Elegir otro método
+        </button>
+        {error ? <p className="text-sm text-red-400">{error}</p> : null}
+      </div>
+    );
+  }
+
   return (
     <div className={compact ? "space-y-4" : "space-y-6"}>
       {!compact ? (
@@ -270,15 +349,47 @@ export function CheckoutForm({
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
 
       <div className="space-y-3">
+        {mercadoPagoEnabled ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => startCheckout("mercadopago")}
+            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+          >
+            <span>{loadingMethod === "mercadopago" ? "Abriendo Mercado Pago…" : "Pagar con Mercado Pago"}</span>
+            <span>{priceLabel}</span>
+          </button>
+        ) : null}
+
+        {usdtEnabled ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => startCheckout("usdt")}
+            className={
+              mercadoPagoEnabled
+                ? "flex min-h-12 w-full items-center justify-between rounded-full border border-white/20 bg-white/8 px-6 text-sm font-bold text-white disabled:opacity-60"
+                : "flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+            }
+          >
+            <span>{loadingMethod === "usdt" ? "Creando factura USDT…" : "Pagar con USDT (TRC20)"}</span>
+            <span>{formatProductPrice(price, "USD")}</span>
+          </button>
+        ) : null}
+
         {speiEnabled ? (
           <button
             type="button"
             disabled={busy}
             onClick={() => startCheckout("spei")}
-            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+            className={
+              mercadoPagoEnabled
+                ? "flex min-h-12 w-full items-center justify-between rounded-full border border-white/20 bg-white/8 px-6 text-sm font-bold text-white disabled:opacity-60"
+                : "flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+            }
           >
             <span>{loadingMethod === "spei" ? "Preparando SPEI…" : "Transferir por SPEI"}</span>
-            <span>{formatProductPrice(price, currency)}</span>
+            <span>{priceLabel}</span>
           </button>
         ) : null}
 
@@ -290,15 +401,19 @@ export function CheckoutForm({
             className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
           >
             <span>{loadingMethod === "demo" ? "Procesando…" : `Pagar ${title}`}</span>
-            <span>{formatProductPrice(price, currency)}</span>
+            <span>{priceLabel}</span>
           </button>
         ) : null}
       </div>
 
       <p className="text-center text-[11px] text-white/35">
-        {speiEnabled
-          ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
-          : "Entorno local: el acceso se abre al instante, sin cobro real."}
+        {[
+          mercadoPagoEnabled ? "Mercado Pago (tarjeta, SPEI u OXXO)" : null,
+          usdtEnabled ? "USDT en red TRC20 (el acceso se abre al confirmar la red)" : null,
+          speiEnabled ? "transferencia SPEI con comprobante" : null,
+        ]
+          .filter(Boolean)
+          .join(" o ") || "Entorno local: el acceso se abre al instante, sin cobro real."}
       </p>
     </div>
   );

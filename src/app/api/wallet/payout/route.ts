@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await requestPayout(userId, parsed.data.amount);
+    const result = await requestPayout(userId, parsed.data.amount, parsed.data.method);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     if (error instanceof WalletError) {

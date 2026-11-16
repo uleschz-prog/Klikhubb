@@ -704,6 +704,13 @@ model Order {
   tax         Decimal     @default(0) @db.Decimal(19, 4)
   total       Decimal     @db.Decimal(19, 4)
   currency    String      @db.Char(3) @default("USD")
+  /// Precio del producto en USD al momento del pago.
+  amountUsd   Decimal?    @db.Decimal(19, 4)
+  /// Importe cobrado en MXN (Checkout Pro).
+  amountMxn   Decimal?    @db.Decimal(19, 4)
+  /// Tipo de cambio USD→MXN usado al crear el cobro.
+  fxRate      Decimal?    @db.Decimal(19, 8)
+  fxAt        DateTime?
   paidAt      DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -749,6 +756,11 @@ model Payment {
   amount      Decimal       @db.Decimal(19, 4)
   currency    String        @db.Char(3) @default("USD")
   status      PaymentStatus @default(PENDING)
+  payAddress    String?
+  txHash        String?
+  payAmount     Decimal?      @db.Decimal(19, 8)
+  payCurrency   String?
+  actuallyPaid  Decimal?      @db.Decimal(19, 8)
   createdAt   DateTime      @default(now())
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -793,6 +805,10 @@ model Wallet {
   pending         Decimal @default(0) @db.Decimal(19, 4)
   lifetimeEarned  Decimal @default(0) @db.Decimal(19, 4)
   currency        String  @db.Char(3) @default("USD")
+  /// Correo de la cuenta Mercado Pago donde el creador quiere recibir retiros.
+  mpPayoutEmail   String?
+  /// Dirección USDT TRC20 del creador para retiros en cripto.
+  usdtTrc20Address String?
   updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -823,23 +839,51 @@ model WalletLedger {
 }
 
 model Payout {
-  id           String       @id @default(cuid())
-  userId       String
-  amount       Decimal      @db.Decimal(19, 4)
-  currency     String       @db.Char(3) @default("USD")
-  method       String
-  status       PayoutStatus @default(PENDING)
-  providerRef  String?      @unique
-  completedAt  DateTime?
-  failureNote  String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  userId          String
+  amount          Decimal      @db.Decimal(19, 4)
+  currency        String       @db.Char(3) @default("USD")
+  method          String
+  status          PayoutStatus @default(PENDING)
+  providerRef     String?      @unique
+  /// Correo o identificador de destino usado al solicitar el retiro.
+  destination     String?
+  amountUsd       Decimal?     @db.Decimal(19, 4)
+  amountMxn       Decimal?     @db.Decimal(19, 4)
+  fxRate          Decimal?     @db.Decimal(19, 8)
+  fxAt            DateTime?
+  idempotencyKey  String?      @unique
+  /// Referencia numérica enviada a Mercado Pago (external_reference).
+  externalRef     String?
+  mpPayoutId      String?
+  mpTransactionId String?
+  completedAt     DateTime?
+  failureNote     String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   user   User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   ledger WalletLedger[]
+  events PayoutEvent[]
 
   @@index([userId, status, createdAt])
+  @@index([mpPayoutId])
   @@map("payouts")
+}
+
+/// Auditoría de cambios de estado de un retiro (solicitud, webhook, cron, admin).
+model PayoutEvent {
+  id        String   @id @default(cuid())
+  payoutId  String
+  source    String
+  status    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  payout Payout @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+
+  @@index([payoutId, createdAt])
+  @@map("payout_events")
 }
 
 // ---------------------------------------------------------------------------
@@ -1131,3 +1175,28 @@ model Notification {
   @@index([userId, readAt])
   @@map("notifications")
 }
+
+/// Intento de cobro cripto (NOWPayments). Se conserva aunque la orden se asiente después.
+model CryptoInvoice {
+  id             String   @id @default(cuid())
+  buyerId        String
+  productId      String
+  provider       String
+  providerRef    String   @unique
+  orderId        String?
+  status         String
+  payAddress     String?
+  payAmount      Decimal? @db.Decimal(19, 8)
+  payCurrency    String?
+  priceAmount    Decimal? @db.Decimal(19, 4)
+  priceCurrency  String?
+  txHash         String?
+  actuallyPaid   Decimal? @db.Decimal(19, 8)
+  rawStatus      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([buyerId, productId, createdAt])
+  @@map("crypto_invoices")
+}
+

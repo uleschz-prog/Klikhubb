@@ -29,7 +29,11 @@ export function BuyDrawer({
   onClose,
   item,
   signedIn,
+  mercadoPagoEnabled = false,
+  usdtEnabled = false,
   speiEnabled = false,
+  amountMxn,
+  fxRate,
   loginHref,
   cancelPath,
   canceled,
@@ -38,7 +42,11 @@ export function BuyDrawer({
   onClose: () => void;
   item: BuyItem | null;
   signedIn: boolean;
+  mercadoPagoEnabled?: boolean;
+  usdtEnabled?: boolean;
   speiEnabled?: boolean;
+  amountMxn?: number;
+  fxRate?: number;
   loginHref: string;
   cancelPath?: string;
   canceled?: boolean;
@@ -174,7 +182,11 @@ export function BuyDrawer({
                 currency={item.currency}
                 compact
                 cancelPath={cancelPath}
+                mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
                 speiEnabled={speiEnabled}
+                amountMxn={amountMxn}
+                fxRate={fxRate}
                 onPaid={() => setPaid(true)}
               />
             </div>

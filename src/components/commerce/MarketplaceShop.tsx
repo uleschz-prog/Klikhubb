@@ -9,11 +9,19 @@ export function MarketplaceShop({
   products,
   signedIn,
 
+  mercadoPagoEnabled,
+  usdtEnabled,
   speiEnabled,
+  amountMxn,
+  fxRate,
 }: {
   products: CatalogProduct[];
   signedIn: boolean;
+  mercadoPagoEnabled: boolean;
+  usdtEnabled: boolean;
   speiEnabled: boolean;
+  amountMxn?: number;
+  fxRate?: number;
 }) {
   const [slug, setSlug] = useState<string | null>(null);
   const selected = useMemo(() => products.find((item) => item.slug === slug) ?? null, [products, slug]);
@@ -51,7 +59,11 @@ export function MarketplaceShop({
         onClose={() => setSlug(null)}
         item={item}
         signedIn={signedIn}
+        mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
         speiEnabled={speiEnabled}
+        amountMxn={amountMxn}
+        fxRate={fxRate}
         loginHref={`/login?callbackUrl=${encodeURIComponent("/marketplace")}`}
         cancelPath="/marketplace"
       />

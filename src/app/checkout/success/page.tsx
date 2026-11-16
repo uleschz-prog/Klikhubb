@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 import { getDbUserId } from "@/lib/auth/session";
+import { MercadoPagoReturnConfirm } from "@/components/commerce/MercadoPagoReturnConfirm";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +25,9 @@ async function slugFromOrder(orderId: string, buyerId: string | null) {
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: { order?: string; pending?: string; slug?: string };
+  searchParams: { order?: string; pending?: string; slug?: string; payment_id?: string; collection_id?: string; external_reference?: string; status?: string };
 }) {
+  const paymentId = (searchParams.payment_id || searchParams.collection_id || "").trim();
   const orderRef = searchParams.order ?? null;
   const pending = searchParams.pending === "1";
   let productSlug = searchParams.slug?.trim() || null;
@@ -56,10 +58,18 @@ export default async function CheckoutSuccessPage({
         {pending ? "Pago en revisión" : "Pago confirmado"}
       </p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">{headline}</h1>
-      <p className="mt-3 max-w-xl text-sm text-white/60">
-        {body}
-        {orderRef ? ` Ref ${orderRef}.` : ""}
-      </p>
+      {paymentId && !orderRef ? (
+        <MercadoPagoReturnConfirm
+          paymentId={paymentId}
+          externalReference={searchParams.external_reference}
+          slug={productSlug ?? undefined}
+        />
+      ) : (
+        <p className="mt-3 max-w-xl text-sm text-white/60">
+          {body}
+          {orderRef ? ` Ref ${orderRef}.` : ""}
+        </p>
+      )}
       <div className="mt-8 flex flex-wrap gap-3">
         {pending ? (
           <Link

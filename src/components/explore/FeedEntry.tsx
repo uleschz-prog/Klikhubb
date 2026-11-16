@@ -10,7 +10,11 @@ export function FeedEntry({
   clipId,
   tab,
   signedIn,
+  mercadoPagoEnabled,
+  usdtEnabled,
   speiEnabled,
+  amountMxn,
+  fxRate,
   buySlug,
   canceled,
 }: {
@@ -18,7 +22,11 @@ export function FeedEntry({
   clipId?: string;
   tab: "foryou" | "following" | "saved";
   signedIn: boolean;
+  mercadoPagoEnabled: boolean;
+  usdtEnabled: boolean;
   speiEnabled: boolean;
+  amountMxn?: number;
+  fxRate?: number;
   buySlug?: string;
   canceled?: boolean;
 }) {
@@ -77,7 +85,11 @@ export function FeedEntry({
       videos={theaterVideos}
       initialId={clipId}
       signedIn={signedIn}
+      mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
       speiEnabled={speiEnabled}
+      amountMxn={amountMxn}
+      fxRate={fxRate}
       buySlug={buySlug}
       canceled={canceled}
     />

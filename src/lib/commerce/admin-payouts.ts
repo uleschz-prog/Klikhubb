@@ -1,11 +1,17 @@
 import { prisma } from "@/lib/prisma";
+import { applyRemotePayoutStatus, syncMercadoPagoPayout } from "@/lib/commerce/payouts";
 
 export type AdminPayoutRow = {
   id: string;
   amount: number;
+  amountMxn: number | null;
+  fxRate: number | null;
   currency: string;
   method: string;
   status: string;
+  destination: string | null;
+  mpPayoutId: string | null;
+  failureNote: string | null;
   createdAt: string;
   user: {
     id: string;
@@ -17,7 +23,7 @@ export type AdminPayoutRow = {
 
 export async function listPendingManualPayouts(): Promise<AdminPayoutRow[]> {
   const rows = await prisma.payout.findMany({
-    where: { status: "PENDING", method: "manual" },
+    where: { status: { in: ["PENDING", "PROCESSING"] } },
     orderBy: { createdAt: "asc" },
     include: {
       user: {
@@ -29,9 +35,14 @@ export async function listPendingManualPayouts(): Promise<AdminPayoutRow[]> {
   return rows.map((row) => ({
     id: row.id,
     amount: Number(row.amount),
+    amountMxn: row.amountMxn != null ? Number(row.amountMxn) : null,
+    fxRate: row.fxRate != null ? Number(row.fxRate) : null,
     currency: row.currency.trim(),
     method: row.method,
     status: row.status,
+    destination: row.destination,
+    mpPayoutId: row.mpPayoutId,
+    failureNote: row.failureNote,
     createdAt: row.createdAt.toISOString(),
     user: row.user,
   }));
@@ -48,57 +59,58 @@ export class AdminPayoutError extends Error {
 }
 
 export async function completeManualPayout(payoutId: string, note?: string) {
-  return prisma.$transaction(async (tx) => {
-    const payout = await tx.payout.findUnique({ where: { id: payoutId } });
-    if (!payout) throw new AdminPayoutError("Retiro no encontrado.", "NOT_FOUND");
-    if (payout.status !== "PENDING" || payout.method !== "manual") {
-      throw new AdminPayoutError("Este retiro ya no está pendiente.", "INVALID_STATE");
-    }
+  const payout = await prisma.payout.findUnique({ where: { id: payoutId } });
+  if (!payout) throw new AdminPayoutError("Retiro no encontrado.", "NOT_FOUND");
+  if (payout.status !== "PENDING" && payout.status !== "PROCESSING") {
+    throw new AdminPayoutError("Este retiro ya no está pendiente.", "INVALID_STATE");
+  }
 
-    return tx.payout.update({
-      where: { id: payoutId },
-      data: {
-        status: "COMPLETED",
-        completedAt: new Date(),
-        failureNote: note?.trim() || null,
-      },
-    });
+  const result = await applyRemotePayoutStatus(payoutId, "COMPLETED", "admin", {
+    detail: note?.trim() || "Marcado pagado por operaciones.",
   });
+  if (result.ignored && result.status !== "COMPLETED") {
+    throw new AdminPayoutError("Este retiro ya no está pendiente.", "INVALID_STATE");
+  }
+
+  if (note?.trim()) {
+    await prisma.payout.update({
+      where: { id: payoutId },
+      data: { failureNote: note.trim() },
+    });
+  }
+
+  const latest = await prisma.payout.findUnique({ where: { id: payoutId } });
+  return latest!;
 }
 
 export async function rejectManualPayout(payoutId: string, note: string) {
-  return prisma.$transaction(async (tx) => {
-    const payout = await tx.payout.findUnique({ where: { id: payoutId } });
-    if (!payout) throw new AdminPayoutError("Retiro no encontrado.", "NOT_FOUND");
-    if (payout.status !== "PENDING" || payout.method !== "manual") {
-      throw new AdminPayoutError("Este retiro ya no está pendiente.", "INVALID_STATE");
-    }
+  const payout = await prisma.payout.findUnique({ where: { id: payoutId } });
+  if (!payout) throw new AdminPayoutError("Retiro no encontrado.", "NOT_FOUND");
+  if (payout.status !== "PENDING" && payout.status !== "PROCESSING") {
+    throw new AdminPayoutError("Este retiro ya no está pendiente.", "INVALID_STATE");
+  }
 
-    const wallet = await tx.wallet.findUnique({ where: { userId: payout.userId } });
-    if (wallet) {
-      const updated = await tx.wallet.update({
-        where: { userId: payout.userId },
-        data: { available: { increment: payout.amount } },
-      });
+  const result = await applyRemotePayoutStatus(
+    payoutId,
+    "FAILED",
+    "admin",
+    { detail: note.trim() || "Retiro rechazado por operaciones." },
+  );
+  if (result.ignored && result.status !== "FAILED") {
+    throw new AdminPayoutError("Este retiro ya no está pendiente.", "INVALID_STATE");
+  }
 
-      await tx.walletLedger.create({
-        data: {
-          userId: payout.userId,
-          amount: payout.amount,
-          balanceAfter: updated.available.plus(updated.pending),
-          type: "ADJUSTMENT",
-          payoutId: payout.id,
-          note: note.trim() || "Retiro rechazado. Saldo restaurado.",
-        },
-      });
-    }
+  const latest = await prisma.payout.findUnique({ where: { id: payoutId } });
+  return latest!;
+}
 
-    return tx.payout.update({
-      where: { id: payoutId },
-      data: {
-        status: "FAILED",
-        failureNote: note.trim() || "Retiro rechazado por operaciones.",
-      },
-    });
-  });
+export async function syncAdminPayout(payoutId: string) {
+  const payout = await prisma.payout.findUnique({ where: { id: payoutId } });
+  if (!payout) throw new AdminPayoutError("Retiro no encontrado.", "NOT_FOUND");
+  if (!payout.mpPayoutId) {
+    throw new AdminPayoutError("Este retiro aún no tiene identificador de Mercado Pago.", "INVALID_STATE");
+  }
+  await syncMercadoPagoPayout(payoutId, "admin");
+  const latest = await prisma.payout.findUnique({ where: { id: payoutId } });
+  return latest!;
 }
