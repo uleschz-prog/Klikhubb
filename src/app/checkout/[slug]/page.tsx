@@ -44,7 +44,6 @@ export default async function CheckoutPage({
         creatorName: preview.product.creatorName,
       }}
       signedIn
-      stripeEnabled={methods.stripe}
       speiEnabled={methods.spei}
       canceled={searchParams.canceled === "1"}
       cancelPath={`/c/${params.slug}`}

@@ -47,7 +47,6 @@ export default async function FeedPage({
       clipId={searchParams.v}
       tab={tab}
       signedIn={Boolean(session?.user)}
-      stripeEnabled={methods.stripe}
       speiEnabled={methods.spei}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}

@@ -110,7 +110,6 @@ export default async function PlayPage({
       videos={theaterVideos}
       initialId={searchParams.v}
       signedIn={Boolean(session?.user)}
-      stripeEnabled={methods.stripe}
       speiEnabled={methods.spei}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
