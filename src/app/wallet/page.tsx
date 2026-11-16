@@ -2,12 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 import { WalletMpDestinationForm } from "@/components/wallet/WalletMpDestinationForm";
+import { WalletUsdtDestinationForm } from "@/components/wallet/WalletUsdtDestinationForm";
 import { WalletPayoutForm } from "@/components/wallet/WalletPayoutForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/commerce/split";
 import { formatWalletDate, ledgerLabel, loadWalletView } from "@/lib/commerce/wallet";
 import { usdToMxn } from "@/lib/payments/fx";
 import { isMercadoPagoPayoutsReady } from "@/lib/payments/mp-payouts";
+import { isUsdtEnabled, isUsdtPayoutsReady } from "@/lib/payments/nowpayments";
 import { loadDisplayFxQuote } from "@/lib/payments/display-quote";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +39,8 @@ export default async function WalletPage() {
   const fx = await loadDisplayFxQuote();
   const amountMxn = fx ? usdToMxn(wallet.available, fx.rate) : null;
   const mpPayoutsEnabled = isMercadoPagoPayoutsReady();
+  const usdtPayoutsEnabled = isUsdtPayoutsReady();
+  const showUsdt = isUsdtEnabled() || Boolean(wallet.usdtTrc20Address);
 
   return (
     <PlatformShell title="Monedero">
@@ -85,6 +89,7 @@ export default async function WalletPage() {
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="space-y-4">
           <WalletMpDestinationForm email={wallet.mpPayoutEmail} />
+          {showUsdt ? <WalletUsdtDestinationForm address={wallet.usdtTrc20Address} /> : null}
           <WalletPayoutForm
             available={wallet.available}
             minPayout={wallet.minPayout}
@@ -93,6 +98,8 @@ export default async function WalletPage() {
             fxRate={fx?.rate ?? null}
             destination={wallet.mpPayoutEmail}
             mpPayoutsEnabled={mpPayoutsEnabled}
+            usdtAddress={wallet.usdtTrc20Address}
+            usdtPayoutsEnabled={usdtPayoutsEnabled}
           />
         </div>
 

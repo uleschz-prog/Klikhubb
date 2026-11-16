@@ -2,6 +2,7 @@ import { legalIdentityComplete, legalMeta } from "@/config/legal";
 import { getPaymentInstructions, isManualPaymentsConfigured } from "@/config/payment-instructions";
 import { isMercadoPagoConfigured, getMercadoPagoWebhookSecret, getMercadoPagoPublicKey } from "@/lib/payments/mercadopago";
 import { envFxOverride } from "@/lib/payments/fx";
+import { getNowPaymentsIpnSecret, isUsdtFlagOn, isUsdtEnabled, isUsdtPayoutsFlagOn, isUsdtPayoutsReady } from "@/lib/payments/nowpayments";
 import {
   isMercadoPagoPayoutsFlagOn,
   isMercadoPagoPayoutsReady,
@@ -124,6 +125,26 @@ export function getPlatformReadiness() {
             : "Activo, pero en producción hace falta MP_PAYOUTS_PRIVATE_KEY (Ed25519 registrada ante MP). Hasta entonces el admin paga a mano",
     },
     {
+      id: "usdt",
+      label: "USDT TRC20 (NOWPayments)",
+      ok: !isUsdtFlagOn() || isUsdtEnabled() && Boolean(getNowPaymentsIpnSecret()),
+      hint: !isUsdtFlagOn()
+        ? "USDT_ENABLED está apagado (recomendado hasta la revisión legal y fiscal). El cobro en USDT no aparece en checkout"
+        : isUsdtEnabled() && getNowPaymentsIpnSecret()
+          ? "USDT listo: API key e IPN secret presentes"
+          : "USDT_ENABLED=1, pero faltan NOWPAYMENTS_API_KEY o NOWPAYMENTS_IPN_SECRET",
+    },
+    {
+      id: "usdt_payouts",
+      label: "Retiros USDT TRC20",
+      ok: !isUsdtPayoutsFlagOn() || isUsdtPayoutsReady(),
+      hint: !isUsdtPayoutsFlagOn()
+        ? "USDT_PAYOUTS_ENABLED apagado: si un creador pide USDT, el admin lo paga a mano"
+        : isUsdtPayoutsReady()
+          ? "Retiros USDT automáticos listos (API + email/password de NOWPayments)"
+          : "Activo, pero faltan NOWPAYMENTS_EMAIL y NOWPAYMENTS_PASSWORD (y 2FA recomendado)",
+    },
+    {
       id: "legal_entity",
       label: "Identidad legal pública",
       ok: legal.complete,
@@ -134,7 +155,7 @@ export function getPlatformReadiness() {
   ];
 
   const blockers = checks.filter((check) => {
-    if (check.id === "payment_bank" || check.id === "mercadopago" || check.id === "mp_payouts") return false;
+    if (check.id === "payment_bank" || check.id === "mercadopago" || check.id === "mp_payouts" || check.id === "usdt" || check.id === "usdt_payouts") return false;
     return !check.ok;
   });
 

@@ -12,6 +12,7 @@ import { getCheckoutMethods, resolveCheckoutIntent } from "@/config/checkout-met
 import { demoSettleOrder } from "@/lib/demo/store";
 import { checkoutSchema } from "@/lib/validations/auth";
 import { createCheckoutPreference, MercadoPagoError } from "@/lib/payments/mercadopago";
+import { createUsdtPayment, NowPaymentsError } from "@/lib/payments/nowpayments";
 
 export const runtime = "nodejs";
 
@@ -83,6 +84,42 @@ export async function POST(request: Request) {
       }
       console.error(error);
       return NextResponse.json({ error: "No se pudo iniciar el pago con Mercado Pago." }, { status: 500 });
+    }
+  }
+
+
+  if (intent === "usdt") {
+    if (!methods.usdt) {
+      return NextResponse.json(
+        { error: "USDT (TRC20) aún no está activo. Falta USDT_ENABLED y las claves de NOWPayments." },
+        { status: 503 },
+      );
+    }
+    try {
+      const invoice = await createUsdtPayment({
+        buyerId,
+        productId: product.id,
+        title: product.title,
+        amountUsd: product.price,
+      });
+      return NextResponse.json({
+        ok: true,
+        mode: "usdt",
+        paymentId: invoice.paymentId,
+        payAddress: invoice.payAddress,
+        payAmount: invoice.payAmount,
+        payCurrency: invoice.payCurrency,
+        priceAmount: invoice.priceAmount,
+        priceCurrency: invoice.priceCurrency,
+        invoiceId: invoice.invoiceId,
+      });
+    } catch (error) {
+      if (error instanceof NowPaymentsError) {
+        const status = error.code === "NOT_CONFIGURED" || error.code === "DISABLED" ? 503 : 502;
+        return NextResponse.json({ error: error.message, code: error.code }, { status });
+      }
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo iniciar el pago con USDT." }, { status: 500 });
     }
   }
 

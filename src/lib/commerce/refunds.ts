@@ -14,7 +14,8 @@ export class RefundError extends Error {
       | "WINDOW_CLOSED"
       | "ALREADY_REFUNDED"
       | "NO_ACCESS"
-      | "PROVIDER_FAILED",
+      | "PROVIDER_FAILED"
+      | "MANUAL_ONLY",
   ) {
     super(message);
     this.name = "RefundError";
@@ -211,6 +212,12 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
   }
 
   const payment = order.payments[0];
+  if (payment?.provider === "nowpayments") {
+    throw new RefundError(
+      "Los pagos en USDT no se devuelven solos. Escríbele a Qlykadmin: la devolución es manual y la decide el operador.",
+      "MANUAL_ONLY",
+    );
+  }
   if (payment?.provider === "mercadopago" && payment.providerRef) {
     try {
       await refundMercadoPagoPayment(payment.providerRef, order.id);
