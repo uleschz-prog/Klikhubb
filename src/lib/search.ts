@@ -97,3 +97,73 @@ export async function searchPlatform(query: string): Promise<SearchResult> {
     })),
   };
 }
+
+export type SearchExplore = SearchResult & {
+  suggestions: string[];
+};
+
+const FALLBACK_SUGGESTIONS = ["cierre", "curso", "membresía", "IA", "Qlyk"];
+
+export async function listSearchExplore(): Promise<SearchExplore> {
+  try {
+    const [creators, products, videos] = await Promise.all([
+      prisma.user.findMany({
+        where: { username: { not: null }, OR: [{ products: { some: { status: "ACTIVE" } } }, { videos: { some: { status: "PUBLISHED" } } }] },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        select: { username: true, displayName: true, name: true, bio: true, image: true },
+      }),
+      prisma.product.findMany({
+        where: { status: "ACTIVE", slug: { not: "qlyk-academy" } },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: { creator: { select: { displayName: true, username: true } } },
+      }),
+      prisma.video.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ likeCount: "desc" }, { publishedAt: "desc" }],
+        take: 8,
+        include: { creator: { select: { username: true } } },
+      }),
+    ]);
+
+    const mappedProducts = products.map((row) => ({
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      price: Number(row.price),
+      currency: row.currency.trim(),
+      creatorName: row.creator.displayName ?? row.creator.username ?? "Creador",
+    }));
+
+    const suggestions = Array.from(
+      new Set([
+        ...mappedProducts.slice(0, 4).map((row) => row.title.split("—")[0].trim().slice(0, 28)),
+        ...FALLBACK_SUGGESTIONS,
+      ]),
+    ).slice(0, 6);
+
+    return {
+      suggestions,
+      creators: creators
+        .filter((row) => row.username)
+        .map((row) => ({
+          username: row.username as string,
+          displayName: row.displayName ?? row.name ?? (row.username as string),
+          bio: row.bio,
+          image: row.image,
+        })),
+      products: mappedProducts,
+      videos: videos.map((row) => ({
+        id: row.id,
+        title: row.title,
+        caption: row.caption,
+        thumbnailUrl: row.thumbnailUrl,
+        lane: row.lane,
+        handle: row.creator.username ?? "creator",
+      })),
+    };
+  } catch {
+    return { suggestions: [...FALLBACK_SUGGESTIONS], creators: [], products: [], videos: [] };
+  }
+}
