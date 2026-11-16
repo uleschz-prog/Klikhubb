@@ -1,7 +1,5 @@
 import { legalIdentityComplete, legalMeta } from "@/config/legal";
 import { getPaymentInstructions, isManualPaymentsConfigured } from "@/config/payment-instructions";
-import { isStripeEnabled } from "@/config/checkout-methods";
-import { isConnectPayoutsEnabled } from "@/lib/commerce/stripe-connect";
 
 export type SetupCheck = {
   id: string;
@@ -32,13 +30,10 @@ export function getLegalSetupStatus() {
 export function getPlatformReadiness() {
   const manualPayments = isManualPaymentsConfigured();
   const paymentInstructions = getPaymentInstructions();
-  const stripeKey = isStripeEnabled();
-  const stripeWebhook = Boolean(process.env.STRIPE_WEBHOOK_SECRET?.trim());
-  const stripeReady = stripeKey && stripeWebhook;
-  const connectEnabled = isConnectPayoutsEnabled();
-  const paymentsReady = stripeReady || manualPayments;
+  const paymentsReady = manualPayments;
   const adminPassword = Boolean(process.env.PLATFORM_ADMIN_PASSWORD?.trim());
   const blob = Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+  const cronSecret = Boolean(process.env.CRON_SECRET?.trim());
   const legal = getLegalSetupStatus();
   const isProduction = process.env.VERCEL_ENV === "production";
 
@@ -49,27 +44,15 @@ export function getPlatformReadiness() {
       ok: !isProduction || adminPassword,
       hint: isProduction
         ? "Obligatoria en producción para el login de Qlykadmin"
-        : "Opcional en local (hay fallback de desarrollo)",
+        : "Opcional en local (hay fallback solo si NODE_ENV=development)",
     },
     {
-      id: "stripe",
-      label: "Stripe (tarjeta)",
-      ok: stripeReady,
-      hint: stripeReady
-        ? "Checkout Session + webhook configurados"
-        : stripeKey
-          ? "Falta STRIPE_WEBHOOK_SECRET (endpoint /api/webhooks/stripe)"
-          : "Opcional si SPEI está activo. Define STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET",
-    },
-    {
-      id: "stripe_connect",
-      label: "Stripe Connect (retiros)",
-      ok: !stripeReady || connectEnabled,
-      hint: connectEnabled
-        ? "Los creadores pueden vincular Express y recibir transferencias"
-        : stripeReady
-          ? "Connect apagado (STRIPE_CONNECT_ENABLED=false). Los retiros siguen siendo manuales"
-          : "Se activa al configurar Stripe. En Dashboard: Connect + evento account.updated",
+      id: "cron_secret",
+      label: "CRON_SECRET",
+      ok: !isProduction || cronSecret,
+      hint: cronSecret
+        ? "El cron de liberación de monederos exige Authorization: Bearer $CRON_SECRET"
+        : "Obligatoria en producción. Vercel la envía automáticamente al cron si está definida",
     },
     {
       id: "payment_bank",
@@ -77,20 +60,18 @@ export function getPlatformReadiness() {
       ok: manualPayments,
       hint: manualPayments
         ? `${paymentInstructions?.bankName} · CLABE configurada`
-        : "Opcional si Stripe está activo. Define PAYMENT_BANK_NAME, PAYMENT_BENEFICIARY y PAYMENT_CLABE",
+        : "Define PAYMENT_BANK_NAME, PAYMENT_BENEFICIARY y PAYMENT_CLABE. Es el método de cobro actual hasta Mercado Pago",
     },
     {
       id: "payments_any",
       label: "Al menos un método de cobro",
       ok: paymentsReady,
-      hint: paymentsReady
-        ? [stripeReady ? "Stripe" : null, manualPayments ? "SPEI" : null].filter(Boolean).join(" + ")
-        : "Activa Stripe (clave + webhook) o los datos SPEI",
+      hint: paymentsReady ? "SPEI configurado" : "Configura los datos SPEI para poder cobrar en producción",
     },
     {
       id: "blob",
       label: "BLOB_READ_WRITE_TOKEN",
-      ok: blob || (stripeReady && !manualPayments),
+      ok: blob || !manualPayments,
       hint: blob
         ? "Subida de archivos activa"
         : manualPayments
@@ -108,8 +89,7 @@ export function getPlatformReadiness() {
   ];
 
   const blockers = checks.filter((check) => {
-    if (check.id === "stripe" || check.id === "payment_bank" || check.id === "stripe_connect")
-      return false;
+    if (check.id === "payment_bank") return false;
     return !check.ok;
   });
 
@@ -117,12 +97,11 @@ export function getPlatformReadiness() {
     checks,
     legal,
     payments: {
-      stripeEnabled: stripeReady,
       manualEnabled: manualPayments,
       instructions: paymentInstructions,
     },
     environment: process.env.VERCEL_ENV ?? "development",
-    readyForBeta: blockers.length === 0,
-    allChecksPass: blockers.length === 0,
+    readyForBeta: blockers.length === 0 && paymentsReady,
+    allChecksPass: blockers.length === 0 && paymentsReady,
   };
 }
