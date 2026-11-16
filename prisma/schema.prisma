@@ -227,7 +227,7 @@ model User {
   /// Fin del periodo FLAT pagado. Si es null o ya pasó, las ventas usan PAYG.
   creatorPlanUntil DateTime?
   lastLoginAt   DateTime?
-  /// Cuenta Express de Stripe Connect para depositar retiros.
+  /// Histórico de Stripe Connect (ya no se usa). Se conserva para no perder datos.
   stripeAccountId       String?  @unique
   stripePayoutsEnabled  Boolean  @default(false)
   createdAt     DateTime   @default(now())
@@ -622,7 +622,7 @@ model Enrollment {
   @@map("enrollments")
 }
 
-/// Suscripción Stripe para productos MONTHLY.
+/// Histórico de suscripciones (campos Stripe conservados; ya no se crean cargos con Stripe).
 model ProductSubscription {
   id                   String    @id @default(cuid())
   userId               String

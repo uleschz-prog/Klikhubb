@@ -19,7 +19,7 @@
 > «Los creadores viven fragmentados:
 >
 > - **TikTok / Reels** les dan alcance, pero no les dejan cobrar ahí.
-> - **Gumroad / Hotmart / Stripe** les dejan cobrar, pero fuera del contenido.
+> - **Gumroad / Hotmart** les dejan cobrar, pero fuera del contenido.
 > - **Skool / Discord** les dan comunidad, pero en otro sitio.
 >
 > Resultado: pierden conversión en cada salto de enlace, no son dueños de la relación y la plataforma se queda con la atención — no con el negocio del creador.
@@ -42,7 +42,7 @@
 > 4. **Marketplace** (catálogo de ofertas).
 > 5. **Monedero** con reparto automático y retiros.
 >
-> El usuario ve un video → pulsa comprar → paga con Stripe → accede al curso o comunidad **sin salir de la experiencia**.
+> El usuario ve un video → pulsa comprar → paga por SPEI → accede al curso o comunidad **sin salir de la experiencia**.
 >
 > Para el creador: publica en `/publish`, construye cursos en `/studio`, ve ingresos en `/wallet` y gestiona todo desde `/dashboard`.»
 
@@ -79,9 +79,9 @@ Venta 100%
 > **No es multinivel.** Un solo nivel de referido por compra. No hay bonos por reclutamiento, matrices binarias ni promesas de ingresos pasivos. Invitar no paga; **comprar** paga comisión al referidor.
 >
 > Flujo de caja:
-> - Cobro vía **Stripe Checkout**.
+> - Cobro vía **SPEI** (transferencia con comprobante).
 > - Comisiones en **monedero interno** con hold de **14 días** (devoluciones, contracargos, fraude).
-> - Retiro mínimo **10 USD** (Stripe Connect en roadmap para automatizar).»
+> - Retiro mínimo **10 USD** (depósito manual por el equipo).»
 
 **Métricas clave a trackear:**
 - GMV (volumen bruto de ventas)
@@ -112,12 +112,12 @@ Venta 100%
 ## 6. Tracción y producto (1 min)
 
 > «Estado actual:
-> - Producto **live** en Vercel: registro gratuito directo, landing premium, Course Studio, feed, marketplace, wallet, Stripe.
-> - Documentación legal completa (términos, privacidad, RGPD).
+> - Producto **live** en Vercel: registro gratuito directo, landing premium, Course Studio, feed, marketplace, wallet, SPEI.
+> - Documentación legal completa (términos, privacidad, LFPDPPP).
 > - Preview social (Open Graph) para viralidad en WhatsApp.
 > - Stack escalable: Next.js, PostgreSQL, Prisma, diseñado para millones de usuarios en schema.
 >
-> Próximo hito: Stripe Connect (retiros automáticos), KYC, métricas de conversión feed→venta.»
+> Próximo hito: cobro con Mercado Pago (Checkout Pro) y retiros más ágiles, KYC, métricas de conversión feed→venta.»
 
 ---
 
@@ -145,7 +145,7 @@ Venta 100%
 
 > «Buscamos **[monto]€** en **[ronda]** para:
 >
-> 1. **Producto** — Stripe Connect, analytics de conversión, app móvil PWA/native.
+> 1. **Producto** — Mercado Pago, analytics de conversión, app móvil PWA/native.
 > 2. **Growth** — adquisición de creadores ancla y primeras 1.000 cuentas activas.
 > 3. **Operaciones** — legal, compliance, soporte a creadores.
 >
@@ -176,7 +176,7 @@ Hold de 14 días + clawback en monedero antes del retiro.
 Creator economy global + foco inicial hispano (España, LATAM, US hispano).
 
 **¿Regulación?**  
-Intermediario tecnológico; creador es vendedor. Términos y privacidad RGPD-ready. Entidad legal por completar antes de escala.
+Intermediario tecnológico; creador es vendedor. Términos y privacidad alineados a LFPDPPP. Entidad legal por completar antes de escala.
 
 **¿Competencia de big tech?**  
 Big tech optimiza engagement publicitario; Qlyk optimiza **conversión del creador** — incentivos alineados.

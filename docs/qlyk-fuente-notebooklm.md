@@ -81,8 +81,8 @@ Los creadores suelen estar fragmentados entre redes sociales (alcance), platafor
 
 ### 2.11 Checkout y pagos
 - Checkout por producto (`/checkout/[slug]`).
-- Pagos: tarjeta con Stripe Checkout y/o transferencia SPEI (datos bancarios, referencia `QLYK-XXXXXX`, comprobante).
-- Confirmación: Stripe asienta solo; SPEI lo aprueba Qlykadmin en `/admin/payments`.
+- Pagos: transferencia SPEI (datos bancarios, referencia `QLYK-XXXXXX`, comprobante).
+- Confirmación: SPEI lo aprueba Qlykadmin en `/admin/payments`.
 - Página de éxito post-compra (cuando el pago está aprobado).
 
 ---
@@ -160,7 +160,7 @@ Cada venta completada se reparte al 100%:
 2. Crea un producto en Studio o al publicar un video.
 3. Sube un clip en `/publish` (lane SHOP) vinculado al producto.
 4. El video aparece en el Feed con CTA de compra.
-5. Un miembro paga con tarjeta (Stripe) o transfiere por SPEI y sube comprobante; Qlykadmin aprueba SPEI en `/admin/payments`.
+5. Un miembro transfiere por SPEI y sube comprobante; Qlykadmin aprueba SPEI en `/admin/payments`.
 6. El comprador accede al curso/comunidad.
 7. El creador ve la comisión en su monedero (pendiente 14 días, luego disponible).
 8. Solicita retiro cuando supera el mínimo.
@@ -196,7 +196,7 @@ Cada venta completada se reparte al 100%:
 - **Backend:** API Routes de Next.js, Prisma ORM.
 - **Base de datos:** PostgreSQL.
 - **Autenticación:** NextAuth (email/contraseña + Google OAuth opcional).
-- **Pagos:** Stripe Checkout (tarjeta) y/o SPEI manual con confirmación admin.
+- **Pagos:** SPEI manual con confirmación admin.
 - **Almacenamiento de video:** Vercel Blob.
 - **Email transaccional:** Resend (opcional).
 - **Despliegue:** Vercel (con cron para liberación de monedero).
@@ -208,7 +208,7 @@ Cada venta completada se reparte al 100%:
 
 ### 8.1 Documentos publicados
 - Términos de uso: `/legal/terms`
-- Política de privacidad (RGPD): `/legal/privacy`
+- Política de privacidad (LFPDPPP): `/legal/privacy`
 - Política de cookies: `/legal/cookies`
 
 ### 8.2 Puntos legales clave
@@ -260,7 +260,7 @@ Las cuentas y contraseñas de prueba se eliminaron del producto. El operador ent
 ### Para inversionistas
 - Take rate claro del 10% sobre GMV.
 - No es MLM; modelo legalmente defendible.
-- Producto live con pagos Stripe y SPEI, studio, wallet y legal RGPD.
+- Producto live con pagos SPEI, studio, wallet y legal LFPDPPP.
 - Mercado: creator economy hispano/latino.
 
 ### Para redes sociales (WhatsApp, Reels)
@@ -277,7 +277,7 @@ Las cuentas y contraseñas de prueba se eliminaron del producto. El operador ent
 - Registro directo ampliado.
 - Feed, Play, Marketplace, Cursos, Community.
 - Course Studio y publicación de video.
-- Checkout Stripe + SPEI, confirmación admin (`/admin/payments`), monedero, hold 14 días.
+- Checkout SPEI, confirmación admin (`/admin/payments`), monedero, hold 14 días.
 - Términos, privacidad, cookies completos.
 - Preview Open Graph para WhatsApp.
 
