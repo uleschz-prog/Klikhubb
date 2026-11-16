@@ -18,17 +18,29 @@ export default async function CommunityPage() {
       </p>
 
       {!userId ? (
-        <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">
-          <h2 className="font-display text-2xl font-extrabold">Entra para ver tu comunidad</h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
-            El acceso se guarda en tu cuenta, no en el teléfono.
+        <div className="mt-10 rounded-3xl border border-klik-line bg-klik-card px-6 py-14 text-center">
+          <p className="page-kicker">Para creadores y su gente</p>
+          <h2 className="mt-3 font-display text-2xl font-extrabold">Tu comunidad no se evapora</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-foreground/55">
+            Quien compra tu membresía o curso entra aquí. Tú publicas actualizaciones, ellos se quedan y vuelven.
+            Sin depender de un algoritmo ni de un chat que desaparece.
           </p>
-          <Link
-            href={`/login?callbackUrl=${encodeURIComponent("/community")}`}
-            className="mt-6 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
-          >
-            Entrar
-          </Link>
+          <ul className="mx-auto mt-6 grid max-w-xl gap-3 text-left text-sm text-foreground/70 sm:grid-cols-3">
+            <li className="rounded-2xl border border-klik-line px-4 py-3">Espacio propio por membresía o curso</li>
+            <li className="rounded-2xl border border-klik-line px-4 py-3">Tus posts, tu gente, tu ritmo</li>
+            <li className="rounded-2xl border border-klik-line px-4 py-3">El acceso vive en la cuenta, no en el teléfono</li>
+          </ul>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/register" className="btn-primary inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold">
+              Crear cuenta
+            </Link>
+            <Link
+              href={`/login?callbackUrl=${encodeURIComponent("/community")}`}
+              className="inline-flex min-h-11 items-center rounded-full border border-klik-line px-5 text-sm font-semibold"
+            >
+              Entrar
+            </Link>
+          </div>
         </div>
       ) : spaces.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-white/10 px-6 py-14 text-center">

@@ -18,7 +18,9 @@ html[data-theme="light"] {
   --l-surface: #ffffff;
   --l-border: rgb(0 0 0 / 0.08);
   --l-nav: rgb(245 245 247 / 0.82);
-  --l-accent: #0071e3;
+  --l-accent: #30D158;
+  --color-primary: #30D158;
+  --color-primary-fg: #000000;
   --l-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.04);
   color-scheme: light;
 }
@@ -38,7 +40,9 @@ html[data-theme="dark"] {
   --l-surface: #1c1c1e;
   --l-border: rgb(255 255 255 / 0.12);
   --l-nav: rgb(0 0 0 / 0.72);
-  --l-accent: #0a84ff;
+  --l-accent: #30D158;
+  --color-primary: #30D158;
+  --color-primary-fg: #000000;
   --l-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
   color-scheme: dark;
 }
@@ -274,8 +278,10 @@ html[data-theme="light"] .ring-1.ring-white\/10 {
 
 html[data-theme="light"] .on-accent,
 html[data-theme="light"] .on-accent .text-white,
-html[data-theme="light"] .bg-klik-cyan.text-white,
 html[data-theme="light"] [style*="--l-accent"].text-white {
+  color: #000000 !important;
+}
+html[data-theme="light"] .bg-klik-cyan.text-white {
   color: #ffffff !important;
 }
 
@@ -406,5 +412,36 @@ html[data-theme="light"] input.bg-black,
 html[data-theme="light"] textarea.bg-black {
   background-color: rgb(var(--app-surface)) !important;
   color: rgb(var(--app-fg)) !important;
+}
+
+
+/* CTA única (verde Qlyk) y escala tipográfica de página. */
+.btn-primary {
+  background: var(--color-primary, #30D158);
+  color: var(--color-primary-fg, #000000);
+}
+.btn-primary:hover {
+  filter: brightness(0.97);
+}
+.page-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-primary, #30D158);
+}
+.page-title {
+  margin-top: 0.5rem;
+  font-size: 1.875rem;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.page-lead {
+  margin-top: 0.5rem;
+  max-width: 36rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgb(var(--app-fg) / 0.55);
 }
 

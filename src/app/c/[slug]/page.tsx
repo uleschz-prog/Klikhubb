@@ -7,7 +7,8 @@ import { BuyButton } from "@/components/commerce/BuyButton";
 import { CourseReviewForm } from "@/components/course/CourseReviewForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { groupLessonsByModule, loadPublicCourse } from "@/lib/commerce/public-course";
-import { formatProductPrice } from "@/lib/commerce/billing";
+import { PriceTag } from "@/components/ui/PriceTag";
+import { resolveDisplayFxUsdMxn } from "@/lib/commerce/display-fx";
 import { courseWatchHref } from "@/lib/commerce/course";
 import { site } from "@/config/site";
 
@@ -61,6 +62,7 @@ export default async function PublicCoursePage({
   const lockedSelected = requested && !requested.isFreePreview ? requested : null;
   const modules = groupLessonsByModule(course.lessons);
   const checkoutHref = `/checkout/${course.slug}`;
+  const fxRate = resolveDisplayFxUsdMxn();
   const learnHref = courseWatchHref(course.slug);
   const loginHref = `/login?callbackUrl=${encodeURIComponent(`/c/${course.slug}`)}`;
 
@@ -101,7 +103,7 @@ export default async function PublicCoursePage({
             Abrir Studio
           </Link>
         ) : (
-          <BuyButton href={checkoutHref} price={course.price} currency={course.currency} label="Comprar" className="w-auto min-w-[240px]" />
+          <BuyButton href={checkoutHref} price={course.price} currency={course.currency} fx={fxRate} label="Comprar" className="w-auto min-w-[240px]" />
         )}
         {course.access === "guest" && !userId ? (
           <Link href={loginHref} className="text-sm font-semibold text-white/50 hover:text-white">
@@ -145,7 +147,10 @@ export default async function PublicCoursePage({
                   href={checkoutHref}
                   className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
                 >
-                  Comprar {formatProductPrice(course.price, course.currency)}
+                  <span className="flex items-center gap-2">
+                    Comprar
+                    <PriceTag amount={course.price} currency={course.currency} fx={fxRate} size="sm" compact />
+                  </span>
                 </Link>
               )}
             </div>

@@ -23,6 +23,13 @@ export function LandingNav() {
         <div className="hidden items-center gap-2 sm:flex">
           <ThemeToggle />
           <Link
+            href="/cursos"
+            className="text-sm font-medium transition hover:opacity-80"
+            style={{ color: "var(--l-fg)" }}
+          >
+            Cursos
+          </Link>
+          <Link
             href="/feed"
             className="rounded-full px-4 py-2 text-sm font-medium transition hover:opacity-80"
             style={{ color: "var(--l-fg)" }}
@@ -38,8 +45,7 @@ export function LandingNav() {
           </Link>
           <Link
             href="/register"
-            className="on-accent rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-            style={{ background: "var(--l-accent)" }}
+            className="btn-primary rounded-full px-4 py-2 text-sm font-semibold transition hover:opacity-90"
           >
             Crear cuenta
           </Link>
@@ -67,6 +73,14 @@ export function LandingNav() {
         <div className="border-t px-4 py-3 sm:hidden" style={{ borderColor: "var(--l-border)" }}>
           <div className="flex flex-col gap-2">
             <Link
+              href="/cursos"
+              onClick={() => setOpen(false)}
+              className="rounded-xl px-4 py-3 text-sm font-medium"
+              style={{ color: "var(--l-fg)", background: "var(--l-surface)" }}
+            >
+              Cursos
+            </Link>
+            <Link
               href="/feed"
               onClick={() => setOpen(false)}
               className="rounded-xl px-4 py-3 text-sm font-medium"
@@ -85,8 +99,7 @@ export function LandingNav() {
             <Link
               href="/register"
               onClick={() => setOpen(false)}
-              className="on-accent rounded-xl px-4 py-3 text-center text-sm font-semibold text-white"
-              style={{ background: "var(--l-accent)" }}
+              className="btn-primary rounded-xl px-4 py-3 text-center text-sm font-semibold"
             >
               Crear cuenta
             </Link>

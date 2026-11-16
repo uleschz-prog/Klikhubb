@@ -5,7 +5,7 @@ import {
   ogImageContentType,
   ogImageSize,
 } from "@/lib/og/share-card";
-import { formatProductPrice } from "@/lib/commerce/billing";
+import { formatCatalogPrice } from "@/lib/commerce/display-fx";
 
 export const runtime = "nodejs";
 export const alt = "Curso en Qlyk";
@@ -29,7 +29,10 @@ export default async function CourseOpenGraphImage({ params }: { params: { slug:
     return createCourseShareImage({
       title: product.title,
       creatorName: product.creator.displayName ?? product.creator.username ?? "Creador",
-      priceLabel: formatProductPrice(Number(product.price), product.currency.trim()),
+      priceLabel: (() => {
+        const price = formatCatalogPrice(Number(product.price), product.currency.trim());
+        return price.secondary ? `${price.primary} · ${price.secondary}` : price.primary;
+      })(),
     });
   } catch {
     return createShareImage();

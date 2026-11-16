@@ -25,6 +25,15 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
+      { protocol: "https", hostname: "*.blob.vercel-storage.com" },
+      { protocol: "https", hostname: "image.mux.com" },
+      { protocol: "https", hostname: "i.ytimg.com" },
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+    ],
+  },
   async redirects() {
     return [
       { source: "/academy", destination: "/cursos", permanent: true },

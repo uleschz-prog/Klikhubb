@@ -4,6 +4,8 @@ import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutMethods } from "@/config/checkout-methods";
 import { FeedTheater } from "@/components/video/FeedTheater";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { resolveDisplayFxUsdMxn } from "@/lib/commerce/display-fx";
+import { selectFeaturedCatalog } from "@/lib/video/catalog-trust";
 
 export const dynamic = "force-dynamic";
 
@@ -28,9 +30,10 @@ export default async function PlayPage({
     searchParams.v && !videos.some((item) => item.id === searchParams.v)
       ? await getPublishedVideo(searchParams.v, viewerId ?? undefined)
       : null;
+  const catalog = tab === "foryou" && !searchParams.v ? selectFeaturedCatalog(videos) : videos;
   const theaterVideos = [
     ...(focused ? [focused] : []),
-    ...(tab === "following" ? videos.filter((video) => video.followedByMe) : videos),
+    ...(tab === "following" ? catalog.filter((video) => video.followedByMe) : catalog),
   ];
 
   if (tab === "saved" && !viewerId) {
@@ -55,15 +58,12 @@ export default async function PlayPage({
     return (
       <PlatformShell title="Inicio" flush>
         <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Inicio</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">Aún no hay videos</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Inicio · Próximamente</p>
+          <h1 className="mt-3 font-display text-3xl font-extrabold">Aún no hay videos de creadores</h1>
           <p className="mt-3 max-w-sm text-sm text-white/55">
-            Aquí vas a ver los videos de la gente. Sube el tuyo si quieres ser el primero.
+            Aquí vas a ver clips originales publicados en Qlyk. Sube el tuyo si quieres ser de los primeros.
           </p>
-          <Link
-            href="/publish?lane=play"
-            className="mt-6 rounded-full bg-klik-green px-6 py-3 text-sm font-bold text-klik-black"
-          >
+          <Link href="/publish?lane=play" className="btn-primary mt-6 rounded-full px-6 py-3 text-sm font-bold">
             Subir video
           </Link>
         </div>
@@ -113,6 +113,7 @@ export default async function PlayPage({
       speiEnabled={methods.spei}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
+      fxRate={resolveDisplayFxUsdMxn()}
     />
   );
 }
