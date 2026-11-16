@@ -113,6 +113,7 @@ export default async function PlayPage({
       initialId={searchParams.v}
       signedIn={Boolean(session?.user)}
       mercadoPagoEnabled={methods.mercadopago}
+      usdtEnabled={methods.usdt}
       speiEnabled={methods.spei}
       fxRate={fx?.rate}
       buySlug={searchParams.buy}

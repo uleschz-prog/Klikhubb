@@ -50,6 +50,7 @@ export default async function FeedPage({
       tab={tab}
       signedIn={Boolean(session?.user)}
       mercadoPagoEnabled={methods.mercadopago}
+      usdtEnabled={methods.usdt}
       speiEnabled={methods.spei}
       fxRate={fx?.rate}
       buySlug={searchParams.buy}

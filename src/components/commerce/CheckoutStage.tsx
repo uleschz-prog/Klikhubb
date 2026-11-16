@@ -8,6 +8,7 @@ export function CheckoutStage({
   item,
   signedIn,
   mercadoPagoEnabled,
+  usdtEnabled,
   speiEnabled,
   amountMxn,
   fxRate,
@@ -17,6 +18,7 @@ export function CheckoutStage({
   item: BuyItem;
   signedIn: boolean;
   mercadoPagoEnabled: boolean;
+  usdtEnabled: boolean;
   speiEnabled: boolean;
   amountMxn?: number;
   fxRate?: number;
@@ -38,6 +40,7 @@ export function CheckoutStage({
         item={item}
         signedIn={signedIn}
         mercadoPagoEnabled={mercadoPagoEnabled}
+        usdtEnabled={usdtEnabled}
         speiEnabled={speiEnabled}
         amountMxn={amountMxn}
         fxRate={fxRate}
