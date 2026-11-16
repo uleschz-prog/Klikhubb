@@ -10,6 +10,8 @@ import {
   muxThumbnailUrl,
 } from "@/lib/video/types";
 import { youtubePoster } from "@/lib/video/source";
+import { PriceTag } from "@/components/ui/PriceTag";
+import { RemoteImage } from "@/components/ui/RemoteImage";
 
 function landingPoster(video: FeedVideo) {
   if (video.thumbnailUrl) return video.thumbnailUrl;
@@ -29,20 +31,12 @@ function landingPreviewSrc(video: FeedVideo) {
   return url;
 }
 
-export function LandingVideoCard({ video }: { video: FeedVideo }) {
+export function LandingVideoCard({ video, fxRate }: { video: FeedVideo; fxRate?: number }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hovered, setHovered] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const poster = landingPoster(video);
   const previewSrc = previewFailed ? null : landingPreviewSrc(video);
-  const price =
-    video.product != null
-      ? new Intl.NumberFormat("es-MX", {
-          style: "currency",
-          currency: video.product.currency || "MXN",
-          maximumFractionDigits: 0,
-        }).format(video.product.price)
-      : null;
 
   useEffect(() => {
     const node = videoRef.current;
@@ -60,7 +54,7 @@ export function LandingVideoCard({ video }: { video: FeedVideo }) {
   return (
     <Link
       href={video.product ? `/feed?v=${video.id}` : `/play?v=${video.id}`}
-      className="group block overflow-hidden rounded-2xl border transition duration-200 hover:-translate-y-0.5"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border transition duration-200 hover:-translate-y-0.5"
       style={{
         borderColor: "var(--l-border)",
         background: "var(--l-surface)",
@@ -83,27 +77,36 @@ export function LandingVideoCard({ video }: { video: FeedVideo }) {
             loop
             playsInline
             preload="metadata"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain object-center"
             aria-hidden
             onError={() => setPreviewFailed(true)}
           />
         ) : poster ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <RemoteImage
+            src={poster}
+            alt={video.title || video.caption || "Video"}
+            className="object-contain object-center"
+          />
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
         )}
-        {price ? (
+        {video.product ? (
           <span
-            className="on-accent pointer-events-none absolute left-3 top-3 z-10 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+            className="pointer-events-none absolute left-3 top-3 z-10 rounded-2xl px-2.5 py-1.5 text-klik-black"
             style={{ background: "var(--l-accent)" }}
           >
-            {price}
+            <PriceTag
+              amount={video.product.price}
+              currency={video.product.currency}
+              fx={fxRate}
+              size="sm"
+              compact
+            />
           </span>
         ) : null}
       </div>
-      <div className="space-y-1 px-3.5 py-3.5">
-        <p className="line-clamp-2 text-[15px] font-semibold leading-snug tracking-tight" style={{ color: "var(--l-fg)" }}>
+      <div className="mt-auto space-y-1 px-3.5 py-3.5">
+        <p className="line-clamp-2 min-h-[2.5rem] text-[15px] font-semibold leading-snug tracking-tight" style={{ color: "var(--l-fg)" }}>
           {video.title || video.caption || "Video"}
         </p>
         <p className="truncate text-[13px]" style={{ color: "var(--l-muted)" }}>
