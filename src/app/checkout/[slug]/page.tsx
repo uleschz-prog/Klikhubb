@@ -3,6 +3,7 @@ import { CheckoutStage } from "@/components/commerce/CheckoutStage";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutPreview, viewerOwnsProduct } from "@/lib/commerce/catalog";
 import { getCheckoutMethods } from "@/config/checkout-methods";
+import { resolveDisplayFxUsdMxn } from "@/lib/commerce/display-fx";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ export default async function CheckoutPage({
       signedIn
       speiEnabled={methods.spei}
       canceled={searchParams.canceled === "1"}
+      fxRate={resolveDisplayFxUsdMxn()}
       cancelPath={`/c/${params.slug}`}
     />
   );

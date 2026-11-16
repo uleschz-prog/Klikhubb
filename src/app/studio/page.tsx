@@ -4,6 +4,8 @@ import { PlatformShell } from "@/components/layout/PlatformShell";
 import { getDbUserId } from "@/lib/auth/session";
 import { formatProductPrice } from "@/lib/commerce/billing";
 import { listStudioCourses } from "@/lib/commerce/studio";
+import { loadCreatorLaunchProgress } from "@/components/dashboard/CreatorLaunchChecklist";
+import { CreatorOnboarding } from "@/components/onboarding/CreatorOnboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +21,21 @@ export default async function StudioPage() {
   if (!userId) redirect("/login?callbackUrl=/studio");
 
   const courses = await listStudioCourses(userId);
+  const launchProgress = await loadCreatorLaunchProgress(userId).catch(() => null);
 
   return (
     <PlatformShell title="Crear">
+      {launchProgress ? (
+        <div className="mb-8">
+          <CreatorOnboarding
+            progress={{
+              hasProfile: launchProgress.hasAvatar,
+              hasClip: launchProgress.hasShopVideo || launchProgress.hasPlayVideo,
+              hasCourse: launchProgress.hasCourse,
+            }}
+          />
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Creador</p>
