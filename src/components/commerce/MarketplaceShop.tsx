@@ -8,12 +8,11 @@ import { BuyDrawer, type BuyItem } from "@/components/commerce/BuyDrawer";
 export function MarketplaceShop({
   products,
   signedIn,
-  stripeEnabled,
+
   speiEnabled,
 }: {
   products: CatalogProduct[];
   signedIn: boolean;
-  stripeEnabled: boolean;
   speiEnabled: boolean;
 }) {
   const [slug, setSlug] = useState<string | null>(null);
@@ -52,7 +51,6 @@ export function MarketplaceShop({
         onClose={() => setSlug(null)}
         item={item}
         signedIn={signedIn}
-        stripeEnabled={stripeEnabled}
         speiEnabled={speiEnabled}
         loginHref={`/login?callbackUrl=${encodeURIComponent("/marketplace")}`}
         cancelPath="/marketplace"
