@@ -2,14 +2,13 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { assertCanPurchase, resolveProduct } from "@/lib/commerce/catalog";
-import { createStripeCheckoutSession } from "@/lib/commerce/stripe";
 import { CommerceError, settlePaidOrder } from "@/lib/commerce/settle-order";
 import {
   createManualPaymentRequest,
   ManualPaymentError,
 } from "@/lib/commerce/manual-payments";
 import { isLivePaymentsRequired } from "@/config/payment-instructions";
-import { isSpeiEnabled, isStripeEnabled, resolveCheckoutIntent } from "@/config/checkout-methods";
+import { isSpeiEnabled, resolveCheckoutIntent } from "@/config/checkout-methods";
 import { demoSettleOrder } from "@/lib/demo/store";
 import { checkoutSchema } from "@/lib/validations/auth";
 
@@ -44,30 +43,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se pudo validar la compra." }, { status: 500 });
   }
 
-  const stripeOn = isStripeEnabled();
   const speiOn = isSpeiEnabled();
-  const intent = resolveCheckoutIntent(method, stripeOn, speiOn);
-
-  if (intent === "stripe") {
-    if (!stripeOn) {
-      return NextResponse.json({ error: "El pago con tarjeta no está activo." }, { status: 503 });
-    }
-    try {
-      const checkout = await createStripeCheckoutSession({
-        buyerId,
-        buyerEmail: session.user.email,
-        product,
-        cancelPath: parsed.data.cancelPath,
-      });
-      if (!checkout.url) {
-        return NextResponse.json({ error: "Stripe no devolvió una URL de pago." }, { status: 502 });
-      }
-      return NextResponse.json({ ok: true, url: checkout.url, mode: "stripe" });
-    } catch (error) {
-      console.error(error);
-      return NextResponse.json({ error: "No se pudo abrir Stripe Checkout." }, { status: 502 });
-    }
-  }
+  const intent = resolveCheckoutIntent(method, speiOn);
 
   if (intent === "spei") {
     if (!speiOn) {
@@ -102,14 +79,9 @@ export async function POST(request: Request) {
     }
   }
 
-  if (intent === "choose" || isLivePaymentsRequired()) {
+  if (isLivePaymentsRequired()) {
     return NextResponse.json(
-      {
-        error:
-          intent === "choose"
-            ? "Elige tarjeta o transferencia SPEI."
-            : "Elige un método de pago. Falta conectar Stripe o los datos SPEI.",
-      },
+      { error: "Elige un método de pago. Falta configurar los datos SPEI." },
       { status: 503 },
     );
   }
