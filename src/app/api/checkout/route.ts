@@ -8,9 +8,10 @@ import {
   ManualPaymentError,
 } from "@/lib/commerce/manual-payments";
 import { isLivePaymentsRequired } from "@/config/payment-instructions";
-import { isSpeiEnabled, resolveCheckoutIntent } from "@/config/checkout-methods";
+import { getCheckoutMethods, resolveCheckoutIntent } from "@/config/checkout-methods";
 import { demoSettleOrder } from "@/lib/demo/store";
 import { checkoutSchema } from "@/lib/validations/auth";
+import { createCheckoutPreference, MercadoPagoError } from "@/lib/payments/mercadopago";
 
 export const runtime = "nodejs";
 
@@ -43,11 +44,50 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se pudo validar la compra." }, { status: 500 });
   }
 
-  const speiOn = isSpeiEnabled();
-  const intent = resolveCheckoutIntent(method, speiOn);
+  const methods = getCheckoutMethods();
+  const intent = resolveCheckoutIntent(method, methods);
+
+  if (intent === "mercadopago") {
+    if (!methods.mercadopago) {
+      return NextResponse.json(
+        { error: "Mercado Pago aún no está activo. Falta configurar las claves." },
+        { status: 503 },
+      );
+    }
+    try {
+      const preference = await createCheckoutPreference({
+        buyerId,
+        productId: product.id,
+        title: product.title,
+        description: product.description,
+        amountUsd: product.price,
+        buyerEmail: session.user.email,
+        successPath: `/checkout/success?slug=${encodeURIComponent(product.slug)}`,
+        failurePath: `/checkout/failure?slug=${encodeURIComponent(product.slug)}`,
+        pendingPath: `/checkout/pending?slug=${encodeURIComponent(product.slug)}`,
+      });
+      return NextResponse.json({
+        ok: true,
+        mode: "mercadopago",
+        preferenceId: preference.id,
+        initPoint: preference.initPoint,
+        externalReference: preference.externalReference,
+        amountUsd: preference.amountUsd,
+        amountMxn: preference.amountMxn,
+        fxRate: preference.fxRate,
+      });
+    } catch (error) {
+      if (error instanceof MercadoPagoError) {
+        const status = error.code === "NOT_CONFIGURED" || error.code === "FX_UNAVAILABLE" ? 503 : 502;
+        return NextResponse.json({ error: error.message, code: error.code }, { status });
+      }
+      console.error(error);
+      return NextResponse.json({ error: "No se pudo iniciar el pago con Mercado Pago." }, { status: 500 });
+    }
+  }
 
   if (intent === "spei") {
-    if (!speiOn) {
+    if (!methods.spei) {
       return NextResponse.json(
         { error: "Los pagos por transferencia aún no están activos. Falta configurar datos bancarios." },
         { status: 503 },
@@ -81,7 +121,7 @@ export async function POST(request: Request) {
 
   if (isLivePaymentsRequired()) {
     return NextResponse.json(
-      { error: "Elige un método de pago. Falta configurar los datos SPEI." },
+      { error: "Elige un método de pago. Falta configurar Mercado Pago o los datos SPEI." },
       { status: 503 },
     );
   }
