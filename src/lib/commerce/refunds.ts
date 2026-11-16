@@ -3,6 +3,7 @@ import { BUYER_REFUND_WINDOW_HOURS, isWithinBuyerRefundWindow } from "@/config/r
 import { fromCents, toCents } from "@/lib/money/cents";
 import { prisma } from "@/lib/prisma";
 import { notifyAndEmail } from "@/lib/notifications";
+import { MercadoPagoError, refundMercadoPagoPayment } from "@/lib/payments/mercadopago";
 
 export class RefundError extends Error {
   constructor(
@@ -12,7 +13,8 @@ export class RefundError extends Error {
       | "FORBIDDEN"
       | "WINDOW_CLOSED"
       | "ALREADY_REFUNDED"
-      | "NO_ACCESS",
+      | "NO_ACCESS"
+      | "PROVIDER_FAILED",
   ) {
     super(message);
     this.name = "RefundError";
@@ -184,6 +186,7 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     where: { id: orderId },
     include: {
       items: { take: 1, include: { product: { select: { id: true, title: true, slug: true, type: true } } } },
+      payments: { take: 1 },
     },
   });
 
@@ -207,6 +210,19 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     );
   }
 
+  const payment = order.payments[0];
+  if (payment?.provider === "mercadopago" && payment.providerRef) {
+    try {
+      await refundMercadoPagoPayment(payment.providerRef, order.id);
+    } catch (error) {
+      const message =
+        error instanceof MercadoPagoError
+          ? error.message
+          : "Mercado Pago no pudo devolver el cargo. Inténtalo de nuevo o escribe a soporte.";
+      throw new RefundError(message, "PROVIDER_FAILED");
+    }
+  }
+
   const result = await revokeCourseAccessForRefund({
     buyerId,
     productId: product.id,
@@ -225,7 +241,10 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     userId: buyerId,
     type: "SYSTEM",
     title: "Devolución aceptada",
-    body: `Aceptamos la devolución de «${product.title}». Si pagaste por SPEI u otro método manual, Qlyk te transfiere de vuelta. Ya no tienes acceso al curso.`,
+    body:
+      payment?.provider === "mercadopago"
+        ? `Reembolsamos «${product.title}». Mercado Pago devuelve el cargo al medio que usaste. Ya no tienes acceso al curso.`
+        : `Aceptamos la devolución de «${product.title}». Si pagaste por SPEI, Qlyk te transfiere de vuelta. Ya no tienes acceso al curso.`,
     href: "/orders",
     emailSubject: `Qlyk · Devolución de ${product.title}`,
   });
@@ -245,7 +264,7 @@ export async function requestBuyerCourseRefund(buyerId: string, orderId: string)
     ...result,
     ok: true as const,
     productTitle: product.title,
-    mode: "manual" as const,
+    mode: payment?.provider === "mercadopago" ? ("mercadopago" as const) : ("manual" as const),
   };
 }
 

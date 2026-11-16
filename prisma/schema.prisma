@@ -704,6 +704,13 @@ model Order {
   tax         Decimal     @default(0) @db.Decimal(19, 4)
   total       Decimal     @db.Decimal(19, 4)
   currency    String      @db.Char(3) @default("USD")
+  /// Precio del producto en USD al momento del pago.
+  amountUsd   Decimal?    @db.Decimal(19, 4)
+  /// Importe cobrado en MXN (Checkout Pro).
+  amountMxn   Decimal?    @db.Decimal(19, 4)
+  /// Tipo de cambio USD→MXN usado al crear el cobro.
+  fxRate      Decimal?    @db.Decimal(19, 8)
+  fxAt        DateTime?
   paidAt      DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
