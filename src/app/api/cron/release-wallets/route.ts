@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/cron/auth";
+import { syncOpenMercadoPagoPayouts } from "@/lib/commerce/payouts";
 import { releaseMatureCommissions } from "@/lib/commerce/wallet";
 
 export const runtime = "nodejs";
@@ -12,7 +13,8 @@ export async function GET(request: Request) {
 
   try {
     const result = await releaseMatureCommissions();
-    return NextResponse.json({ ok: true, ...result });
+    const payouts = await syncOpenMercadoPagoPayouts();
+    return NextResponse.json({ ok: true, ...result, payouts });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "No se pudo liberar el hold." }, { status: 500 });
