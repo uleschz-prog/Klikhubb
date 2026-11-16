@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
-import { WalletConnectCard } from "@/components/wallet/WalletConnectCard";
 import { WalletPayoutForm } from "@/components/wallet/WalletPayoutForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/commerce/split";
 import { formatWalletDate, ledgerLabel, loadWalletView } from "@/lib/commerce/wallet";
-import { isConnectPayoutsEnabled, loadConnectStatus } from "@/lib/commerce/stripe-connect";
 
 export const dynamic = "force-dynamic";
 
@@ -25,23 +23,13 @@ function payoutStatus(status: string) {
   }
 }
 
-export default async function WalletPage({
-  searchParams,
-}: {
-  searchParams: { connect?: string };
-}) {
+export default async function WalletPage() {
   const userId = await getDbUserId();
   if (!userId) {
     redirect("/login?callbackUrl=/wallet");
   }
 
   const wallet = await loadWalletView(userId);
-  const connectEnabled = isConnectPayoutsEnabled();
-  const connect = connectEnabled ? await loadConnectStatus(userId) : null;
-  const connectNotice =
-    searchParams.connect === "return" || searchParams.connect === "refresh"
-      ? searchParams.connect
-      : null;
 
   return (
     <PlatformShell title="Monedero">
@@ -49,7 +37,7 @@ export default async function WalletPage({
       <h1 className="mt-2 font-display text-3xl font-extrabold">Monedero</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
         Cada venta espera {wallet.holdLabel} por si hay un reembolso. Después pasa a disponible.
-        Vincula tu Stripe para que te transfiramos el retiro a tu banco.
+        El retiro lo deposita el equipo a mano (mínimo 10 USD).
         {wallet.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
       </p>
 
@@ -88,14 +76,10 @@ export default async function WalletPage({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <WalletConnectCard initial={connect} connectNotice={connectNotice} />
-
         <WalletPayoutForm
           available={wallet.available}
           minPayout={wallet.minPayout}
           currency={wallet.currency}
-          connectRequired={connectEnabled}
-          connectReady={Boolean(connect?.payoutsEnabled)}
         />
 
         <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
