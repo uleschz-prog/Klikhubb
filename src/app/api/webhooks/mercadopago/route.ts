@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { CommerceError } from "@/lib/commerce/settle-order";
+import { extractPayoutIdFromNotification } from "@/lib/commerce/payout-state";
+import { syncMercadoPagoPayoutByProviderId } from "@/lib/commerce/payouts";
 import {
   extractPaymentIdFromWebhook,
   signatureDataId,
@@ -28,6 +30,24 @@ async function handleNotification(request: Request) {
     body = await request.json().catch(() => null);
   }
 
+  const payoutId = extractPayoutIdFromNotification({
+    query: url.searchParams,
+    body,
+  });
+  if (payoutId) {
+    try {
+      const result = await syncMercadoPagoPayoutByProviderId(payoutId, "webhook");
+      return NextResponse.json({ ok: true, kind: "payout", ...result });
+    } catch (error) {
+      if (error instanceof MercadoPagoError) {
+        console.error("[mercadopago] payout webhook", error.message);
+        return NextResponse.json({ error: error.message }, { status: 502 });
+      }
+      console.error(error);
+      return NextResponse.json({ error: "Error al sincronizar el retiro" }, { status: 500 });
+    }
+  }
+
   const paymentId = extractPaymentIdFromWebhook({
     query: url.searchParams,
     body,
@@ -50,7 +70,7 @@ async function handleNotification(request: Request) {
 
   try {
     const result = await settleFromMercadoPagoPaymentId(paymentId);
-    return NextResponse.json({ ok: true, ...result });
+    return NextResponse.json({ ok: true, kind: "payment", ...result });
   } catch (error) {
     if (error instanceof MercadoPagoError) {
       console.error("[mercadopago] webhook", error.message);
@@ -59,7 +79,6 @@ async function handleNotification(request: Request) {
     }
     if (error instanceof CommerceError) {
       console.warn("[mercadopago] settle commerce", error.code, error.message);
-      // 200 para que MP no reintente en ya-owned / conflictos de negocio
       return NextResponse.json({ ok: false, code: error.code, error: error.message });
     }
     console.error(error);

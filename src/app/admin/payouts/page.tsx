@@ -8,6 +8,17 @@ import { formatWalletDate } from "@/lib/commerce/wallet";
 
 export const dynamic = "force-dynamic";
 
+function statusLabel(status: string) {
+  switch (status) {
+    case "PENDING":
+      return "Pendiente";
+    case "PROCESSING":
+      return "En proceso (Mercado Pago)";
+    default:
+      return status;
+  }
+}
+
 export default async function AdminPayoutsPage() {
   await requireAdminPage();
   const payouts = await listPendingManualPayouts();
@@ -15,9 +26,10 @@ export default async function AdminPayoutsPage() {
   return (
     <PlatformShell title="Admin">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Operaciones</p>
-      <h1 className="mt-2 font-display text-3xl font-extrabold">Retiros manuales</h1>
+      <h1 className="mt-2 font-display text-3xl font-extrabold">Retiros</h1>
       <p className="mt-2 max-w-2xl text-sm text-white/55">
-        Los creadores piden retiro y tú transfieres el dinero por fuera (SPEI, PayPal, etc.). Marca cada retiro como pagado cuando lo hayas enviado.
+        Si Mercado Pago Payouts está habilitado, el sistema intenta enviar el dinero a la cuenta del creador. Si falla o
+        el flag está apagado, aparece aquí para que lo marques pagado a mano o lo devuelvas al monedero.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm">
@@ -49,16 +61,20 @@ export default async function AdminPayoutsPage() {
               <div>
                 <p className="font-display text-xl font-extrabold text-klik-green">
                   {formatMoney(payout.amount, payout.currency)}
+                  {payout.amountMxn != null ? ` · ${formatMoney(payout.amountMxn, "MXN")}` : ""}
                 </p>
                 <p className="mt-1 text-sm text-white/80">
                   {payout.user.displayName ?? payout.user.username ?? "Usuario"} ·{" "}
-                  {payout.user.email ?? payout.user.username ?? payout.user.id}
+                  {payout.destination ?? payout.user.email ?? payout.user.username ?? payout.user.id}
                 </p>
                 <p className="mt-1 text-xs text-white/40">
-                  Solicitado {formatWalletDate(payout.createdAt)} · ID {payout.id.slice(0, 8)}…
+                  {statusLabel(payout.status)} · {payout.method} · Solicitado {formatWalletDate(payout.createdAt)} · ID{" "}
+                  {payout.id.slice(0, 8)}…
+                  {payout.mpPayoutId ? ` · MP ${payout.mpPayoutId}` : ""}
                 </p>
+                {payout.failureNote ? <p className="mt-1 text-xs text-amber-300">{payout.failureNote}</p> : null}
               </div>
-              <AdminPayoutActions payoutId={payout.id} />
+              <AdminPayoutActions payoutId={payout.id} canSync={Boolean(payout.mpPayoutId)} />
             </div>
           ))}
         </div>
