@@ -1,29 +1,16 @@
 import { LedgerType, Prisma } from "@prisma/client";
 import { COMPENSATION_PLAN_V1, creatorHoldLabel, creatorHoldMs } from "@/config/compensation-plan";
 import { prisma } from "@/lib/prisma";
-import { fromCents, toCents } from "@/lib/money/cents";
+import { fromCents } from "@/lib/money/cents";
 import {
   demoLoadWalletView,
   demoReleaseMature,
   demoRequestPayout,
   shouldUseDemoFallback,
 } from "@/lib/demo/store";
+import { MIN_PAYOUT_CENTS, WalletError } from "@/lib/commerce/wallet-core";
 
-export const MIN_PAYOUT_CENTS = 1_000;
-
-export class WalletError extends Error {
-  constructor(
-    message: string,
-    public readonly code: "INSUFFICIENT" | "MINIMUM" | "USER_NOT_FOUND",
-  ) {
-    super(message);
-    this.name = "WalletError";
-  }
-}
-
-function money(cents: number): Prisma.Decimal {
-  return new Prisma.Decimal(fromCents(cents).toFixed(4));
-}
+export { MIN_PAYOUT_CENTS, WalletError };
 
 function asMoney(value: Prisma.Decimal | number): Prisma.Decimal {
   return new Prisma.Decimal(Number(value).toFixed(4));
@@ -67,6 +54,7 @@ export type WalletView = {
   ledger: WalletMovement[];
   payouts: WalletPayoutRow[];
   demo: boolean;
+  mpPayoutEmail: string | null;
 };
 
 export type ReleaseResult = {
@@ -152,7 +140,9 @@ export async function loadWalletView(userId: string): Promise<WalletView> {
 
 export async function requestPayout(userId: string, amount?: number) {
   try {
-    return await payoutInDb(userId, amount);
+    await releaseInDb(userId);
+    const { requestCreatorPayout } = await import("@/lib/commerce/payouts");
+    return await requestCreatorPayout(userId, amount);
   } catch (error) {
     if (error instanceof WalletError) throw error;
     if (!shouldUseDemoFallback(error)) throw error;
@@ -170,7 +160,7 @@ function toWalletError(error: unknown): WalletError {
   const code =
     error && typeof error === "object" && "code" in error ? String(error.code) : "";
   const message = error instanceof Error ? error.message : "No se pudo solicitar el retiro.";
-  if (code === "MINIMUM" || code === "INSUFFICIENT" || code === "USER_NOT_FOUND") {
+  if (code === "MINIMUM" || code === "INSUFFICIENT" || code === "USER_NOT_FOUND" || code === "DESTINATION_REQUIRED") {
     return new WalletError(message, code);
   }
   if (message === "USER_NOT_FOUND") {
@@ -376,77 +366,6 @@ async function readWalletView(userId: string): Promise<WalletView> {
       createdAt: row.createdAt.toISOString(),
     })),
     demo: false,
-  };
-}
-
-async function payoutInDb(userId: string, requestedAmount?: number) {
-  await releaseInDb(userId);
-
-  const draft = await prisma.$transaction(async (tx) => {
-    const wallet = await tx.wallet.findUnique({ where: { userId } });
-    if (!wallet) {
-      throw new WalletError("Aún no tienes monedero. Primero vende o invita.", "USER_NOT_FOUND");
-    }
-
-    const availableCents = toCents(Number(wallet.available));
-    if (availableCents < MIN_PAYOUT_CENTS) {
-      throw new WalletError(
-        `Necesitas al menos ${fromCents(MIN_PAYOUT_CENTS).toFixed(2)} USD disponibles para retirar.`,
-        "MINIMUM",
-      );
-    }
-
-    const requestCents = requestedAmount == null ? availableCents : toCents(requestedAmount);
-    if (requestCents < MIN_PAYOUT_CENTS) {
-      throw new WalletError(
-        `El retiro mínimo es ${fromCents(MIN_PAYOUT_CENTS).toFixed(2)} USD.`,
-        "MINIMUM",
-      );
-    }
-    if (requestCents > availableCents) {
-      throw new WalletError("No tienes ese saldo disponible.", "INSUFFICIENT");
-    }
-
-    const amount = money(requestCents);
-    const payout = await tx.payout.create({
-      data: {
-        userId,
-        amount,
-        currency: wallet.currency,
-        method: "manual",
-        status: "PENDING",
-      },
-    });
-
-    const updated = await tx.wallet.update({
-      where: { userId },
-      data: { available: { decrement: amount } },
-    });
-
-    await tx.walletLedger.create({
-      data: {
-        userId,
-        amount: amount.negated(),
-        balanceAfter: asMoney(Number(updated.available) + Number(updated.pending)),
-        type: LedgerType.PAYOUT,
-        payoutId: payout.id,
-        note: "Retiro solicitado. El equipo lo deposita manualmente.",
-      },
-    });
-
-    return {
-      payoutId: payout.id,
-      amount: Number(amount),
-      available: Number(updated.available),
-      pending: Number(updated.pending),
-    };
-  });
-
-  return {
-    payoutId: draft.payoutId,
-    amount: draft.amount,
-    available: draft.available,
-    pending: draft.pending,
-    mode: "manual" as const,
+    mpPayoutEmail: wallet?.mpPayoutEmail ?? null,
   };
 }

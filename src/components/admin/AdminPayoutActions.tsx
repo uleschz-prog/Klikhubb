@@ -3,16 +3,24 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function AdminPayoutActions({ payoutId }: { payoutId: string }) {
+export function AdminPayoutActions({
+  payoutId,
+  canSync,
+}: {
+  payoutId: string;
+  canSync?: boolean;
+}) {
   const router = useRouter();
-  const [busy, setBusy] = useState<"complete" | "reject" | null>(null);
+  const [busy, setBusy] = useState<"complete" | "reject" | "sync" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function act(action: "complete" | "reject") {
+  async function act(action: "complete" | "reject" | "sync") {
     const note =
       action === "reject"
         ? window.prompt("Motivo del rechazo (opcional). El saldo vuelve al monedero del usuario.")
-        : window.prompt("Nota interna (opcional). Ej: transferencia SPEI 30/08.");
+        : action === "complete"
+          ? window.prompt("Nota interna (opcional). Ej: transferencia SPEI o acreditado en MP.")
+          : undefined;
 
     setBusy(action);
     setError(null);
@@ -39,6 +47,16 @@ export function AdminPayoutActions({ payoutId }: { payoutId: string }) {
   return (
     <div className="flex flex-col items-end gap-2">
       <div className="flex flex-wrap justify-end gap-2">
+        {canSync ? (
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => act("sync")}
+            className="inline-flex min-h-10 items-center rounded-full border border-white/15 px-4 text-sm font-bold text-white disabled:opacity-50"
+          >
+            {busy === "sync" ? "Consultando…" : "Sincronizar MP"}
+          </button>
+        ) : null}
         <button
           type="button"
           disabled={busy !== null}

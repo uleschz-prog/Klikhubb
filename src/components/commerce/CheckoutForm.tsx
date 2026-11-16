@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { formatProductPrice } from "@/lib/commerce/billing";
+import { usdToMxn } from "@/lib/payments/fx";
 
 type ManualInstructions = {
   bankName: string;
@@ -28,7 +29,10 @@ export function CheckoutForm({
   compact = false,
   cancelPath,
   onPaid,
+  mercadoPagoEnabled = false,
   speiEnabled = false,
+  amountMxn,
+  fxRate,
 }: {
   slug: string;
   title: string;
@@ -37,20 +41,28 @@ export function CheckoutForm({
   compact?: boolean;
   cancelPath?: string;
   onPaid?: (orderId: string) => void;
+  mercadoPagoEnabled?: boolean;
   speiEnabled?: boolean;
+  amountMxn?: number;
+  fxRate?: number;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
-  const [loadingMethod, setLoadingMethod] = useState<"spei" | "demo" | null>(null);
+  const [loadingMethod, setLoadingMethod] = useState<"mercadopago" | "spei" | "demo" | null>(null);
   const [manual, setManual] = useState<ManualCheckout | null>(null);
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const busy = loadingMethod !== null;
-  const hasLiveMethod = speiEnabled;
+  const hasLiveMethod = mercadoPagoEnabled || speiEnabled;
+  const displayMxn = amountMxn ?? (fxRate ? usdToMxn(price, fxRate) : undefined);
+  const priceLabel =
+    displayMxn != null
+      ? `${formatProductPrice(displayMxn, "MXN")}${fxRate ? ` · ${formatProductPrice(price, "USD")}` : ""}`
+      : formatProductPrice(price, currency);
 
-  async function startCheckout(method: "spei" | "demo") {
+  async function startCheckout(method: "mercadopago" | "spei" | "demo") {
     setLoadingMethod(method);
     setError("");
 
@@ -69,6 +81,7 @@ export function CheckoutForm({
       orderId?: string;
       mode?: string;
       url?: string;
+      initPoint?: string;
       requestId?: string;
       reference?: string;
       amount?: number;
@@ -83,6 +96,11 @@ export function CheckoutForm({
         return;
       }
       setError(payload.error ?? "No se pudo iniciar el pago.");
+      return;
+    }
+
+    if (payload.mode === "mercadopago" && (payload.initPoint || payload.url)) {
+      window.location.href = payload.initPoint || payload.url || "";
       return;
     }
 
@@ -270,15 +288,31 @@ export function CheckoutForm({
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
 
       <div className="space-y-3">
+        {mercadoPagoEnabled ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => startCheckout("mercadopago")}
+            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+          >
+            <span>{loadingMethod === "mercadopago" ? "Abriendo Mercado Pago…" : "Pagar con Mercado Pago"}</span>
+            <span>{priceLabel}</span>
+          </button>
+        ) : null}
+
         {speiEnabled ? (
           <button
             type="button"
             disabled={busy}
             onClick={() => startCheckout("spei")}
-            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+            className={
+              mercadoPagoEnabled
+                ? "flex min-h-12 w-full items-center justify-between rounded-full border border-white/20 bg-white/8 px-6 text-sm font-bold text-white disabled:opacity-60"
+                : "flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
+            }
           >
             <span>{loadingMethod === "spei" ? "Preparando SPEI…" : "Transferir por SPEI"}</span>
-            <span>{formatProductPrice(price, currency)}</span>
+            <span>{priceLabel}</span>
           </button>
         ) : null}
 
@@ -290,15 +324,19 @@ export function CheckoutForm({
             className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
           >
             <span>{loadingMethod === "demo" ? "Procesando…" : `Pagar ${title}`}</span>
-            <span>{formatProductPrice(price, currency)}</span>
+            <span>{priceLabel}</span>
           </button>
         ) : null}
       </div>
 
       <p className="text-center text-[11px] text-white/35">
-        {speiEnabled
-          ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
-          : "Entorno local: el acceso se abre al instante, sin cobro real."}
+        {mercadoPagoEnabled && speiEnabled
+          ? "Mercado Pago (tarjeta, SPEI u OXXO) o transferencia SPEI directa con comprobante."
+          : mercadoPagoEnabled
+            ? "Pago con Mercado Pago: tarjeta, SPEI u OXXO. El acceso se abre al confirmar el cargo."
+            : speiEnabled
+              ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
+              : "Entorno local: el acceso se abre al instante, sin cobro real."}
       </p>
     </div>
   );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listPublishedVideos, listSavedVideos } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutMethods } from "@/config/checkout-methods";
+import { loadDisplayFxQuote } from "@/lib/payments/display-quote";
 import { FeedEntry } from "@/components/explore/FeedEntry";
 import { PlatformShell } from "@/components/layout/PlatformShell";
 
@@ -40,6 +41,7 @@ export default async function FeedPage({
   }
 
   const methods = getCheckoutMethods();
+  const fx = await loadDisplayFxQuote();
 
   return (
     <FeedEntry
@@ -47,7 +49,9 @@ export default async function FeedPage({
       clipId={searchParams.v}
       tab={tab}
       signedIn={Boolean(session?.user)}
+      mercadoPagoEnabled={methods.mercadopago}
       speiEnabled={methods.spei}
+      fxRate={fx?.rate}
       buySlug={searchParams.buy}
       canceled={searchParams.canceled === "1"}
     />

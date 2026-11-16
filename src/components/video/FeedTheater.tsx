@@ -34,7 +34,10 @@ export function FeedTheater({
   videos,
   initialId,
   signedIn = false,
+  mercadoPagoEnabled = false,
   speiEnabled = false,
+  amountMxn,
+  fxRate,
   buySlug,
   canceled = false,
   home = "shop",
@@ -43,7 +46,10 @@ export function FeedTheater({
   videos: FeedVideo[];
   initialId?: string;
   signedIn?: boolean;
+  mercadoPagoEnabled?: boolean;
   speiEnabled?: boolean;
+  amountMxn?: number;
+  fxRate?: number;
   buySlug?: string;
   canceled?: boolean;
   home?: "play" | "shop";
@@ -830,7 +836,10 @@ export function FeedTheater({
         onClose={closeShop}
         item={shopItem}
         signedIn={signedIn}
+        mercadoPagoEnabled={mercadoPagoEnabled}
         speiEnabled={speiEnabled}
+        amountMxn={amountMxn}
+        fxRate={fxRate}
         loginHref={`/login?callbackUrl=${encodeURIComponent(clipHref(video.id, video.product ? { buy: video.product.slug } : {}))}`}
         cancelPath={clipHref(video.id, video.product ? { buy: video.product.slug } : {})}
         canceled={canceled}

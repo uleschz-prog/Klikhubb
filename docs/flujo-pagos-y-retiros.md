@@ -4,7 +4,7 @@ Este documento explica qué pasa cuando alguien compra un curso, quién cobra qu
 
 ## Resumen en una frase
 
-**Hoy:** el comprador paga por **SPEI** (transferencia + comprobante). Qlyk cobra en una cuenta central, asienta la venta, el creador ve su parte en el monedero y **a las 24 horas** (misma ventana de reembolso) puede pedir un retiro que **Qlykadmin** deposita a mano.
+**Hoy:** el comprador paga con **Mercado Pago Checkout Pro** (tarjeta, SPEI u OXXO, en MXN) o, como respaldo, por **SPEI manual**. Qlyk cobra en una cuenta central, asienta la venta (descontando la tarifa de MP del bruto antes del 93/7), el creador ve su parte en el monedero y **a las 24 horas** puede pedir un retiro que **Qlykadmin** deposita a mano.
 
 Las comisiones de un procesador de pagos, cuando exista uno, se descuentan del **importe bruto antes** del reparto 93/7 (o del 100% del plan mensual). El SPEI manual no aplica tarifa de procesador.
 
@@ -48,14 +48,23 @@ El comprador tiene **24 horas** desde el pago confirmado para pedir la devoluci�
 
 ### 5. Retiro
 
-- El creador pide retiro en `/wallet` (mínimo 10 USD).
-- El retiro queda `manual` / `PENDING` y **Qlykadmin** lo marca pagado en `/admin/payouts`.
+- El creador guarda en `/wallet` el correo de su cuenta Mercado Pago y pide retiro (mínimo 10 USD). El saldo en USD se convierte a MXN con el tipo de cambio de ese momento.
+- Si `MP_PAYOUTS_ENABLED=1` (y, en producción, la clave Ed25519 `MP_PAYOUTS_PRIVATE_KEY` está registrada ante Mercado Pago), Qlyk llama a `POST /v1/payouts` con `X-Idempotency-Key`, deja el retiro en `PROCESSING` y lo cierra con el webhook o el cron `/api/cron/sync-payouts`. Si el envío falla, el saldo vuelve a disponible.
+- Si el flag está apagado o falta la firma, el retiro queda `PENDING` y **Qlykadmin** lo marca pagado o lo rechaza (devolviendo el saldo) en `/admin/payouts`.
 
 ---
 
 ## Variables en Vercel (producción)
 
+Webhook de Mercado Pago: `https://qlyk.vercel.app/api/webhooks/mercadopago`
+
 ```env
+MP_ACCESS_TOKEN="..."
+MP_PUBLIC_KEY="..."
+MP_WEBHOOK_SECRET="..."
+# MP_PAYOUTS_ENABLED="1"
+# MP_PAYOUTS_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+FX_USD_MXN="18.50"
 PAYMENT_BANK_NAME="BBVA"
 PAYMENT_BENEFICIARY="…"
 PAYMENT_CLABE="…"

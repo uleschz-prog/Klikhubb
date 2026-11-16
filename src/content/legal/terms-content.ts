@@ -24,7 +24,7 @@ export const termsSections: LegalSection[] = [
           '«Creador»: Usuario que publica contenido, productos, cursos o membresías en la Plataforma.',
           '«Miembro» o «Estudiante»: Usuario que consume contenido, participa en comunidades o realiza compras.',
           '«Producto»: bien o servicio digital (curso, membresía, contenido descargable u otro activo digital) ofrecido por un Creador.',
-          '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (hoy, transferencia bancaria SPEI con confirmación manual; otros métodos que el Operador habilite en el checkout).',
+          '«Compra»: transacción pagada procesada a través de los medios habilitados en la Plataforma (Mercado Pago Checkout Pro con tarjeta, SPEI u OXXO, y/o transferencia bancaria SPEI con confirmación manual).',
           '«Monedero»: saldo interno que refleja importes pendientes o disponibles derivados de ventas o ajustes, sujeto a retenciones y verificaciones.',
           '«Hold» o «retención»: periodo de 24 horas durante el cual ciertos importes permanecen bloqueados antes de poder retirarse, alineado con la ventana de reembolso del comprador, para gestionar devoluciones o incidencias.',
         ],
@@ -119,7 +119,7 @@ export const termsSections: LegalSection[] = [
           "Plan «pago cuando vendo»: 93% para el Creador y 7% de tarifa de plataforma (Qlykadmin).",
           "Plan mensual ($25 USD / 30 días): 100% para el Creador mientras el periodo esté activo (0% de tarifa de plataforma).",
           "El Creador puede cambiar de modalidad en cualquier momento desde su dashboard. Cada venta usa el plan efectivo en el momento del pago.",
-          "Las comisiones o tarifas del procesador de pagos (cuando el cobro se realice por un proveedor externo) se descuentan del importe bruto de la venta antes de aplicar el reparto 93/7 o el 100% del plan mensual. El método SPEI manual no aplica tarifa de procesador.",
+          "Las comisiones o tarifas del procesador de pagos (cuando el cobro se realice por un proveedor externo) se descuentan del importe bruto de la venta antes de aplicar el reparto 93/7 o el 100% del plan mensual. El método SPEI manual no aplica tarifa de procesador. Mercado Pago sí cobra una comisión sobre el importe bruto, que se descuenta antes del reparto.",
         ],
       },
       {
@@ -138,8 +138,8 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         paragraphs: [
-          "Los pagos de los compradores se procesan por los métodos habilitados en el checkout. Hoy el método disponible es la transferencia bancaria SPEI con confirmación manual. El Operador no almacena números completos de tarjeta en sus servidores.",
-          "Los retiros del Monedero se procesan de forma manual por el Operador, previa verificación. El Operador no almacena números de cuenta completos más allá de lo necesario para ejecutar el depósito.",
+          "Los pagos de los compradores se procesan por los métodos habilitados en el checkout. El método principal es Mercado Pago Checkout Pro (tarjeta, SPEI u OXXO, en pesos mexicanos). Puede coexistir una transferencia SPEI con confirmación manual. El Operador no almacena números completos de tarjeta en sus servidores; el cargo con tarjeta lo procesa Mercado Pago.",
+          "Los retiros del Monedero, cuando la vía automática está habilitada, se envían a la cuenta de Mercado Pago cuyo correo el creador haya registrado en su monedero. El saldo disponible está expresado en USD y, al solicitar el retiro, se convierte a MXN con el tipo de cambio vigente en ese momento. Si esa vía no está disponible o el envío falla, el Operador procesa el retiro de forma manual, previa verificación, y puede devolver el saldo al monedero. El Operador no almacena números de cuenta completos más allá de lo necesario para ejecutar el depósito.",
           "El Monedero muestra saldos pendientes y disponibles con carácter informativo. Un saldo disponible no implica necesariamente que el retiro sea inmediato si faltan verificaciones de identidad (KYC), datos bancarios o revisiones de riesgo.",
           "Las solicitudes de retiro pueden estar sujetas a importes mínimos, comisiones de terceros, plazos de procesamiento y comprobaciones antilavado. Nos reservamos el derecho de rechazar retiros si existen indicios de fraude o incumplimiento.",
           "El Operador no es entidad de crédito ni custodio de depósitos bancarios regulados. Los saldos reflejan derechos económicos internos derivados de la actividad en la Plataforma, convertibles según las reglas vigentes.",
