@@ -503,6 +503,7 @@ export async function demoHub(userId: string) {
     leaderboard,
     demo: true as const,
     mpPayoutEmail: null,
+    usdtTrc20Address: null,
   };
 }
 
@@ -607,6 +608,7 @@ export async function demoLoadWalletView(userId: string) {
       })),
     demo: true as const,
     mpPayoutEmail: null,
+    usdtTrc20Address: null,
   };
 }
 
