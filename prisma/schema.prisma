@@ -800,6 +800,8 @@ model Wallet {
   pending         Decimal @default(0) @db.Decimal(19, 4)
   lifetimeEarned  Decimal @default(0) @db.Decimal(19, 4)
   currency        String  @db.Char(3) @default("USD")
+  /// Correo de la cuenta Mercado Pago donde el creador quiere recibir retiros.
+  mpPayoutEmail   String?
   updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -830,23 +832,51 @@ model WalletLedger {
 }
 
 model Payout {
-  id           String       @id @default(cuid())
-  userId       String
-  amount       Decimal      @db.Decimal(19, 4)
-  currency     String       @db.Char(3) @default("USD")
-  method       String
-  status       PayoutStatus @default(PENDING)
-  providerRef  String?      @unique
-  completedAt  DateTime?
-  failureNote  String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  userId          String
+  amount          Decimal      @db.Decimal(19, 4)
+  currency        String       @db.Char(3) @default("USD")
+  method          String
+  status          PayoutStatus @default(PENDING)
+  providerRef     String?      @unique
+  /// Correo o identificador de destino usado al solicitar el retiro.
+  destination     String?
+  amountUsd       Decimal?     @db.Decimal(19, 4)
+  amountMxn       Decimal?     @db.Decimal(19, 4)
+  fxRate          Decimal?     @db.Decimal(19, 8)
+  fxAt            DateTime?
+  idempotencyKey  String?      @unique
+  /// Referencia numérica enviada a Mercado Pago (external_reference).
+  externalRef     String?
+  mpPayoutId      String?
+  mpTransactionId String?
+  completedAt     DateTime?
+  failureNote     String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   user   User           @relation(fields: [userId], references: [id], onDelete: Restrict)
   ledger WalletLedger[]
+  events PayoutEvent[]
 
   @@index([userId, status, createdAt])
+  @@index([mpPayoutId])
   @@map("payouts")
+}
+
+/// Auditoría de cambios de estado de un retiro (solicitud, webhook, cron, admin).
+model PayoutEvent {
+  id        String   @id @default(cuid())
+  payoutId  String
+  source    String
+  status    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  payout Payout @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+
+  @@index([payoutId, createdAt])
+  @@map("payout_events")
 }
 
 // ---------------------------------------------------------------------------

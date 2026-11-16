@@ -502,6 +502,7 @@ export async function demoHub(userId: string) {
     wallet,
     leaderboard,
     demo: true as const,
+    mpPayoutEmail: null,
   };
 }
 
@@ -605,6 +606,7 @@ export async function demoLoadWalletView(userId: string) {
         createdAt: row.createdAt,
       })),
     demo: true as const,
+    mpPayoutEmail: null,
   };
 }
 
