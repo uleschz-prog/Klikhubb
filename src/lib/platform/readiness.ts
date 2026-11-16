@@ -2,6 +2,12 @@ import { legalIdentityComplete, legalMeta } from "@/config/legal";
 import { getPaymentInstructions, isManualPaymentsConfigured } from "@/config/payment-instructions";
 import { isMercadoPagoConfigured, getMercadoPagoWebhookSecret, getMercadoPagoPublicKey } from "@/lib/payments/mercadopago";
 import { envFxOverride } from "@/lib/payments/fx";
+import {
+  isMercadoPagoPayoutsFlagOn,
+  isMercadoPagoPayoutsReady,
+  isMercadoPagoPayoutsSandbox,
+  getMercadoPagoPayoutsPrivateKey,
+} from "@/lib/payments/mp-payouts";
 
 export type SetupCheck = {
   id: string;
@@ -104,6 +110,20 @@ export function getPlatformReadiness() {
           : "Recomendado para avatares y media; obligatorio si usas SPEI",
     },
     {
+      id: "mp_payouts",
+      label: "Retiros a Mercado Pago",
+      ok: !isMercadoPagoPayoutsFlagOn() || isMercadoPagoPayoutsReady(),
+      hint: !isMercadoPagoPayoutsFlagOn()
+        ? "MP_PAYOUTS_ENABLED no está activo: los retiros se marcan a mano en /admin/payouts"
+        : isMercadoPagoPayoutsReady()
+          ? isMercadoPagoPayoutsSandbox()
+            ? "Payouts en sandbox (X-test-token). El creador guarda su correo MP en /wallet"
+            : "Payouts listos en producción (token + firma Ed25519)"
+          : getMercadoPagoPayoutsPrivateKey()
+            ? "Falta MP_ACCESS_TOKEN o el flag no quedó bien configurado"
+            : "Activo, pero en producción hace falta MP_PAYOUTS_PRIVATE_KEY (Ed25519 registrada ante MP). Hasta entonces el admin paga a mano",
+    },
+    {
       id: "legal_entity",
       label: "Identidad legal pública",
       ok: legal.complete,
@@ -114,7 +134,7 @@ export function getPlatformReadiness() {
   ];
 
   const blockers = checks.filter((check) => {
-    if (check.id === "payment_bank" || check.id === "mercadopago") return false;
+    if (check.id === "payment_bank" || check.id === "mercadopago" || check.id === "mp_payouts") return false;
     return !check.ok;
   });
 

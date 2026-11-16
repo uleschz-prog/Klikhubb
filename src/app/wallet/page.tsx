@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { WalletMpDestinationForm } from "@/components/wallet/WalletMpDestinationForm";
 import { WalletPayoutForm } from "@/components/wallet/WalletPayoutForm";
 import { getDbUserId } from "@/lib/auth/session";
 import { formatMoney } from "@/lib/commerce/split";
 import { formatWalletDate, ledgerLabel, loadWalletView } from "@/lib/commerce/wallet";
+import { usdToMxn } from "@/lib/payments/fx";
+import { isMercadoPagoPayoutsReady } from "@/lib/payments/mp-payouts";
+import { loadDisplayFxQuote } from "@/lib/payments/display-quote";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +34,9 @@ export default async function WalletPage() {
   }
 
   const wallet = await loadWalletView(userId);
+  const fx = await loadDisplayFxQuote();
+  const amountMxn = fx ? usdToMxn(wallet.available, fx.rate) : null;
+  const mpPayoutsEnabled = isMercadoPagoPayoutsReady();
 
   return (
     <PlatformShell title="Monedero">
@@ -37,7 +44,7 @@ export default async function WalletPage() {
       <h1 className="mt-2 font-display text-3xl font-extrabold">Monedero</h1>
       <p className="mt-2 max-w-xl text-sm text-white/55">
         Cada venta espera {wallet.holdLabel} por si hay un reembolso. Después pasa a disponible.
-        El retiro lo deposita el equipo a mano (mínimo 10 USD).
+        Después puedes pedir un retiro (mínimo 10 USD) a tu cuenta Mercado Pago o, si el envío automático no está activo, el equipo lo deposita a mano.
         {wallet.demo ? " Modo local: Postgres aún no acepta la conexión." : ""}
       </p>
 
@@ -76,11 +83,18 @@ export default async function WalletPage() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <WalletPayoutForm
-          available={wallet.available}
-          minPayout={wallet.minPayout}
-          currency={wallet.currency}
-        />
+        <div className="space-y-4">
+          <WalletMpDestinationForm email={wallet.mpPayoutEmail} />
+          <WalletPayoutForm
+            available={wallet.available}
+            minPayout={wallet.minPayout}
+            currency={wallet.currency}
+            amountMxn={amountMxn}
+            fxRate={fx?.rate ?? null}
+            destination={wallet.mpPayoutEmail}
+            mpPayoutsEnabled={mpPayoutsEnabled}
+          />
+        </div>
 
         <div className="rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Hold</p>
