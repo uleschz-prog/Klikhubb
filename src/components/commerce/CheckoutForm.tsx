@@ -28,7 +28,6 @@ export function CheckoutForm({
   compact = false,
   cancelPath,
   onPaid,
-  stripeEnabled = false,
   speiEnabled = false,
 }: {
   slug: string;
@@ -38,21 +37,20 @@ export function CheckoutForm({
   compact?: boolean;
   cancelPath?: string;
   onPaid?: (orderId: string) => void;
-  stripeEnabled?: boolean;
   speiEnabled?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState("");
-  const [loadingMethod, setLoadingMethod] = useState<"stripe" | "spei" | "demo" | null>(null);
+  const [loadingMethod, setLoadingMethod] = useState<"spei" | "demo" | null>(null);
   const [manual, setManual] = useState<ManualCheckout | null>(null);
   const [proofNote, setProofNote] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const busy = loadingMethod !== null;
-  const hasLiveMethod = stripeEnabled || speiEnabled;
+  const hasLiveMethod = speiEnabled;
 
-  async function startCheckout(method: "stripe" | "spei" | "demo") {
+  async function startCheckout(method: "spei" | "demo") {
     setLoadingMethod(method);
     setError("");
 
@@ -85,11 +83,6 @@ export function CheckoutForm({
         return;
       }
       setError(payload.error ?? "No se pudo iniciar el pago.");
-      return;
-    }
-
-    if (payload.mode === "stripe" && payload.url) {
-      window.location.href = payload.url;
       return;
     }
 
@@ -277,28 +270,12 @@ export function CheckoutForm({
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
 
       <div className="space-y-3">
-        {stripeEnabled ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => startCheckout("stripe")}
-            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
-          >
-            <span>{loadingMethod === "stripe" ? "Abriendo Stripe…" : "Pagar con tarjeta"}</span>
-            <span>{formatProductPrice(price, currency)}</span>
-          </button>
-        ) : null}
-
         {speiEnabled ? (
           <button
             type="button"
             disabled={busy}
             onClick={() => startCheckout("spei")}
-            className={
-              stripeEnabled
-                ? "flex min-h-12 w-full items-center justify-between rounded-full border border-white/20 bg-white/8 px-6 text-sm font-bold text-white disabled:opacity-60"
-                : "flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
-            }
+            className="flex min-h-12 w-full items-center justify-between rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black disabled:opacity-60"
           >
             <span>{loadingMethod === "spei" ? "Preparando SPEI…" : "Transferir por SPEI"}</span>
             <span>{formatProductPrice(price, currency)}</span>
@@ -319,13 +296,9 @@ export function CheckoutForm({
       </div>
 
       <p className="text-center text-[11px] text-white/35">
-        {stripeEnabled && speiEnabled
-          ? "Tarjeta con Stripe, o transferencia SPEI con comprobante para confirmar a mano."
-          : stripeEnabled
-            ? "Pago seguro con Stripe. El acceso se abre al confirmar el cargo."
-            : speiEnabled
-              ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
-              : "Entorno local: el acceso se abre al instante, sin cobro real."}
+        {speiEnabled
+          ? "Te damos los datos bancarios y confirmamos tu transferencia manualmente."
+          : "Entorno local: el acceso se abre al instante, sin cobro real."}
       </p>
     </div>
   );
