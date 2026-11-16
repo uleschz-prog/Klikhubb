@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/profile/UserAvatar";
 type ProfileAvatarUploadProps = {
   name: string;
   imageUrl?: string | null;
+  compact?: boolean;
 };
 
 function avatarFileName(file: File) {
@@ -15,7 +16,7 @@ function avatarFileName(file: File) {
   return `avatars/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 }
 
-export function ProfileAvatarUpload({ name, imageUrl }: ProfileAvatarUploadProps) {
+export function ProfileAvatarUpload({ name, imageUrl, compact = false }: ProfileAvatarUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { update } = useSession();
   const [preview, setPreview] = useState<string | null>(imageUrl ?? null);
@@ -79,7 +80,7 @@ export function ProfileAvatarUpload({ name, imageUrl }: ProfileAvatarUploadProps
 
   return (
     <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-      <UserAvatar name={name} imageUrl={preview} size="xl" />
+      <UserAvatar name={name} imageUrl={preview} size={compact ? "lg" : "xl"} className={compact ? "!h-16 !w-16 !text-lg" : ""} />
 
       <div className="space-y-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">Foto de perfil</p>
@@ -88,7 +89,7 @@ export function ProfileAvatarUpload({ name, imageUrl }: ProfileAvatarUploadProps
             type="button"
             disabled={loading}
             onClick={() => inputRef.current?.click()}
-            className="min-h-10 rounded-full bg-klik-cyan px-4 text-sm font-bold text-klik-black disabled:opacity-60"
+            className="min-h-11 rounded-full bg-klik-cyan px-4 text-sm font-bold text-klik-black transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60"
           >
             {loading ? "Subiendo…" : preview ? "Cambiar foto" : "Subir foto"}
           </button>
@@ -97,7 +98,7 @@ export function ProfileAvatarUpload({ name, imageUrl }: ProfileAvatarUploadProps
               type="button"
               disabled={loading}
               onClick={onRemove}
-              className="min-h-10 rounded-full border border-white/15 px-4 text-sm font-semibold text-white/70 disabled:opacity-60"
+              className="min-h-11 rounded-full border border-white/15 px-4 text-sm font-semibold text-white/70 transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60"
             >
               Quitar
             </button>

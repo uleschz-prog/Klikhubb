@@ -111,7 +111,7 @@ export default async function WalletPage() {
       </div>
 
       {wallet.payouts.length > 0 ? (
-        <div className="mt-6 rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
+        <div id="movimientos" className="mt-6 scroll-mt-24 rounded-2xl border border-klik-line bg-klik-card p-4 md:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">Retiros</p>
           <ul className="mt-4 space-y-3">
             {wallet.payouts.map((row) => (
