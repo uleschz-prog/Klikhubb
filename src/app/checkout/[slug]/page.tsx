@@ -3,6 +3,7 @@ import { CheckoutStage } from "@/components/commerce/CheckoutStage";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutPreview, viewerOwnsProduct } from "@/lib/commerce/catalog";
 import { getCheckoutMethods } from "@/config/checkout-methods";
+import { loadDisplayFxQuote } from "@/lib/payments/display-quote";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function CheckoutPage({
   if (!preview) notFound();
 
   const methods = getCheckoutMethods();
+  const fx = await loadDisplayFxQuote();
 
   return (
     <CheckoutStage
@@ -44,7 +46,9 @@ export default async function CheckoutPage({
         creatorName: preview.product.creatorName,
       }}
       signedIn
+      mercadoPagoEnabled={methods.mercadopago}
       speiEnabled={methods.spei}
+      fxRate={fx?.rate}
       canceled={searchParams.canceled === "1"}
       cancelPath={`/c/${params.slug}`}
     />
