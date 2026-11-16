@@ -12,6 +12,8 @@ export function WalletPayoutForm({
   fxRate,
   destination,
   mpPayoutsEnabled,
+  usdtAddress,
+  usdtPayoutsEnabled,
 }: {
   available: number;
   minPayout: number;
@@ -20,12 +22,20 @@ export function WalletPayoutForm({
   fxRate: number | null;
   destination: string | null;
   mpPayoutsEnabled: boolean;
+  usdtAddress: string | null;
+  usdtPayoutsEnabled: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
-  const canWithdraw = available >= minPayout && (!mpPayoutsEnabled || Boolean(destination));
+  const [method, setMethod] = useState<"mercadopago" | "usdt" | "manual">(
+    mpPayoutsEnabled ? "mercadopago" : usdtPayoutsEnabled ? "usdt" : "manual",
+  );
+  const needsDestination =
+    (method === "mercadopago" && mpPayoutsEnabled && !destination) ||
+    (method === "usdt" && !usdtAddress);
+  const canWithdraw = available >= minPayout && !needsDestination;
 
   async function submit() {
     if (busy || !canWithdraw) return;
@@ -36,7 +46,7 @@ export function WalletPayoutForm({
       const response = await fetch("/api/wallet/payout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ method }),
       });
       const payload: unknown = await response.json().catch(() => null);
       const message =
@@ -82,6 +92,32 @@ export function WalletPayoutForm({
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Retiro</p>
       <h2 className="mt-1 font-display text-xl font-bold">Saca lo disponible</h2>
       <p className="mt-3 text-sm leading-6 text-white/60">{help}</p>
+      {mpPayoutsEnabled || usdtPayoutsEnabled || usdtAddress ? (
+        <div className="mt-4 space-y-2 text-sm">
+          {mpPayoutsEnabled ? (
+            <label className="flex items-center gap-2 text-white/70">
+              <input
+                type="radio"
+                name="payout-method"
+                checked={method === "mercadopago"}
+                onChange={() => setMethod("mercadopago")}
+              />
+              Mercado Pago {destination ? `(${destination})` : "(guarda tu correo)"}
+            </label>
+          ) : null}
+          {usdtPayoutsEnabled || usdtAddress ? (
+            <label className="flex items-center gap-2 text-white/70">
+              <input
+                type="radio"
+                name="payout-method"
+                checked={method === "usdt"}
+                onChange={() => setMethod("usdt")}
+              />
+              USDT TRC20 {usdtAddress ? `(${usdtAddress.slice(0, 6)}…${usdtAddress.slice(-4)})` : "(guarda tu dirección)"}
+            </label>
+          ) : null}
+        </div>
+      ) : null}
       {amountMxn && fxRate ? (
         <p className="mt-2 text-xs text-white/40">
           Estimado al tipo de cambio actual: {formatMoney(amountMxn, "MXN")} (USD→MXN {fxRate.toFixed(2)}).
@@ -97,9 +133,11 @@ export function WalletPayoutForm({
           ? "Solicitando…"
           : canWithdraw
             ? `Retirar ${formatMoney(available, currency)}`
-            : mpPayoutsEnabled && !destination
-              ? "Guarda tu correo de Mercado Pago"
-              : `Faltan ${formatMoney(Math.max(0, minPayout - available), currency)} para el mínimo`}
+            : needsDestination && method === "usdt"
+              ? "Guarda tu dirección USDT TRC20"
+              : needsDestination
+                ? "Guarda tu correo de Mercado Pago"
+                : `Faltan ${formatMoney(Math.max(0, minPayout - available), currency)} para el mínimo`}
       </button>
       {error ? <p className="mt-3 text-sm text-red-400">{error}</p> : null}
       {done ? <p className="mt-3 text-sm text-klik-green">{done}</p> : null}
