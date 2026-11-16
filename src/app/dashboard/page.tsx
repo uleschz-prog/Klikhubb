@@ -8,6 +8,7 @@ import {
   loadCreatorLaunchProgress,
 } from "@/components/dashboard/CreatorLaunchChecklist";
 import { CreatorPlanCard } from "@/components/dashboard/CreatorPlanCard";
+import { CreatorOnboarding } from "@/components/onboarding/CreatorOnboarding";
 import { creatorHoldLabel } from "@/config/compensation-plan";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCreatorPlanSnapshot } from "@/lib/commerce/creator-plan-billing";
@@ -32,7 +33,17 @@ export default async function DashboardPage() {
   return (
     <PlatformShell title="Cuenta">
       <div className="space-y-6">
-        <header className="flex items-start justify-between gap-4">
+        {launchProgress ? (
+          <CreatorOnboarding
+            progress={{
+              hasProfile: launchProgress.hasAvatar,
+              hasClip: launchProgress.hasShopVideo || launchProgress.hasPlayVideo,
+              hasCourse: launchProgress.hasCourse,
+            }}
+          />
+        ) : null}
+
+        <header id="perfil" className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-white/50">Hola</p>
             <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight">

@@ -136,6 +136,43 @@ export async function listCatalogProducts(): Promise<CatalogProduct[]> {
   }
 }
 
+
+export type PublicCatalogItem = CatalogProduct & {
+  creatorName: string;
+  creatorUsername: string | null;
+};
+
+export async function listPublicCatalog(): Promise<PublicCatalogItem[]> {
+  try {
+    const rows = await prisma.product.findMany({
+      where: { status: "ACTIVE", slug: { not: RETIRED_SLUG } },
+      orderBy: { createdAt: "desc" },
+      include: { creator: { select: { displayName: true, username: true, name: true } } },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      description: row.description,
+      price: Number(row.price),
+      currency: row.currency.trim(),
+      creatorId: row.creatorId,
+      type: row.type,
+      billing: row.billing === "MONTHLY" ? ("MONTHLY" as const) : ("ONE_TIME" as const),
+      creatorName: row.creator.displayName ?? row.creator.name ?? row.creator.username ?? "Creador",
+      creatorUsername: row.creator.username,
+    }));
+  } catch (error) {
+    if (!shouldUseDemoFallback(error)) throw error;
+    const products = await listCatalogProducts();
+    return products.map((row) => ({
+      ...row,
+      creatorName: "Creador",
+      creatorUsername: null,
+    }));
+  }
+}
+
 export type CourseEnrollment = {
   slug: string;
   title: string;
