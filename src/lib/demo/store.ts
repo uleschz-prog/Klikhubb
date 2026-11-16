@@ -10,7 +10,11 @@ import type { LeaderboardRow } from "@/components/gamification/Leaderboard";
 import { DEMO_USER_EMAILS } from "@/config/demo-fixtures";
 import { PLATFORM_ADMIN, platformAdminPassword } from "@/config/platform-admin";
 
-export const DEMO_PASSWORD = "KlikHubb2026!";
+/** Contraseña del store demo. Solo se expone en NODE_ENV=development. */
+export function demoPassword() {
+  if (process.env.NODE_ENV !== "development") return "";
+  return process.env.DEMO_PASSWORD?.trim() || "KlikHubb2026!";
+}
 
 const DEMO_EMAIL_SET = new Set(DEMO_USER_EMAILS.map((email) => email.toLowerCase()));
 

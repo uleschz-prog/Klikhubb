@@ -1,8 +1,7 @@
 import { ensureNextAuthUrl } from "@/config/site-url.env.mjs";
+import { resolveNextAuthSecret } from "@/lib/auth/secret";
 
-if (!process.env.NEXTAUTH_SECRET?.trim()) {
-  process.env.NEXTAUTH_SECRET = process.env.AUTH_SECRET?.trim() || "klikhubb-demo-secret";
-}
+process.env.NEXTAUTH_SECRET = resolveNextAuthSecret();
 
 ensureNextAuthUrl();
 
