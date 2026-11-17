@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PlatformShell } from "@/components/layout/PlatformShell";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { listSearchExplore, searchPlatform } from "@/lib/search";
 import { PriceTag } from "@/components/ui/PriceTag";
 import { RemoteImage } from "@/components/ui/RemoteImage";
@@ -68,7 +69,15 @@ export default async function SearchPage({
         <p className="mt-6 text-sm text-foreground/50">Escribe al menos 2 caracteres.</p>
       ) : null}
 
-      {empty ? <p className="mt-6 text-sm text-foreground/50">Nada coincide con «{q}».</p> : null}
+      {empty ? (
+        <div className="mt-8">
+          <EmptyState
+            kicker="Buscar"
+            title={`Nada coincide con «${q}»`}
+            body="Prueba con el nombre de un creador, un curso o una palabra del video."
+          />
+        </div>
+      ) : null}
 
       {q.length >= 2 ? (
         <div className="mt-8">
@@ -101,7 +110,9 @@ function ExploreResults({
   empty?: string;
 }) {
   if (!creators.length && !products.length && !videos.length) {
-    return empty ? <p className="text-sm text-foreground/50">{empty}</p> : null;
+    return empty ? (
+      <EmptyState kicker="Descubrir" title="Aún no hay nada que mostrar" body={empty} />
+    ) : null;
   }
 
   return (

@@ -20,7 +20,7 @@ export default async function OrdersPage() {
     <PlatformShell title="Compras">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Compras</p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">Mis pedidos</h1>
-      <p className="mt-2 max-w-xl text-sm text-white/55">
+      <p className="mt-2 max-w-xl text-sm text-foreground/60">
         Aquí ves tus pedidos y transferencias SPEI. Tienes{" "}
         {BUYER_REFUND_WINDOW_HOURS} horas desde la compra para pedir la devolución a Qlyk.
       </p>
@@ -48,13 +48,13 @@ export default async function OrdersPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="font-display text-lg font-bold">{row.productTitle}</p>
-                  <p className="mt-1 text-sm text-klik-cyan">{row.statusLabel}</p>
-                  <p className="mt-1 text-xs text-white/40">
+                  <p className="mt-1 text-sm font-medium text-klik-green">{row.statusLabel}</p>
+                  <p className="mt-1 text-xs text-foreground/45">
                     {formatWalletDate(row.createdAt)}
                     {row.reference ? ` · Ref ${row.reference}` : ""}
                   </p>
                   {row.reviewerNote && row.status !== "REFUNDED" ? (
-                    <p className="mt-2 text-sm text-white/55">Nota: {row.reviewerNote}</p>
+                    <p className="mt-2 text-sm text-foreground/60">Nota: {row.reviewerNote}</p>
                   ) : null}
                 </div>
                 <div className="text-left sm:text-right">
@@ -76,7 +76,7 @@ export default async function OrdersPage() {
                     {row.status === "PENDING" || row.status === "PROOF_SUBMITTED" ? (
                       <Link
                         href={row.productSlug ? `/checkout/${row.productSlug}` : "/orders"}
-                        className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold"
+                        className="rounded-full border border-klik-line px-4 py-2 text-xs font-semibold text-foreground"
                       >
                         Ver instrucciones
                       </Link>
@@ -86,7 +86,7 @@ export default async function OrdersPage() {
                         href={row.proofUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold text-klik-cyan"
+                        className="rounded-full border border-klik-line px-4 py-2 text-xs font-semibold text-foreground"
                       >
                         Comprobante
                       </a>

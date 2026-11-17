@@ -68,14 +68,14 @@ export default async function PublicCoursePage({
 
   return (
     <PlatformShell title={course.title}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
         {TYPE_LABEL[course.type] ?? course.type}
       </p>
       <h1 className="mt-2 font-display text-3xl font-extrabold">{course.title}</h1>
-      <p className="mt-2 text-sm text-white/55">
+      <p className="mt-2 text-sm text-foreground/60">
         Por{" "}
         {course.creatorUsername ? (
-          <Link href={`/u/${course.creatorUsername}`} className="text-klik-cyan hover:underline">
+          <Link href={`/u/${course.creatorUsername}`} className="text-klik-green hover:underline">
             {course.creatorName}
           </Link>
         ) : (
@@ -91,14 +91,14 @@ export default async function PublicCoursePage({
         {course.access === "student" ? (
           <Link
             href={learnHref}
-            className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+            className="inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
             Continuar
           </Link>
         ) : course.access === "creator" ? (
           <Link
             href={`/studio/${course.slug}`}
-            className="inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+            className="inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
           >
             Abrir Studio
           </Link>
@@ -138,7 +138,7 @@ export default async function PublicCoursePage({
               {course.access === "student" ? (
                 <Link
                   href={courseWatchHref(course.slug, lockedSelected.id)}
-                  className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                  className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
                 >
                   Ver el curso
                 </Link>
@@ -169,7 +169,7 @@ export default async function PublicCoursePage({
                   {course.access === "creator" ? (
                     <Link
                       href={`/studio/${course.slug}`}
-                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
                     >
                       Ir a Studio
                     </Link>
@@ -188,7 +188,7 @@ export default async function PublicCoursePage({
                   {course.access === "creator" ? (
                     <Link
                       href={`/studio/${course.slug}`}
-                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-cyan px-5 text-sm font-bold text-klik-black"
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-klik-green px-5 text-sm font-bold text-klik-black"
                     >
                       Ir a Studio
                     </Link>
@@ -211,7 +211,7 @@ export default async function PublicCoursePage({
             <div className="mt-3 space-y-4">
               {modules.map((module, moduleIndex) => (
                 <div key={`${moduleIndex}-${module.title}`}>
-                  <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-klik-cyan/80">
+                  <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-klik-green/80">
                     {module.title}
                   </p>
                   <ol className="mt-2 space-y-1">
@@ -224,7 +224,7 @@ export default async function PublicCoursePage({
                             href={href}
                             className={`flex items-start gap-3 rounded-xl px-3 py-3 text-sm transition ${
                               active
-                                ? "bg-klik-cyan/15 text-white"
+                                ? "bg-klik-green/15 text-foreground"
                                 : "text-white/70 hover:bg-white/5 hover:text-white"
                             }`}
                           >
@@ -279,7 +279,7 @@ export default async function PublicCoursePage({
             <li key={item.id} className="rounded-2xl border border-white/10 px-4 py-4">
               <p className="text-sm font-semibold">
                 {item.displayName}{" "}
-                <span className="font-normal text-klik-cyan">{"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}</span>
+                <span className="font-normal text-klik-green">{"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}</span>
               </p>
               {item.comment ? <p className="mt-2 text-sm leading-6 text-white/70">{item.comment}</p> : null}
             </li>
