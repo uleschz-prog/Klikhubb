@@ -95,6 +95,16 @@ function PublishIcon() {
   );
 }
 
+function StudioIcon() {
+  return (
+    <Icon>
+      <path d="M4 8 12 4l8 4-8 4-8-4Z" />
+      <path d="M4 8v8l8 4 8-4V8" />
+      <path d="M12 12v8" />
+    </Icon>
+  );
+}
+
 function BellIcon() {
   return (
     <Icon>
@@ -105,6 +115,15 @@ function BellIcon() {
 }
 
 const ACCESOS = [
+  {
+    href: "/studio",
+    title: "Studio",
+    hint: "Área de creación",
+    chip: "bg-klik-green/15 text-klik-green",
+    icon: <StudioIcon />,
+    countKey: null,
+  },
+
   {
     href: "/orders",
     title: "Compras",
@@ -124,7 +143,7 @@ const ACCESOS = [
   {
     href: "/publish",
     title: "Publicar",
-    hint: "Sube un video",
+    hint: "Clips para el feed",
     chip: "bg-[#7C3AED]/15 text-[#8B5CF6]",
     icon: <PublishIcon />,
     countKey: null,
@@ -289,7 +308,7 @@ export function AccountHome({
 
       <section className="dash-rise dash-rise-2">
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/40">Accesos</p>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           {ACCESOS.map((item) => {
             const count = item.countKey ? counts[item.countKey] : 0;
             const showBadge = Boolean(item.countKey) && count > 0;

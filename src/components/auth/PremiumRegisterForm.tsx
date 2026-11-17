@@ -44,7 +44,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
   const searchParams = useSearchParams();
   const termsId = useId();
   const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => searchParams.get("email")?.trim() ?? "");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);

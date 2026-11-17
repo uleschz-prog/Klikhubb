@@ -8,8 +8,9 @@ const links = [
   { href: "/play", label: "Ver", match: ["/play"] },
   { href: "/feed", label: "Comprar", match: ["/feed", "/marketplace"] },
   { href: "/search", label: "Buscar", match: ["/search"] },
+  { href: "/studio", label: "Studio", match: ["/studio"] },
   { href: "/orders", label: "Mis cosas", match: ["/orders", "/cursos", "/learn"] },
-  { href: "/dashboard", label: "Yo", match: ["/dashboard", "/wallet", "/studio", "/notifications"] },
+  { href: "/dashboard", label: "Yo", match: ["/dashboard", "/wallet", "/notifications"] },
 ];
 
 export function PlatformNav({ variant = "page" }: { variant?: "page" | "media" }) {

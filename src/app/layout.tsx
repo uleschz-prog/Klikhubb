@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Serif, Inter } from "next/font/google";
 import Script from "next/script";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { PwaInstallHint } from "@/components/pwa/PwaInstallHint";
@@ -11,6 +11,14 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -104,7 +112,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" data-theme="light" suppressHydrationWarning>
-      <body className={`${inter.variable} bg-background font-sans text-foreground antialiased`}>
+      <body className={`${inter.variable} ${instrumentSerif.variable} bg-background font-sans text-foreground antialiased`}>
         <Script id="theme-boot" strategy="beforeInteractive">
           {THEME_BOOT_SCRIPT}
         </Script>

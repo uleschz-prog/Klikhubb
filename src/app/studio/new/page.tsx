@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PlatformShell } from "@/components/layout/PlatformShell";
 import { CreateCourseForm } from "@/components/studio/CreateCourseForm";
-import { getDbUserId } from "@/lib/auth/session";
+import { getDbUserId, getSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewStudioCoursePage() {
-  const userId = await getDbUserId();
+  const session = await getSession();
+  const userId = (await getDbUserId()) ?? session?.user?.id ?? null;
   if (!userId) redirect("/login?callbackUrl=/studio/new");
 
   return (
-    <PlatformShell title="Nuevo curso">
+    <div>
       <Link href="/studio" className="text-sm font-semibold text-klik-cyan hover:underline">
         Volver al Studio
       </Link>
@@ -23,6 +23,6 @@ export default async function NewStudioCoursePage() {
       <div className="mt-8">
         <CreateCourseForm />
       </div>
-    </PlatformShell>
+    </div>
   );
 }
