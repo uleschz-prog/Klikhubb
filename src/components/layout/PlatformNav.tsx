@@ -25,15 +25,16 @@ export function PlatformNav({ variant = "page" }: { variant?: "page" | "media" }
           <Link
             key={link.href}
             href={link.href}
-            className={`text-sm font-semibold transition ${
+            className={`rounded-full px-2.5 py-1 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green ${
               media
                 ? active
-                  ? "text-klik-cyan"
+                  ? "bg-klik-green/20 text-klik-green"
                   : "text-white/80 hover:text-white"
                 : active
-                  ? "text-klik-cyan"
+                  ? "bg-klik-green/15 text-klik-green"
                   : "text-foreground/55 hover:text-foreground"
             }`}
+            aria-current={active ? "page" : undefined}
           >
             {link.label}
           </Link>

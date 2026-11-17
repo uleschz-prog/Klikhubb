@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import type { FeedVideo } from "@/lib/video/types";
 import { FeedTheater } from "@/components/video/FeedTheater";
+import { FeedEmptyState } from "@/components/video/FeedEmptyState";
 
 /** Tienda: feed a pantalla completa (estilo TikTok) en móvil y escritorio. */
 export function FeedEntry({
@@ -59,16 +59,14 @@ export function FeedEntry({
             };
 
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-klik-black px-6 text-center text-white">
-        <h1 className="font-display text-3xl font-extrabold">{empty.title}</h1>
-        <p className="mt-3 max-w-sm text-sm text-white/55">{empty.body}</p>
-        <Link
-          href={empty.href}
-          className="mt-6 rounded-full bg-klik-green px-6 py-3 text-sm font-bold text-klik-black"
-        >
-          {empty.cta}
-        </Link>
-      </div>
+      <FeedEmptyState
+        titleShell="Tienda"
+        kicker="Tienda"
+        title={empty.title}
+        body={empty.body}
+        actionHref={empty.href}
+        actionLabel={empty.cta}
+      />
     );
   }
 

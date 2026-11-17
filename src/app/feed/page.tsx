@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { listPublishedVideos, listSavedVideos } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutMethods } from "@/config/checkout-methods";
 import { FeedEntry } from "@/components/explore/FeedEntry";
-import { PlatformShell } from "@/components/layout/PlatformShell";
+import { FeedEmptyState } from "@/components/video/FeedEmptyState";
 import { resolveDisplayFxUsdMxn } from "@/lib/commerce/display-fx";
 import { selectFeaturedCatalog } from "@/lib/video/catalog-trust";
 
@@ -26,18 +25,14 @@ export default async function FeedPage({
 
   if (tab === "foryou" && videos.length === 0) {
     return (
-      <PlatformShell title="Tienda" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Tienda · Próximamente</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">Aún no hay ofertas en la Tienda</h1>
-          <p className="mt-3 max-w-sm text-sm text-white/55">
-            Aquí van a aparecer clips originales con un curso o producto. Publica el tuyo y sé de los primeros en vender.
-          </p>
-          <Link href="/publish" className="btn-primary mt-6 rounded-full px-6 py-3 text-sm font-bold">
-            Publicar y vender
-          </Link>
-        </div>
-      </PlatformShell>
+      <FeedEmptyState
+        titleShell="Tienda"
+        kicker="Tienda"
+        title="Aún no hay ofertas en la Tienda"
+        body="Aquí van a aparecer clips originales con un curso o producto. Publica el tuyo y sé de los primeros en vender."
+        actionHref="/publish"
+        actionLabel="Publicar y vender"
+      />
     );
   }
 
