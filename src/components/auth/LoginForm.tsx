@@ -52,7 +52,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="mt-2 min-h-12 w-full rounded-full border border-white/10 bg-black px-4 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan"
+              className="mt-2 min-h-12 w-full rounded-full border border-white/10 bg-black px-4 text-sm text-white outline-none focus:ring-2 focus:ring-klik-green"
             />
           </label>
           <label className="block text-xs font-semibold uppercase tracking-wider text-white/45">
@@ -62,7 +62,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               wrapperClassName="mt-2"
-              inputClassName="min-h-12 w-full rounded-full border border-white/10 bg-black px-4 text-sm text-white outline-none focus:ring-2 focus:ring-klik-cyan"
+              inputClassName="min-h-12 w-full rounded-full border border-white/10 bg-black px-4 text-sm text-white outline-none focus:ring-2 focus:ring-klik-green"
             />
           </label>
           {error ? <p className="text-sm text-red-400">{error}</p> : null}
@@ -87,7 +87,7 @@ export function LoginForm({ googleEnabled }: { googleEnabled: boolean }) {
 
         <p className="mt-6 text-center text-sm text-white/45">
           ¿Sin cuenta?{" "}
-          <a href="/register" className="text-klik-cyan">
+          <a href="/register" className="font-semibold text-klik-green">
             Crear cuenta
           </a>
         </p>
