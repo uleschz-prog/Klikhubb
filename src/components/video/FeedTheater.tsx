@@ -100,6 +100,7 @@ export function FeedTheater({
     buySlug && videos.some((item) => item.product?.slug === buySlug && item.product.owned),
   );
   const [shopOpen, setShopOpen] = useState(Boolean(buySlug) && !buyAlreadyOwned);
+  const [captionOpen, setCaptionOpen] = useState(false);
 
   const tags = useMemo(() => {
     const fromCaption = video.caption.match(/#([A-Za-z0-9_]+)/g)?.map((tag) => tag.slice(1)) ?? [];
@@ -170,6 +171,7 @@ export function FeedTheater({
     setDraft("");
     setCurrent(0);
     setDuration(0);
+    setCaptionOpen(false);
   }, [video]);
 
   useEffect(() => {
@@ -419,6 +421,10 @@ export function FeedTheater({
       }}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
+      {video.thumbnailUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={video.thumbnailUrl} alt="" className="feed-media-backdrop" />
+      ) : null}
       {video.videoUrl && fromYouTube ? (
         <YouTubeStage
           url={video.videoUrl}
@@ -436,7 +442,7 @@ export function FeedTheater({
         <video
           ref={media}
           key={video.id}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
           src={video.videoUrl}
           poster={video.thumbnailUrl ?? undefined}
           autoPlay
@@ -491,28 +497,39 @@ export function FeedTheater({
 
       {!hidden ? (
         <>
-          <div className="overlay-vignette-right pointer-events-none absolute inset-y-0 right-0 z-20 w-32 md:w-40" />
-          <div className="overlay-vignette-bottom pointer-events-none absolute inset-x-0 bottom-0 z-20 h-52 md:h-44" />
-          <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-start justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-            <div className="pointer-events-auto">
-              <div className="overlay-chip inline-flex items-center rounded-full px-2.5 py-1.5">
-                <Logo href={basePath} className="text-white" markClassName="h-8 w-8" />
+          <div className="overlay-vignette-top pointer-events-none absolute inset-x-0 top-0 z-20 h-36" />
+          <div className="overlay-vignette-right pointer-events-none absolute inset-y-0 right-0 z-20 w-28 md:w-36" />
+          <div className="overlay-vignette-bottom pointer-events-none absolute inset-x-0 bottom-0 z-20 h-56 md:h-48" />
+          <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-col gap-2 p-3 pt-[max(0.75rem,env(safe-area-inset-top))] md:p-4 md:pt-[max(1rem,env(safe-area-inset-top))]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="pointer-events-auto flex items-center gap-2">
+                <div className="overlay-chip inline-flex items-center rounded-full px-2.5 py-1.5">
+                  <Logo href={basePath} className="text-white" markClassName="h-8 w-8" />
+                </div>
+                <div className="hidden md:block">
+                  <FeedTabs home={home} feedTab={feedTab} signedIn={signedIn} />
+                </div>
+              </div>
+              <div className="pointer-events-auto hidden md:block">
+                <div className="overlay-chip flex items-center gap-2 rounded-full py-1 pl-4 pr-1.5">
+                  <PlatformNav variant="media" />
+                  <MuteChip muted={muted} volume={volume} onEnable={enableAudio} onMute={() => setMuted(true)} />
+                  <ThemeToggle tone="media" />
+                </div>
+              </div>
+              <div className="pointer-events-auto flex items-center gap-2 md:hidden">
+                <MuteChip muted={muted} volume={volume} onEnable={enableAudio} onMute={() => setMuted(true)} />
+                <div className="overlay-chip rounded-full p-0.5">
+                  <ThemeToggle tone="media" />
+                </div>
               </div>
             </div>
-            <div className="pointer-events-auto hidden md:block">
-              <div className="overlay-chip flex items-center gap-3 rounded-full py-1 pl-5 pr-1.5">
-                <PlatformNav variant="media" />
-                <ThemeToggle tone="media" />
-              </div>
-            </div>
-            <div className="pointer-events-auto md:hidden">
-              <div className="overlay-chip rounded-full p-0.5">
-                <ThemeToggle tone="media" />
-              </div>
+            <div className="pointer-events-auto flex justify-center md:hidden">
+              <FeedTabs home={home} feedTab={feedTab} signedIn={signedIn} />
             </div>
           </header>
 
-          <aside className="absolute right-2 z-30 flex max-h-[calc(100dvh-16rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col items-center gap-2 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[calc(14.75rem+env(safe-area-inset-bottom))] max-md:top-auto md:right-8 md:top-[12%] md:max-h-none md:gap-4 md:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <aside className="absolute right-2 z-30 flex max-h-[calc(100dvh-11rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col items-center gap-3 overflow-y-auto overscroll-contain pb-1 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:bottom-[calc(5rem+env(safe-area-inset-bottom))] max-md:top-auto md:right-6 md:top-1/2 md:max-h-[min(36rem,calc(100dvh-8rem))] md:-translate-y-1/2 md:gap-3.5 md:overflow-visible [&::-webkit-scrollbar]:hidden">
             <div className="hidden md:contents">
               <NavArrow label="Anterior" disabled={index === 0} onClick={() => go(index - 1)}>
                 <ChevronUp />
@@ -531,7 +548,7 @@ export function FeedTheater({
                 name={video.creatorName}
                 imageUrl={video.creatorImage}
                 size="lg"
-                className="ring-2 ring-white shadow-[0_0_0_3px_rgba(0,0,0,0.4)]"
+                className="ring-2 ring-white shadow-[0_0_0_3px_rgba(0,0,0,0.45)]"
               />
               <span
                 className={`absolute -bottom-1 left-1/2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full text-sm font-bold ${
@@ -543,7 +560,7 @@ export function FeedTheater({
             </button>
             <Link
               href={`/u/${video.handle}`}
-              className="overlay-label overlay-meta mt-2 max-w-[4.5rem] truncate text-center text-[10px] font-semibold hover:text-klik-cyan"
+              className="overlay-label overlay-meta mt-1.5 max-w-[4.75rem] truncate text-center text-[11px] font-semibold hover:text-klik-green"
             >
               @{video.handle}
             </Link>
@@ -569,69 +586,33 @@ export function FeedTheater({
             <RailAction label={formatCount(shares)} onClick={() => void shareVideo()}>
               <ShareIcon />
             </RailAction>
-            <RailAction
-              active={!muted}
-              label={muted ? "Audio" : "Audio"}
-              ariaLabel={muted ? "Activar audio" : "Silenciar"}
-              onClick={() => {
-                if (muted) enableAudio();
-                else setMuted(true);
-              }}
-              compact
-            >
-              {muted || volume === 0 ? <RailMuteIcon /> : <RailVolumeIcon />}
-            </RailAction>
             {video.product ? (
-              <RailAction label={video.product.owned ? "Continuar" : "Comprar"} onClick={openShop}>
+              <RailAction label={video.product.owned ? "Continuar" : "Curso"} onClick={openShop}>
                 <BagIcon />
               </RailAction>
             ) : null}
+            <Link
+              href={home === "play" ? "/publish?lane=play" : "/publish"}
+              aria-label={home === "play" ? "Subir un video" : "Publicar y vender"}
+              className="mt-0.5 flex flex-col items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_24px_rgba(48,209,88,0.38)] md:h-[3.25rem] md:w-[3.25rem] md:text-3xl">
+                +
+              </span>
+              <span className="overlay-label text-[11px] font-semibold">Subir</span>
+            </Link>
           </aside>
 
-          <div className="absolute bottom-[calc(5.75rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-6.25rem)] md:bottom-16 md:left-8 md:max-w-[min(42rem,calc(100%-7.5rem))]">
-            <div className="overlay-caption-plate rounded-2xl px-4 py-3">
-            <p className="overlay-label text-sm font-semibold">
-              @{video.handle}
-              {video.publishedAt ? <span className="font-normal opacity-80"> · {formatFeedDate(video.publishedAt)}</span> : null}
-            </p>
-            <p className="overlay-label mt-2 text-[15px] leading-6">{video.caption}</p>
-            {tags.length ? (
-              <p className="overlay-label mt-2 flex flex-wrap gap-x-2 gap-y-1 text-[13px] font-medium opacity-90">
-                {tags.map((tag) => (
-                  <span key={tag}>#{tag}</span>
-                ))}
-              </p>
-            ) : null}
-            {video.product && !shopOpen ? (
-              <button
-                type="button"
-                onClick={openShop}
-                className={`mt-3 flex w-full max-w-full items-center justify-between gap-2 rounded-full px-4 py-2.5 text-sm font-bold ${
-                  video.product.owned
-                    ? "bg-klik-cyan text-klik-black"
-                    : "bg-klik-green text-klik-black"
-                }`}
-              >
-                {video.product.owned ? (
-                  <span className="truncate">Continuar</span>
-                ) : (
-                  <>
-                    <span>Comprar</span>
-                    <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-left">
-                      <PriceTag
-                        amount={video.product.price}
-                        currency={video.product.currency}
-                        fx={fxRate}
-                        size="sm"
-                        compact
-                        align="right"
-                      />
-                    </span>
-                  </>
-                )}
-              </button>
-            ) : null}
-            </div>
+          <div className="absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-20 max-w-[calc(100%-6.5rem)] md:bottom-20 md:left-8 md:max-w-[min(36rem,calc(100%-8rem))]">
+            <CaptionCard
+              video={video}
+              tags={tags}
+              fxRate={fxRate}
+              shopOpen={shopOpen}
+              expanded={captionOpen}
+              onToggle={() => setCaptionOpen((value) => !value)}
+              onOpenShop={openShop}
+            />
           </div>
         </>
       ) : (
@@ -646,21 +627,25 @@ export function FeedTheater({
       <div className={`absolute inset-x-0 bottom-14 z-30 md:bottom-0 ${hidden ? "pointer-events-none opacity-0" : "opacity-100"}`}>
         <button
           type="button"
-          className="group relative block h-5 w-full"
+          className="group relative block h-6 w-full px-3 md:px-4"
           aria-label="Barra de progreso"
           onClick={(event) => {
             const rect = event.currentTarget.getBoundingClientRect();
-            seekRatio((event.clientX - rect.left) / rect.width);
+            const pad = 12;
+            seekRatio((event.clientX - rect.left - pad) / Math.max(1, rect.width - pad * 2));
           }}
         >
-          <span className="overlay-progress-track absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full" />
-          <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/55 group-hover:h-1" />
+          <span className="overlay-progress-track absolute inset-x-3 top-1/2 h-1.5 -translate-y-1/2 rounded-full md:inset-x-4" />
           <span
-            className="absolute left-0 top-1/2 h-px -translate-y-1/2 bg-white group-hover:h-1"
-            style={{ width: duration ? `${(current / duration) * 100}%` : "0%" }}
+            className="overlay-progress-fill absolute left-3 top-1/2 h-1.5 -translate-y-1/2 rounded-full md:left-4"
+            style={{ width: duration ? `calc((100% - 1.5rem) * ${current / duration})` : "0%" }}
+          />
+          <span
+            className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-klik-green shadow-[0_0_10px_rgba(48,209,88,0.7)] ring-2 ring-black/40"
+            style={{ left: duration ? `calc(0.75rem + (100% - 1.5rem) * ${current / duration} - 0.4375rem)` : "0.75rem" }}
           />
         </button>
-        <div className="overlay-bar hidden items-center gap-2 px-4 py-2 md:flex">
+        <div className="overlay-bar hidden items-center gap-2 px-4 py-2.5 md:flex">
           <button type="button" onClick={togglePlay} className="p-1" aria-label={playing ? "Pausar" : "Reproducir"}>
             {playing ? <PauseIcon /> : <PlayIcon />}
           </button>
@@ -788,9 +773,9 @@ export function FeedTheater({
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Escribe un comentario"
-              className="min-h-11 flex-1 rounded-full border border-white/15 bg-black/40 px-4 text-sm outline-none ring-klik-cyan focus:ring-2"
+              className="min-h-11 flex-1 rounded-full border border-white/15 bg-black/40 px-4 text-sm outline-none ring-klik-green focus:ring-2"
             />
-            <button type="submit" className="rounded-full bg-klik-cyan px-4 text-sm font-bold text-klik-black">
+            <button type="submit" className="rounded-full bg-klik-green px-4 text-sm font-bold text-klik-black">
               Enviar
             </button>
           </form>
@@ -835,19 +820,166 @@ export function FeedTheater({
       />
 
       {toast ? (
-        <p className="absolute left-1/2 top-20 z-40 -translate-x-1/2 rounded-full bg-black/75 px-4 py-2 text-xs text-white">
+        <p className="overlay-chip overlay-label absolute left-1/2 top-20 z-40 -translate-x-1/2 rounded-full px-4 py-2 text-xs font-semibold">
           {toast}
         </p>
       ) : null}
 
-      <Link
-        href={home === "play" ? "/publish?lane=play" : "/publish"}
-        aria-label={home === "play" ? "Subir un video" : "Publicar y vender"}
-        className="absolute bottom-[calc(11.5rem+env(safe-area-inset-bottom))] right-2 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-klik-green text-2xl font-light leading-none text-klik-black shadow-[0_8px_28px_rgba(0,255,65,0.35)] md:bottom-24 md:right-8 md:h-14 md:w-14 md:text-3xl"
-      >
-        +
-      </Link>
-          {!hidden ? <MobileTabBar /> : null}
+      {!hidden ? <MobileTabBar variant="media" /> : null}
+    </div>
+  );
+}
+
+
+const FEED_TABS = [
+  { id: "foryou" as const, label: "Para ti" },
+  { id: "following" as const, label: "Siguiendo" },
+  { id: "saved" as const, label: "Guardados" },
+];
+
+function FeedTabs({
+  home,
+  feedTab,
+  signedIn,
+}: {
+  home: "play" | "shop";
+  feedTab: "foryou" | "following" | "saved";
+  signedIn: boolean;
+}) {
+  const base = home === "play" ? "/play" : "/feed";
+  return (
+    <nav aria-label="Filtro del feed" className="overlay-chip flex items-center rounded-full p-0.5">
+      {FEED_TABS.map((tab) => {
+        const href =
+          tab.id === "foryou"
+            ? base
+            : tab.id === "saved" && !signedIn
+              ? `/login?callbackUrl=${encodeURIComponent(`${base}?tab=saved`)}`
+              : `${base}?tab=${tab.id}`;
+        const current = feedTab === tab.id;
+        return (
+          <Link
+            key={tab.id}
+            href={href}
+            aria-current={current ? "page" : undefined}
+            className={`overlay-tab rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide transition md:px-3 md:text-xs ${
+              current ? "text-klik-green" : "text-white/70 hover:text-white"
+            }`}
+          >
+            {tab.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function MuteChip({
+  muted,
+  volume,
+  onEnable,
+  onMute,
+}: {
+  muted: boolean;
+  volume: number;
+  onEnable: () => void;
+  onMute: () => void;
+}) {
+  const silent = muted || volume === 0;
+  return (
+    <button
+      type="button"
+      onClick={() => (silent ? onEnable() : onMute())}
+      aria-label={silent ? "Activar audio" : "Silenciar"}
+      className="overlay-chip overlay-icon flex h-10 w-10 items-center justify-center rounded-full text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green"
+    >
+      {silent ? <RailMuteIcon /> : <RailVolumeIcon />}
+    </button>
+  );
+}
+
+const CAPTION_LIMIT = 120;
+
+function CaptionCard({
+  video,
+  tags,
+  fxRate,
+  shopOpen,
+  expanded,
+  onToggle,
+  onOpenShop,
+}: {
+  video: FeedVideo;
+  tags: string[];
+  fxRate?: number;
+  shopOpen: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+  onOpenShop: () => void;
+}) {
+  const captionBody =
+    video.caption.replace(/#[A-Za-z0-9_]+/g, " ").replace(/\s+/g, " ").trim() || video.title;
+  const long = captionBody.length > CAPTION_LIMIT;
+  const shown = !long || expanded ? captionBody : `${captionBody.slice(0, CAPTION_LIMIT).trim()}…`;
+  const course = (video.product?.type ?? "").toUpperCase() === "COURSE";
+  const ctaLabel = video.product?.owned ? "Continuar" : course ? "Ver curso" : "Ver producto";
+
+  return (
+    <div className="overlay-caption-plate rounded-3xl px-3.5 py-3 md:px-4 md:py-3.5">
+      <div className="flex items-start gap-3">
+        <Link href={`/u/${video.handle}`} className="shrink-0" aria-label={`Perfil de @${video.handle}`}>
+          <UserAvatar name={video.creatorName} imageUrl={video.creatorImage} size="md" className="ring-1 ring-white/30" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="overlay-label truncate text-sm font-bold leading-5">{video.creatorName}</p>
+          <p className="overlay-label mt-0.5 text-[12px] font-medium text-white/80">
+            @{video.handle}
+            {video.publishedAt ? <span className="font-normal text-white/70"> · {formatFeedDate(video.publishedAt)}</span> : null}
+          </p>
+        </div>
+      </div>
+      <p className="overlay-label mt-2.5 text-[15px] leading-6">
+        {shown}
+        {long ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="ml-1 font-semibold text-klik-green underline-offset-2 hover:underline"
+          >
+            {expanded ? "menos" : "más"}
+          </button>
+        ) : null}
+      </p>
+      {tags.length ? (
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
+          {tags.map((tag) => (
+            <Link key={tag} href={`/search?q=${encodeURIComponent(tag)}`} className="overlay-hashtag">
+              #{tag}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+      {video.product && !shopOpen ? (
+        <button
+          type="button"
+          onClick={onOpenShop}
+          className="mt-3 flex w-full max-w-full items-center justify-between gap-2 rounded-full bg-klik-green px-4 py-2.5 text-sm font-bold text-klik-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <span className="truncate">{ctaLabel}</span>
+          {video.product.owned ? null : (
+            <span className="rounded-full bg-black/15 px-2.5 py-0.5 text-left">
+              <PriceTag
+                amount={video.product.price}
+                currency={video.product.currency}
+                fx={fxRate}
+                size="sm"
+                compact
+                align="right"
+              />
+            </span>
+          )}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -858,30 +990,28 @@ function RailAction({
   onClick,
   active,
   ariaLabel,
-  compact,
 }: {
   label: string;
   children: React.ReactNode;
   onClick: () => void;
   active?: boolean;
   ariaLabel?: string;
-  compact?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 overflow-visible ${compact ? "w-11 md:w-12" : "w-11 md:w-12"}`}
+      className="flex w-12 flex-col items-center gap-1 overflow-visible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green"
     >
       <span
-        className={`overlay-chip overlay-icon flex items-center justify-center rounded-full ${
-          compact ? "h-11 w-11 md:h-12 md:w-12" : "h-11 w-11 md:h-12 md:w-12"
-        } ${active ? "text-[#FE2C55]" : "text-white"}`}
+        className={`overlay-chip overlay-icon flex h-12 w-12 items-center justify-center rounded-full ${
+          active ? "overlay-chip-active" : "text-white"
+        }`}
       >
         {children}
       </span>
-      <span className="overlay-label overlay-meta max-w-[3.25rem] truncate text-center text-[10px] font-medium leading-tight md:text-[11px]">
+      <span className="overlay-label text-center text-[11px] font-semibold leading-tight tabular-nums md:text-xs">
         {label}
       </span>
     </button>
@@ -930,7 +1060,7 @@ function MenuCard({ children }: { children: React.ReactNode }) {
 
 function SidePanel({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="absolute inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-neutral-950/95 p-5 shadow-2xl ring-1 ring-white/10 backdrop-blur-md">
+    <div className="absolute inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-white/10 bg-black/80 p-5 shadow-2xl backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-display text-lg font-bold">{title}</h2>
         <button type="button" onClick={onClose} className="text-sm text-white/50">
@@ -944,7 +1074,7 @@ function SidePanel({ title, onClose, children }: { title: string; onClose: () =>
 
 function HeartIcon({ filled }: { filled: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" className={`h-9 w-9 overflow-visible ${filled ? "fill-[#FE2C55]" : "fill-white"}`} aria-hidden>
+    <svg viewBox="0 0 24 24" className={`h-9 w-9 overflow-visible ${filled ? "fill-current" : "fill-white"}`} aria-hidden>
       <path d="M12 20.25S4.5 15.3 3.2 10.4C2.4 7.5 4.1 5 6.8 5c1.7 0 3.1 1 3.7 2.3C11.1 6 12.5 5 14.2 5c2.7 0 4.4 2.5 3.6 5.4C16.5 15.3 12 20.25 12 20.25z" />
     </svg>
   );
@@ -958,7 +1088,7 @@ function CommentIcon() {
 }
 function StarIcon({ filled }: { filled: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" className={`h-9 w-9 overflow-visible ${filled ? "fill-[#FE2C55]" : "fill-white"}`} aria-hidden>
+    <svg viewBox="0 0 24 24" className={`h-9 w-9 overflow-visible ${filled ? "fill-current" : "fill-white"}`} aria-hidden>
       <path d="M12 3.6 14.4 9l6 .7-4.5 4.1 1.3 5.9L12 16.8 6.8 19.7 8.1 13.8 3.6 9.7 9.6 9z" />
     </svg>
   );

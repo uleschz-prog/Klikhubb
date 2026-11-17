@@ -88,6 +88,8 @@ export function youtubeEmbedSrc(
     modestbranding: "1",
     controls: "0",
     iv_load_policy: "3",
+    disablekb: "1",
+    fs: "0",
     loop: "1",
     playlist: id,
     enablejsapi: "1",

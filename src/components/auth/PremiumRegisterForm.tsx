@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/theme/ThemeProvider";
 type Variant = "hero" | "section" | "page";
 
 const inputClass =
-  "min-h-12 w-full rounded-2xl border border-white/10 bg-black/50 px-4 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/30 focus:border-klik-cyan/40 focus:ring-2 focus:ring-klik-cyan/30";
+  "min-h-12 w-full rounded-2xl border border-white/10 bg-black/50 px-4 text-sm text-white outline-none backdrop-blur-sm transition placeholder:text-white/30 focus:border-klik-green/40 focus:ring-2 focus:ring-klik-green/30";
 
 function detectLocale() {
   if (typeof navigator === "undefined") return "es";
@@ -146,7 +146,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
             Usuario
           </span>
           <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-klik-cyan">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-klik-green">
               @
             </span>
             <input
@@ -191,11 +191,11 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
         />
         <span className="text-xs leading-5 text-white/55">
           Acepto los{" "}
-          <Link href="/legal/terms" className="text-klik-cyan hover:text-white">
+          <Link href="/legal/terms" className="text-klik-green hover:text-white">
             términos
           </Link>{" "}
           y la{" "}
-          <Link href="/legal/privacy" className="text-klik-cyan hover:text-white">
+          <Link href="/legal/privacy" className="text-klik-green hover:text-white">
             privacidad
           </Link>
           .
@@ -227,7 +227,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
       {!isPage ? (
         <p className="text-center text-xs text-white/45">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="font-semibold text-klik-cyan hover:text-white">
+          <Link href="/login" className="font-semibold text-klik-green hover:text-white">
             Entra
           </Link>
         </p>
@@ -253,7 +253,7 @@ export function PremiumRegisterForm({ variant = "hero" }: { variant?: Variant })
           {form}
           <p className="mt-6 text-center text-sm text-white/45">
             ¿Ya tienes cuenta?{" "}
-            <Link href="/login" className="text-klik-cyan">
+            <Link href="/login" className="font-semibold text-klik-green">
               Inicia sesión
             </Link>
           </p>

@@ -66,7 +66,7 @@ export default async function CoursesPage() {
                         {course.role === "creator" ? " · Tu curso" : " · Acceso activo"}
                       </p>
                       <h3 className="mt-1 font-display text-lg font-bold">
-                        <Link href={href} className="hover:text-klik-cyan">
+                        <Link href={href} className="hover:text-klik-green">
                           {course.title}
                         </Link>
                       </h3>

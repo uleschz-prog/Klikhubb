@@ -1,9 +1,8 @@
-import Link from "next/link";
 import { listPublishedVideos, listSavedVideos, getPublishedVideo } from "@/lib/video/feed";
 import { getDbUserId, getSession } from "@/lib/auth/session";
 import { getCheckoutMethods } from "@/config/checkout-methods";
 import { FeedTheater } from "@/components/video/FeedTheater";
-import { PlatformShell } from "@/components/layout/PlatformShell";
+import { FeedEmptyState } from "@/components/video/FeedEmptyState";
 import { resolveDisplayFxUsdMxn } from "@/lib/commerce/display-fx";
 import { selectFeaturedCatalog } from "@/lib/video/catalog-trust";
 
@@ -38,66 +37,49 @@ export default async function PlayPage({
 
   if (tab === "saved" && !viewerId) {
     return (
-      <PlatformShell title="Inicio" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Guardados</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">Entra para ver lo que guardaste</h1>
-          <p className="mt-3 max-w-sm text-sm text-white/55">La estrella se queda en tu cuenta, no en el teléfono.</p>
-          <Link
-            href={`/login?callbackUrl=${encodeURIComponent("/play?tab=saved")}`}
-            className="mt-6 rounded-full bg-klik-green px-6 py-3 text-sm font-bold text-klik-black"
-          >
-            Entrar
-          </Link>
-        </div>
-      </PlatformShell>
+      <FeedEmptyState
+        kicker="Guardados"
+        title="Entra para ver lo que guardaste"
+        body="La estrella se queda en tu cuenta, no en el teléfono."
+        actionHref={`/login?callbackUrl=${encodeURIComponent("/play?tab=saved")}`}
+        actionLabel="Entrar"
+      />
     );
   }
 
   if (theaterVideos.length === 0 && tab === "foryou") {
     return (
-      <PlatformShell title="Inicio" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">Inicio · Próximamente</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">Aún no hay videos de creadores</h1>
-          <p className="mt-3 max-w-sm text-sm text-white/55">
-            Aquí vas a ver clips originales publicados en Qlyk. Sube el tuyo si quieres ser de los primeros.
-          </p>
-          <Link href="/publish?lane=play" className="btn-primary mt-6 rounded-full px-6 py-3 text-sm font-bold">
-            Subir video
-          </Link>
-        </div>
-      </PlatformShell>
+      <FeedEmptyState
+        kicker="Inicio"
+        title="Aún no hay videos de creadores"
+        body="Aquí vas a ver clips originales publicados en Qlyk. Sube el tuyo si quieres ser de los primeros."
+        actionHref="/publish?lane=play"
+        actionLabel="Subir video"
+      />
     );
   }
 
   if (tab === "following" && theaterVideos.length === 0) {
     return (
-      <PlatformShell title="Inicio" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Siguiendo</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">Todavía no sigues a nadie</h1>
-          <p className="mt-3 max-w-sm text-sm text-white/55">En Inicio, toca el + bajo el avatar. Quien sigas aparece aquí.</p>
-          <Link href="/play" className="mt-6 rounded-full bg-klik-green px-6 py-3 text-sm font-bold text-klik-black">
-            Ir a Inicio
-          </Link>
-        </div>
-      </PlatformShell>
+      <FeedEmptyState
+        kicker="Siguiendo"
+        title="Todavía no sigues a nadie"
+        body="En Para ti, toca el + bajo el avatar. Quien sigas aparece aquí."
+        actionHref="/play"
+        actionLabel="Ir a Para ti"
+      />
     );
   }
 
   if (tab === "saved" && theaterVideos.length === 0) {
     return (
-      <PlatformShell title="Inicio" flush>
-        <div className="flex h-[calc(100dvh-3.5rem)] flex-col items-center justify-center px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-cyan">Guardados</p>
-          <h1 className="mt-3 font-display text-3xl font-extrabold">Todavía no guardas nada</h1>
-          <p className="mt-3 max-w-sm text-sm text-white/55">En un clip, toca la estrella. Aquí se queda.</p>
-          <Link href="/play" className="mt-6 rounded-full bg-klik-green px-6 py-3 text-sm font-bold text-klik-black">
-            Ir a Inicio
-          </Link>
-        </div>
-      </PlatformShell>
+      <FeedEmptyState
+        kicker="Guardados"
+        title="Todavía no guardas nada"
+        body="En un clip, toca la estrella. Aquí se queda."
+        actionHref="/play"
+        actionLabel="Ir a Para ti"
+      />
     );
   }
 

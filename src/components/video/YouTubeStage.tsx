@@ -112,10 +112,16 @@ export function YouTubeStage({
   }
 
   return (
-    <div className={`${className ?? ""} overflow-hidden`}>
+    <div className={`${className ?? ""} overflow-hidden bg-black`}>
+      {poster ? (
+        // Backdrop recortado y difuminado: el iframe va en contain y no se ven
+        // los bordes del reproductor ni marcos de la diapositiva a medias.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={poster} alt="" className="feed-media-backdrop" />
+      ) : null}
       <iframe
         ref={frame}
-        className="pointer-events-none absolute left-1/2 top-1/2 min-h-[100dvh] min-w-[177.78dvh] -translate-x-1/2 -translate-y-1/2 border-0"
+        className="feed-yt-frame pointer-events-none"
         src={embed}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
