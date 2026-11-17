@@ -93,7 +93,7 @@ export function CreatorPlanCard({ initial }: { initial?: CreatorPlanSnapshot | n
   const flatActive = snapshot.effectivePlan === "flat";
 
   return (
-    <div className="rounded-2xl border border-klik-line bg-klik-card p-5 md:p-6">
+    <div id="plan" className="scroll-mt-24 rounded-2xl border border-klik-line bg-klik-card p-5 md:p-6">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-klik-green">
         Tu modalidad
       </p>

@@ -610,30 +610,6 @@ html[data-theme="light"] textarea.bg-black {
   filter: blur(8px);
 }
 
-.hero-mock {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .hero-mock {
-    display: block;
-    position: absolute;
-    inset: auto -1.5rem 30% auto;
-    width: 14rem;
-    transform: rotate(8deg);
-    opacity: 0.9;
-  }
-}
-
-.hero-mock-card {
-  border-radius: 1.5rem;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  background: rgb(12 14 13 / 0.75);
-  padding: 1rem;
-  box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.7);
-  backdrop-filter: blur(16px);
-}
-
 .studio-rise {
   animation: dash-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

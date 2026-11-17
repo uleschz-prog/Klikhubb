@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import {
   evolutionMilestone,
   filterStudioSales,
+  studioPlanShareCopy,
   summarizeStudioSales,
   type CreatorStudioView,
   type StudioProductCard,
@@ -71,6 +72,7 @@ export function StudioDashboard({ data, fxRate }: { data: CreatorStudioView; fxR
   );
   const kpis = useMemo(() => summarizeStudioSales(filteredSales), [filteredSales]);
   const milestone = evolutionMilestone(data.lifetimeEarnedUsd);
+  const planShare = studioPlanShareCopy(data.plan);
   const visibleProducts = data.products.filter((product) => (tab === "all" ? product.status !== "ARCHIVED" : product.status === tab));
   const currentStep = !data.onboarding.hasProfile
     ? "profile"
@@ -105,7 +107,7 @@ export function StudioDashboard({ data, fxRate }: { data: CreatorStudioView; fxR
     },
     sale: {
       title: "Consigue tu primera venta",
-      body: "El 93% de cada venta aprobada es tuyo. Puedes pedir el retiro después de 24 horas.",
+      body: planShare.firstSaleBody,
       href: "/wallet",
       cta: "Ver monedero",
     },
@@ -124,6 +126,12 @@ export function StudioDashboard({ data, fxRate }: { data: CreatorStudioView; fxR
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/45">Área de creación</p>
           <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight">Hola, {data.displayName}</h1>
           <p className="mt-1 text-sm text-foreground/55">Tu tablero para crear, vender y cobrar en Qlyk.</p>
+          <Link
+            href="/dashboard#plan"
+            className="mt-3 inline-flex rounded-full border border-klik-line px-3 py-1 text-xs font-bold text-foreground/70 transition hover:border-klik-green hover:text-foreground"
+          >
+            {planShare.shortLabel}
+          </Link>
         </div>
         <Link
           href="/studio/new"
@@ -256,7 +264,7 @@ export function StudioDashboard({ data, fxRate }: { data: CreatorStudioView; fxR
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground/45">Ingreso neto</p>
             <p className="mt-3 font-display text-3xl font-extrabold text-klik-green">{moneyLabel(kpis.netIncomeUsd, currency, fxRate, hidden)}</p>
             <p className="mt-2 text-xs text-foreground/50">
-              Tu parte después de la comisión de Qlyk, en los últimos {range} días.
+              {planShare.kpiHelp} En los últimos {range} días.
               {currency === "MXN" ? " Cambio de referencia, aproximado." : ""}
             </p>
           </article>
