@@ -591,3 +591,92 @@ html[data-theme="light"] textarea.bg-black {
   color: rgb(var(--app-fg) / 0.55);
 }
 
+
+
+.hero-cinematic {
+  background: #070807;
+  color: #fff;
+}
+
+.hero-cinematic-glow {
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 130%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 12% 20%, rgb(245 158 66 / 0.28), transparent 55%),
+    radial-gradient(ellipse at 80% 0%, rgb(48 209 88 / 0.32), transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgb(10 132 255 / 0.12), transparent 45%);
+  filter: blur(8px);
+}
+
+.hero-mock {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hero-mock {
+    display: block;
+    position: absolute;
+    inset: auto -1.5rem 30% auto;
+    width: 14rem;
+    transform: rotate(8deg);
+    opacity: 0.9;
+  }
+}
+
+.hero-mock-card {
+  border-radius: 1.5rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(12 14 13 / 0.75);
+  padding: 1rem;
+  box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(16px);
+}
+
+.studio-rise {
+  animation: dash-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.studio-sheet {
+  animation: studio-sheet-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes studio-sheet-in {
+  from { transform: translateY(16px); opacity: 0.4; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+html[data-theme="light"] .hero-cinematic .bg-white\/5,
+html[data-theme="light"] .hero-cinematic .bg-white\/10 {
+  background-color: rgb(255 255 255 / 0.1) !important;
+}
+
+html[data-theme="light"] .hero-cinematic .bg-black\/40 {
+  background-color: rgb(0 0 0 / 0.4) !important;
+}
+
+html[data-theme="light"] .hero-cinematic .border-white\/10,
+html[data-theme="light"] .hero-cinematic .border-white\/15,
+html[data-theme="light"] .hero-cinematic .border-white\/20 {
+  border-color: rgb(255 255 255 / 0.16) !important;
+}
+
+html[data-theme="light"] .hero-cinematic .placeholder\:text-white\/35::placeholder {
+  color: rgb(255 255 255 / 0.35) !important;
+}
+
+html[data-theme="light"] .hero-cinematic .text-white\/65,
+html[data-theme="light"] .hero-cinematic .text-white\/70,
+html[data-theme="light"] .hero-cinematic .text-white\/55,
+html[data-theme="light"] .hero-cinematic .text-white\/45 {
+  color: rgb(255 255 255 / 0.7) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-rise,
+  .studio-sheet,
+  .hero-rise {
+    animation: none;
+  }
+}

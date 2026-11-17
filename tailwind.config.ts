@@ -43,6 +43,13 @@ const config: Config = {
           "Arial",
           "sans-serif",
         ],
+        serif: [
+          "var(--font-serif)",
+          "Iowan Old Style",
+          "Palatino",
+          "Georgia",
+          "serif",
+        ],
       },
     },
   },
