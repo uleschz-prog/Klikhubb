@@ -6,18 +6,19 @@ import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingVideoCard } from "@/components/landing/LandingVideoCard";
 import { brand } from "@/config/site";
 
-export function LandingPage({ videos, fxRate }: { videos: FeedVideo[]; fxRate?: number }) {
+export function LandingPage({ videos, fxRate, hero }: { videos: FeedVideo[]; fxRate?: number; hero?: React.ReactNode }) {
   return (
     <div className="landing-root font-apple min-h-[100dvh] transition-colors duration-300">
       <LandingNav />
-      <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:pt-10">
+      {hero}
+      <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:pt-12">
         <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl" style={{ color: "var(--l-fg)" }}>
-            <h1 className="text-[2rem] font-semibold leading-[1.1] tracking-tight sm:text-[2.5rem]">
-              Mira. Compra. Listo.
-            </h1>
-            <p className="mt-3 max-w-md text-[15px] leading-6 sm:text-base" style={{ color: "var(--l-muted)" }}>
-              Videos y cursos de creadores en Qlyk. Si te gusta uno, lo puedes llevar.
+            <h2 className="text-[1.65rem] font-semibold leading-[1.15] tracking-tight sm:text-[2rem]">
+              Cursos y videos de creadores
+            </h2>
+            <p className="mt-2 max-w-md text-[15px] leading-6 sm:text-base" style={{ color: "var(--l-muted)" }}>
+              Si te gusta uno, lo puedes llevar. Los precios se muestran en MXN y USD.
             </p>
           </div>
           <Link href="/cursos" className="btn-primary inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold">

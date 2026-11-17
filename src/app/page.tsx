@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { site } from "@/config/site";
 import { resolveDisplayFxUsdMxn } from "@/lib/commerce/display-fx";
@@ -26,5 +27,7 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const videos = await listPublishedVideos(24).catch(() => []);
   const featured = selectFeaturedCatalog(videos);
-  return <LandingPage videos={featured} fxRate={resolveDisplayFxUsdMxn()} />;
+  return (
+    <LandingPage videos={featured} fxRate={resolveDisplayFxUsdMxn()} hero={<LandingHero />} />
+  );
 }
