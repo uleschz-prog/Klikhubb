@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { FeedVideo } from "@/lib/video/types";
 import { LandingNav } from "@/components/landing/LandingNav";
+import { LandingPlanCompare } from "@/components/landing/LandingPlanCompare";
 import { LandingVideoCard } from "@/components/landing/LandingVideoCard";
 import { brand } from "@/config/site";
 
@@ -11,6 +12,7 @@ export function LandingPage({ videos, fxRate, hero }: { videos: FeedVideo[]; fxR
     <div className="landing-root font-apple min-h-[100dvh] transition-colors duration-300">
       <LandingNav />
       {hero}
+      {hero ? <LandingPlanCompare /> : null}
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:pt-12">
         <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-xl" style={{ color: "var(--l-fg)" }}>
