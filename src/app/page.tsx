@@ -30,7 +30,8 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const videos = await listPublishedVideos(24).catch(() => []);
   const featured = selectFeaturedCatalog(videos);
+  const fxRate = resolveDisplayFxUsdMxn();
   return (
-    <LandingPage videos={featured} fxRate={resolveDisplayFxUsdMxn()} hero={<LandingHero />} />
+    <LandingPage videos={featured} fxRate={fxRate} hero={<LandingHero fxRate={fxRate} />} />
   );
 }

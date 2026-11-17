@@ -6,12 +6,14 @@ import { LandingAudience } from "@/components/landing/LandingAudience";
 import { LandingBenefits } from "@/components/landing/LandingBenefits";
 import { LandingFaq } from "@/components/landing/LandingFaq";
 import { LandingFinalCta } from "@/components/landing/LandingFinalCta";
+import { LandingEarningsSimulator } from "@/components/landing/LandingEarningsSimulator";
 import { LandingHowItWorks } from "@/components/landing/LandingHowItWorks";
 import { LandingMarquee } from "@/components/landing/LandingMarquee";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingPlanCompare } from "@/components/landing/LandingPlanCompare";
 import { LandingVideoCard } from "@/components/landing/LandingVideoCard";
 import { brand } from "@/config/site";
+import { DEFAULT_DISPLAY_FX_USD_MXN } from "@/lib/commerce/display-fx";
 
 export function LandingPage({ videos, fxRate, hero }: { videos: FeedVideo[]; fxRate?: number; hero?: React.ReactNode }) {
   return (
@@ -22,6 +24,7 @@ export function LandingPage({ videos, fxRate, hero }: { videos: FeedVideo[]; fxR
         <>
           <LandingMarquee />
           <LandingHowItWorks />
+          <LandingEarningsSimulator fxRate={fxRate ?? DEFAULT_DISPLAY_FX_USD_MXN} />
           <LandingBenefits />
           <LandingAudience />
           <LandingPlanCompare />
