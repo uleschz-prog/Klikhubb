@@ -1,53 +1,95 @@
+"use client";
+
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import {
-  CREATOR_FLAT_PRICE_USD,
-  CREATOR_PLAN_FLAT,
-  CREATOR_PLAN_PAYG,
-  creatorHoldLabel,
-} from "@/config/compensation-plan";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { CREATOR_PLAN_FLAT } from "@/config/compensation-plan";
+import { CountUp, Magnetic, useFinePointer } from "@/components/landing/landing-motion";
 
-const PAYG_PERCENT = Math.round(CREATOR_PLAN_PAYG.creatorRate * 100);
+const WORDS = ["tus cursos", "tus clips", "tu talento"] as const;
 const FLAT_PERCENT = Math.round(CREATOR_PLAN_FLAT.creatorRate * 100);
-const HOLD = creatorHoldLabel() === "24 horas" ? "24 h" : creatorHoldLabel();
-
-const STATS = [
-  {
-    value: `Hasta ${FLAT_PERCENT}%`,
-    label: `${PAYG_PERCENT}% sin mensualidad o ${FLAT_PERCENT}% con ${CREATOR_PLAN_FLAT.label.toLowerCase()}`,
-  },
-  { value: HOLD, label: "para pedir tu retiro" },
-  { value: "MXN y USD", label: "precios claros" },
-];
 
 export function LandingHero() {
+  const reduced = useReducedMotion();
+  const fine = useFinePointer();
+  const [wordIndex, setWordIndex] = useState(0);
+  const [spot, setSpot] = useState({ x: 72, y: 28 });
+
+  useEffect(() => {
+    if (reduced) return;
+    const id = window.setInterval(() => setWordIndex((index) => (index + 1) % WORDS.length), 2400);
+    return () => window.clearInterval(id);
+  }, [reduced]);
+
   return (
-    <section className="hero-cinematic theme-media relative overflow-hidden text-white">
-      <div className="hero-cinematic-glow" aria-hidden />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:pb-20 lg:pt-14">
+    <section
+      className="hero-cinematic theme-media relative overflow-hidden text-white"
+      onMouseMove={(event) => {
+        if (!fine || reduced) return;
+        const box = event.currentTarget.getBoundingClientRect();
+        setSpot({
+          x: ((event.clientX - box.left) / box.width) * 100,
+          y: ((event.clientY - box.top) / box.height) * 100,
+        });
+      }}
+    >
+      <div className="hero-aurora" aria-hidden />
+      <div className="hero-grain" aria-hidden />
+      {fine && !reduced ? (
+        <div
+          className="hero-spotlight"
+          aria-hidden
+          style={{ "--spot-x": `${spot.x}%`, "--spot-y": `${spot.y}%` } as CSSProperties}
+        />
+      ) : null}
+
+      <div className="relative mx-auto grid max-w-6xl items-start gap-10 px-4 pb-16 pt-24 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:items-center lg:pb-20 lg:pt-28">
         <div className="hero-rise">
-          <p className="hero-ticker mb-5 inline-flex max-w-full flex-wrap gap-x-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">
-            <span>Sin mensualidad: {PAYG_PERCENT}%</span>
-            <span className="text-klik-green">
-              {CREATOR_PLAN_FLAT.label}: {FLAT_PERCENT}%
-            </span>
-            <span>Retiro desde 24 h</span>
+          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/55">
+            Qlyk · Para quienes enseñan y cobran
           </p>
-          <h1 className="font-serif text-[2.6rem] font-normal leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.6rem]">
-            Vende tus cursos y videos.{" "}
-            <span className="italic text-klik-green">Quédate hasta el {FLAT_PERCENT}%.</span>
+          <h1 className="font-serif text-[2.55rem] font-normal leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.55rem]">
+            <span className="block">Convierte</span>
+            <span className="hero-word-slot block italic text-klik-green">
+              {reduced ? (
+                <span>tus cursos, clips y tu talento</span>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={WORDS[wordIndex]}
+                    className="inline-block"
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -18 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    aria-live="polite"
+                  >
+                    {WORDS[wordIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              )}
+            </span>
+            <span className="block">en ingresos.</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-white/70 sm:text-lg">
-            Sin cuota mensual te quedas el {PAYG_PERCENT}% de cada venta aprobada. Con el{" "}
-            {CREATOR_PLAN_FLAT.label.toLowerCase()} de ${CREATOR_FLAT_PRICE_USD} USD te quedas el{" "}
-            {FLAT_PERCENT}%. El retiro se puede pedir después de 24 horas. Los precios se muestran en MXN y USD.
+            Publica lo que ya sabes, reúne a tu gente en tu página y cobra en tu monedero. Empiezas
+            gratis, sin pagar mensualidad, y tu contenido sigue trabajando cuando tú no estás.
           </p>
+
+          <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-klik-green/35 bg-klik-green/10 px-4 py-2 text-sm font-semibold text-klik-green">
+            <span className="inline-flex h-1.5 w-1.5 rounded-full bg-klik-green" aria-hidden />
+            Hasta el <CountUp to={FLAT_PERCENT} suffix="%" className="tabular-nums" /> de cada venta, para ti
+          </p>
+
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href="/register"
-              className="inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black shadow-[0_12px_30px_-12px_rgba(48,209,88,0.9)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-            >
-              Crea tu cuenta gratis
-            </Link>
+            <Magnetic>
+              <Link
+                href="/register"
+                className="cta-shimmer inline-flex min-h-12 items-center rounded-full bg-klik-green px-6 text-sm font-bold text-klik-black shadow-[0_12px_30px_-12px_rgba(48,209,88,0.9)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                Crea tu cuenta gratis
+              </Link>
+            </Magnetic>
             <Link
               href="/cursos"
               className="inline-flex min-h-12 items-center rounded-full border border-white/20 px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -55,27 +97,19 @@ export function LandingHero() {
               Explorar cursos
             </Link>
           </div>
-          <dl className="mt-8 grid grid-cols-3 gap-3 max-sm:grid-cols-1">
-            {STATS.map((stat) => (
-              <div key={stat.value} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                <dt className="font-serif text-2xl text-klik-green sm:text-3xl">{stat.value}</dt>
-                <dd className="mt-1 text-xs leading-5 text-white/65">{stat.label}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
 
-        <div className="hero-rise hero-rise-delay-2 relative isolate">
+        <div className="flex flex-col gap-6">
           <form
             action="/register"
             method="get"
-            className="relative z-10 rounded-3xl border border-white/15 bg-[#0b0d0c]/90 p-6 shadow-2xl backdrop-blur-xl"
+            className="relative z-10 rounded-3xl border border-white/15 bg-[#0b0d0c]/92 p-6 shadow-2xl backdrop-blur-xl"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-klik-green">Empieza hoy</p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold">Crea tu cuenta gratis</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-klik-green">Tu lugar está listo</p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold">Empieza en un minuto</h2>
             <p className="mt-2 text-sm leading-6 text-white/70">
-              Empieza sin mensualidad y quédate el {PAYG_PERCENT}%. Cuando te convenga, pasa al{" "}
-              {CREATOR_PLAN_FLAT.label.toLowerCase()} de ${CREATOR_FLAT_PRICE_USD} USD y quédate el {FLAT_PERCENT}%.
+              Abre tu cuenta, publica tu primer contenido y deja que tu conocimiento empiece a
+              pagarte. No pedimos tarjeta para registrarte.
             </p>
             <label className="mt-5 block text-xs font-semibold uppercase tracking-wider text-white/55">
               Tu correo
@@ -90,9 +124,9 @@ export function LandingHero() {
             </label>
             <button
               type="submit"
-              className="mt-4 flex min-h-12 w-full items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green"
+              className="cta-shimmer mt-4 flex min-h-12 w-full items-center justify-center rounded-full bg-klik-green text-sm font-bold text-klik-black transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-klik-green"
             >
-              Continuar
+              Quiero ser parte
             </button>
             <p className="mt-3 text-center text-sm text-white/55">
               ¿Ya tienes cuenta?{" "}
@@ -101,8 +135,49 @@ export function LandingHero() {
               </Link>
             </p>
           </form>
+
+          <StudioDeviceMock />
         </div>
       </div>
     </section>
+  );
+}
+
+function StudioDeviceMock() {
+  return (
+    <div className="hero-device-float mx-auto hidden w-full max-w-[22rem] lg:ml-auto lg:block" aria-hidden>
+      <div className="rounded-[2rem] border border-white/15 bg-black/55 p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.85)] backdrop-blur-xl">
+        <div className="flex items-center justify-between px-3 pb-2 pt-1">
+          <span className="text-[10px] font-semibold text-white/45">Qlyk Studio</span>
+          <span className="h-1.5 w-12 rounded-full bg-white/20" />
+        </div>
+        <div className="rounded-[1.4rem] border border-white/10 bg-[#0c0f0d] p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">Área de creación</p>
+          <p className="mt-1 font-display text-lg font-extrabold">Tu tablero</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+              <p className="text-[9px] uppercase tracking-[0.14em] text-white/40">Ingreso neto</p>
+              <p className="mt-1 font-display text-sm font-bold text-klik-green">••••</p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+              <p className="text-[9px] uppercase tracking-[0.14em] text-white/40">Ventas</p>
+              <p className="mt-1 font-display text-sm font-bold">Listas</p>
+            </div>
+          </div>
+          <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold">Tu curso</p>
+              <span className="rounded-full bg-klik-green px-2 py-0.5 text-[9px] font-bold text-klik-black">
+                Activo
+              </span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full w-2/3 rounded-full bg-klik-green" />
+            </div>
+            <p className="mt-2 text-[10px] text-white/45">Próximos pasos en un solo lugar</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
