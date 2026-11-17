@@ -1,14 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { shouldUseDemoFallback } from "@/lib/demo/store";
+import { resolveEffectiveCreatorPlan } from "@/lib/commerce/creator-plans";
 import {
   buildStudioOnboarding,
+  studioPlanFromCode,
   type CreatorStudioView,
   type StudioProductCard,
   type StudioSale,
 } from "@/lib/commerce/creator-studio-view";
 
 export type { CreatorStudioView, StudioProductCard, StudioSale, StudioOnboarding, StudioRangeDays } from "@/lib/commerce/creator-studio-view";
-export { STUDIO_RANGE_DAYS, filterStudioSales, summarizeStudioSales, buildStudioOnboarding, evolutionMilestone } from "@/lib/commerce/creator-studio-view";
+export { STUDIO_RANGE_DAYS, filterStudioSales, summarizeStudioSales, buildStudioOnboarding, evolutionMilestone, studioPlanFromCode, studioPlanShareCopy } from "@/lib/commerce/creator-studio-view";
 
 export async function loadCreatorStudio(userId: string): Promise<CreatorStudioView> {
   try {
@@ -16,7 +18,7 @@ export async function loadCreatorStudio(userId: string): Promise<CreatorStudioVi
     const [user, products, orders, wallet, videoCount] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
-        select: { displayName: true, name: true, username: true, image: true },
+        select: { displayName: true, name: true, username: true, image: true, creatorPlan: true, creatorPlanUntil: true },
       }),
       prisma.product.findMany({
         where: {
@@ -93,6 +95,13 @@ export async function loadCreatorStudio(userId: string): Promise<CreatorStudioVi
       hasSale: sales.length > 0 || Number(wallet?.lifetimeEarned ?? 0) > 0,
     });
 
+    const plan = studioPlanFromCode(
+      resolveEffectiveCreatorPlan({
+        preferredPlan: user?.creatorPlan,
+        planUntil: user?.creatorPlanUntil,
+      }),
+    );
+
     return {
       displayName: user?.displayName ?? user?.name ?? "Creador",
       username: user?.username ?? null,
@@ -102,6 +111,7 @@ export async function loadCreatorStudio(userId: string): Promise<CreatorStudioVi
       lifetimeEarnedUsd: Number(wallet?.lifetimeEarned ?? 0),
       onboarding: { ...onboardingBase, shareSlug: shareable?.slug ?? null },
       videoCount,
+      plan,
     };
   } catch (error) {
     if (!shouldUseDemoFallback(error)) throw error;
@@ -119,5 +129,6 @@ function emptyStudioView(): CreatorStudioView {
     lifetimeEarnedUsd: 0,
     onboarding: { ...buildStudioOnboarding({ hasProfile: false, hasProduct: false, hasShareLink: false, hasSale: false }), shareSlug: null },
     videoCount: 0,
+    plan: studioPlanFromCode("payg"),
   };
 }

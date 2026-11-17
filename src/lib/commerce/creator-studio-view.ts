@@ -1,3 +1,10 @@
+import {
+  CREATOR_FLAT_PRICE_USD,
+  CREATOR_PLAN_FLAT,
+  CREATOR_PLAN_PAYG,
+  type CreatorPlanCode,
+} from "@/config/compensation-plan";
+
 export const STUDIO_RANGE_DAYS = [7, 30, 90] as const;
 export type StudioRangeDays = (typeof STUDIO_RANGE_DAYS)[number];
 
@@ -35,6 +42,12 @@ export type StudioOnboarding = {
   shareSlug: string | null;
 };
 
+export type StudioPlanInfo = {
+  code: CreatorPlanCode;
+  creatorRate: number;
+  label: string;
+};
+
 export type CreatorStudioView = {
   displayName: string;
   username: string | null;
@@ -44,7 +57,31 @@ export type CreatorStudioView = {
   lifetimeEarnedUsd: number;
   onboarding: StudioOnboarding;
   videoCount: number;
+  plan: StudioPlanInfo;
 };
+
+export function studioPlanFromCode(code: CreatorPlanCode): StudioPlanInfo {
+  if (code === "flat") {
+    return { code, creatorRate: CREATOR_PLAN_FLAT.creatorRate, label: CREATOR_PLAN_FLAT.label };
+  }
+  return { code: "payg", creatorRate: CREATOR_PLAN_PAYG.creatorRate, label: CREATOR_PLAN_PAYG.label };
+}
+
+export function studioPlanShareCopy(plan: StudioPlanInfo) {
+  const percent = Math.round(plan.creatorRate * 100);
+  if (plan.code === "flat") {
+    return {
+      shortLabel: `${percent}% (${plan.label})`,
+      kpiHelp: `Tu parte: ${percent}% (${plan.label}). En este periodo Qlyk no cobra comisión por venta.`,
+      firstSaleBody: `Con el ${plan.label.toLowerCase()}, el ${percent}% de cada venta aprobada es tuyo. Puedes pedir el retiro después de 24 horas.`,
+    };
+  }
+  return {
+    shortLabel: `Tu parte: ${percent}%`,
+    kpiHelp: `Tu parte: ${percent}% (sin mensualidad), después de la comisión de Qlyk.`,
+    firstSaleBody: `Sin mensualidad, el ${percent}% de cada venta aprobada es tuyo. Con el ${CREATOR_PLAN_FLAT.label.toLowerCase()} de $${CREATOR_FLAT_PRICE_USD} USD te quedas el 100%. Puedes pedir el retiro después de 24 horas.`,
+  };
+}
 
 export function filterStudioSales(
   sales: StudioSale[],

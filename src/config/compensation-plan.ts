@@ -90,4 +90,9 @@ export function ratesForCreatorPlan(plan: CreatorPlanCode): CreatorPlanRates {
   };
 }
 
+/** Ventas brutas mensuales (USD) a partir de las cuales el plan mensual sale a cuenta frente a la comisión por venta. */
+export function flatBreakEvenMonthlySalesUsd() {
+  return Math.round(CREATOR_FLAT_PRICE_USD / CREATOR_PLAN_PAYG.platformFeeRate);
+}
+
 export const PLATFORM_PROTECTED_PATHS = ["/dashboard", "/checkout", "/wallet"] as const;
