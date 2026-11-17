@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 export function useFinePointer() {
   const [fine, setFine] = useState(false);
@@ -110,5 +110,50 @@ export function Magnetic({ children, className = "" }: { children: ReactNode; cl
     >
       {children}
     </div>
+  );
+}
+
+export function useDesktopMedia() {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setDesktop(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  return desktop;
+}
+
+export function ParallaxLayer({
+  children,
+  className = "",
+  offset = 24,
+}: {
+  children: ReactNode;
+  className?: string;
+  offset?: number;
+}) {
+  const reduced = useReducedMotion();
+  const fine = useFinePointer();
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], [offset, -offset]);
+
+  if (reduced || !fine) {
+    return (
+      <div ref={ref} className={className}>
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div ref={ref} style={{ y }} className={className}>
+      {children}
+    </motion.div>
   );
 }

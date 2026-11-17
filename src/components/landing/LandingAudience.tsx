@@ -1,14 +1,35 @@
 "use client";
 
+import Image from "next/image";
 import { LandingReveal } from "@/components/landing/landing-motion";
 
 const PEOPLE = [
-  { title: "Coaches", body: "Empaca tu método en un curso y síguele hablando a tu gente en el feed." },
-  { title: "Maestros", body: "Convierte una clase que ya das en un producto que se puede comprar a cualquier hora." },
-  { title: "Creadores", body: "Pasa del like a la venta: publica clips, enlaza tu curso y cobra en el mismo lugar." },
-  { title: "Expertos", body: "Si tu cabeza ya resuelve problemas ajenos, aquí puedes cobrarlo con claridad." },
-  { title: "Networkers", body: "Comparte lo que sabes, reúne a tu red y deja que ellos compren sin salir de Qlyk." },
-];
+  {
+    title: "Coaches",
+    body: "Empaca tu método en un curso y síguele hablando a tu gente en el feed.",
+    image: "/landing/persona-coaches.webp",
+  },
+  {
+    title: "Maestros",
+    body: "Convierte una clase que ya das en un producto que se puede comprar a cualquier hora.",
+    image: "/landing/persona-maestros.webp",
+  },
+  {
+    title: "Creadores",
+    body: "Pasa del like a la venta: publica clips, enlaza tu curso y cobra en el mismo lugar.",
+    image: "/landing/persona-creadores.webp",
+  },
+  {
+    title: "Expertos",
+    body: "Si tu cabeza ya resuelve problemas ajenos, aquí puedes cobrarlo con claridad.",
+    image: "/landing/persona-expertos.webp",
+  },
+  {
+    title: "Networkers",
+    body: "Comparte lo que sabes, reúne a tu red y deja que ellos compren sin salir de Qlyk.",
+    image: "/landing/persona-networkers.webp",
+  },
+] as const;
 
 export function LandingAudience() {
   return (
@@ -27,13 +48,25 @@ export function LandingAudience() {
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {PEOPLE.map((person, index) => (
             <LandingReveal key={person.title} delay={index * 0.06}>
-              <article className="landing-bento h-full rounded-3xl border p-5" style={{ borderColor: "var(--l-border)", background: "var(--l-surface)" }}>
-                <h3 className="font-display text-lg font-extrabold" style={{ color: "var(--l-fg)" }}>
-                  {person.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6" style={{ color: "var(--l-muted)" }}>
-                  {person.body}
-                </p>
+              <article className="landing-bento h-full overflow-hidden rounded-3xl border" style={{ borderColor: "var(--l-border)", background: "var(--l-surface)" }}>
+                <div className="relative aspect-square overflow-hidden bg-black">
+                  <Image
+                    src={person.image}
+                    alt=""
+                    width={800}
+                    height={800}
+                    className="h-full w-full object-cover"
+                    sizes="(max-width: 640px) 50vw, 20vw"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-display text-lg font-extrabold" style={{ color: "var(--l-fg)" }}>
+                    {person.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6" style={{ color: "var(--l-muted)" }}>
+                    {person.body}
+                  </p>
+                </div>
               </article>
             </LandingReveal>
           ))}

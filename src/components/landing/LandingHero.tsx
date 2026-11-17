@@ -4,12 +4,13 @@ import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CREATOR_PLAN_FLAT } from "@/config/compensation-plan";
+import { LandingHeroMocks } from "@/components/landing/LandingHeroMocks";
 import { CountUp, Magnetic, useFinePointer } from "@/components/landing/landing-motion";
 
 const WORDS = ["tus cursos", "tus clips", "tu talento"] as const;
 const FLAT_PERCENT = Math.round(CREATOR_PLAN_FLAT.creatorRate * 100);
 
-export function LandingHero() {
+export function LandingHero({ fxRate }: { fxRate: number }) {
   const reduced = useReducedMotion();
   const fine = useFinePointer();
   const [wordIndex, setWordIndex] = useState(0);
@@ -136,48 +137,9 @@ export function LandingHero() {
             </p>
           </form>
 
-          <StudioDeviceMock />
+          <LandingHeroMocks fxRate={fxRate} />
         </div>
       </div>
     </section>
-  );
-}
-
-function StudioDeviceMock() {
-  return (
-    <div className="hero-device-float mx-auto hidden w-full max-w-[22rem] lg:ml-auto lg:block" aria-hidden>
-      <div className="rounded-[2rem] border border-white/15 bg-black/55 p-3 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.85)] backdrop-blur-xl">
-        <div className="flex items-center justify-between px-3 pb-2 pt-1">
-          <span className="text-[10px] font-semibold text-white/45">Qlyk Studio</span>
-          <span className="h-1.5 w-12 rounded-full bg-white/20" />
-        </div>
-        <div className="rounded-[1.4rem] border border-white/10 bg-[#0c0f0d] p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">Área de creación</p>
-          <p className="mt-1 font-display text-lg font-extrabold">Tu tablero</p>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-              <p className="text-[9px] uppercase tracking-[0.14em] text-white/40">Ingreso neto</p>
-              <p className="mt-1 font-display text-sm font-bold text-klik-green">••••</p>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-              <p className="text-[9px] uppercase tracking-[0.14em] text-white/40">Ventas</p>
-              <p className="mt-1 font-display text-sm font-bold">Listas</p>
-            </div>
-          </div>
-          <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold">Tu curso</p>
-              <span className="rounded-full bg-klik-green px-2 py-0.5 text-[9px] font-bold text-klik-black">
-                Activo
-              </span>
-            </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full w-2/3 rounded-full bg-klik-green" />
-            </div>
-            <p className="mt-2 text-[10px] text-white/45">Próximos pasos en un solo lugar</p>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
